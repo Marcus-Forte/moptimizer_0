@@ -1,2 +1,2 @@
 # duna-optimizer
-Duna algorithmic optimizationj libraries for SLAM and LiDAR applications
+Duna algorithmic optimization libraries for SLAM and LiDAR applications
