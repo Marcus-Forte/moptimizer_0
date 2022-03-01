@@ -1,0 +1,53 @@
+@startuml
+
+
+Class Dataset <<Interface>>{
+# elements
+}
+
+
+
+Class CostFunction <<Interface>>{
++ virtual f()
++ virtual df()
+Dataset* m_dataset;
+int m_data_size;
+}
+
+Class CostFunctionImpl{
+}
+
+
+
+
+Class Optimizator <<interface>> {
+    +virtual minimize(x) = 0
+    #virtual preprocess() = 0
+}
+
+
+class GenericOptimizator {
+#virtual preprocess()
+}
+
+Class Registration {
+KDTree
+update_correspondences()
+}
+
+Dataset -* CostFunction 
+CostFunction -* Optimizator  
+CostFunction <|.. CostFunctionImpl
+Optimizator <|.. GenericOptimizator
+' Optimizator <|.. GPUOptimizator
+
+
+' note "These classes utilize the dataset and function methods\n to run an optimization algorithm" as N2
+' note "The user must implement this class\nand pass it to optimizator" as N1
+
+' N1 .. CostFunctionImpl
+' GenericOptimizator . N2
+' GPUOptimizator .. N2
+GenericOptimizator <-- Registration 
+
+@enduml
