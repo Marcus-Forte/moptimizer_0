@@ -1,0 +1,22 @@
+{
+    "files.associations": {
+        "*.cu": "cuda",
+        "core": "cpp",
+        "*.tcc": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "array": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
+    },
+
+    "todohighlight.include": [
+        "**/*.cpp",
+        "**/*.txt",
+    ],
+
+    "todohighlight.keywords": ["TODO","FIXME"],
+
+    "todohighlight.isEnable": true
+}
