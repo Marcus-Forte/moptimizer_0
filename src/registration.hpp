@@ -2,6 +2,7 @@
 
 
 #include <iostream>
+
 #include "generic_optimizator.h"
 
 template <int NPARAM>
@@ -13,21 +14,14 @@ public:
 
     Registration(CostFunction<NPARAM> *cost) : GenericOptimizator<NPARAM>(cost)
     {
+        
     }
 
-    virtual ~Registration() {}
-
-protected:
-    void preprocess() override
+    virtual ~Registration() 
     {
-        std::cout << "Calling registration preprocess()\n";
 
-        // Find correspondences
-
-        for (int i = 0; i < m_cost->getDataSize(); ++i)
-        {
-        }
-
-        // Compose Correspondence vector
     }
+
+
+    protected:
 };

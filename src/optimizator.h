@@ -8,6 +8,7 @@ class Optimizator
 {
 public:
     using VectorN = Eigen::Matrix<float, NPARAM, 1>;
+    using MatrixN = Eigen::Matrix<float, NPARAM, NPARAM>;
 
     Optimizator(CostFunction<NPARAM> *cost) : m_cost(cost) {}
     virtual ~Optimizator() = default;
@@ -20,7 +21,6 @@ public:
     }
 
 protected:
-    virtual void preprocess() = 0;
     virtual int testConvergence(const VectorN& delta) = 0;
 
 protected:

@@ -7,38 +7,32 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
     if (m_cost == 0)
     {
         std::cerr << "no cost object!\n";
-        exit(-1);
+        throw std::runtime_error("no cost object.");
     }
 
-    // Compute Hessian
-    int n = m_cost->getDataSize();
 
-    Eigen::Matrix<float, -1, -1> jacobian(m_cost->getDataSize(), NPARAM);
-    Eigen::Matrix<float, -1, 1> residuals(m_cost->getDataSize());
-
-    assert(jacobian.rows() == m_cost->getDataSize());
-
-    // Iterations
+    // LM Configuration
     double lm_init_lambda_factor_ = 1e-9;
     double lm_lambda_ = -1.0;
-
     int lm_max_iterations_ = 10;
 
-    Eigen::Matrix<float, NPARAM, NPARAM> diag_;
+    
+    MatrixN diag_;
     diag_.setIdentity();
 
+    MatrixN hessian;
     VectorN xi(NPARAM);
     VectorN b(NPARAM);
+
+    m_cost->init(x0);
     for (int j = 0; j < max_it; ++j)
     {
         DUNA_DEBUG_STREAM("## IT: " << j << " ##\n");
-        preprocess();
+        m_cost->preprocess(x0);
 
-        double y0 = m_cost->f(x0, residuals);
-        m_cost->df(x0, jacobian);
-        Eigen::Matrix<float, NPARAM, NPARAM> Hessian;
-        Hessian = (jacobian.transpose() * jacobian);
-        b = jacobian.transpose() * residuals;
+
+        // linearization
+        double y0 = m_cost->linearize(x0,hessian,b);
 
         if (lm_lambda_ < 0.0)
         {
@@ -53,8 +47,8 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
             // Eigen::LDLT<Matrix6d> solver(H + lm_lambda_ * Matrix6d::Identity());
             // Vector6d d = solver.solve(-b);
-            diag_ = Hessian.diagonal().asDiagonal();
-            VectorN delta = (Hessian + lm_lambda_ * diag_).inverse() * b;
+            diag_ = hessian.diagonal().asDiagonal();
+            VectorN delta = (hessian + lm_lambda_ * diag_).inverse() * b;
 
             xi = x0 - delta;
 
@@ -62,7 +56,7 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             // x0 = xi;
             // break;
 
-            double yi = m_cost->f(xi, residuals);
+            double yi = m_cost->computeCost(xi);
 
             double rho = (yi - y0) / delta.dot(lm_lambda_ * delta - b);
             DUNA_DEBUG("--- LM Opt --- : %d | %f %f %f %f %f\n", k, y0, yi, rho, lm_lambda_, nu);
@@ -81,13 +75,16 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             }
 
             x0 = xi;
-            lm_lambda_ = lm_init_lambda_factor_ * Hessian.diagonal().array().abs().maxCoeff(); // lm_lambda_ * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
+            lm_lambda_ = lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff(); // lm_lambda_ * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
             break;
         }
 
         // final_hessian_ = H;
 
         // Test Convergence
+
+        // Post process
+        m_cost->postprocess(x0);
     }
 
     return 0;
@@ -95,4 +92,7 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
 // TODO automate
 template class GenericOptimizator<2>;
+template class GenericOptimizator<3>;
 template class GenericOptimizator<6>;
+
+

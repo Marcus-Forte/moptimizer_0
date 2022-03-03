@@ -12,6 +12,7 @@ class GenericOptimizator : public Optimizator<NPARAM>
 {
 public:
     using VectorN = typename Optimizator<NPARAM>::VectorN; // Generic Vector
+    using MatrixN = typename Optimizator<NPARAM>::MatrixN; // Generic Vector
     using Optimizator<NPARAM>::m_cost;                     // Cost Function
     using Optimizator<NPARAM>::max_it;
     // template <typename datatype>
@@ -24,10 +25,6 @@ public:
     int minimize(VectorN &x0) override;
 
 protected:
-    void preprocess() override
-    {
-        // DUNA_LOG("Calling CPUOptimizator preprocess()\n");
-    }
 
     int testConvergence(const VectorN &delta) override
     {

@@ -41,38 +41,37 @@ int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     
-    
 
     for (int i = 1; i < argc; ++i)
     {
         printf("arg: %2d = %s\n", i, argv[i]);
     }
 
-    // Initialize dataset
+    // // Initialize dataset
     data.CameraModel << 586.122314453125, 0, 638.8477694496105, 0, 0,
         722.3973388671875, 323.031267074588, 0,
         0, 0, 1, 0;
 
-    Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(M_PI_2, Eigen::Vector3f::UnitX()) * Eigen::AngleAxisf(M_PI_2, Eigen::Vector3f::UnitZ());
+    Eigen::Matrix3d rot;
+    rot = Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitX()) * Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
     data.camera_lidar_frame.block<3, 3>(0, 0) = rot;
 
-    // Point
+    // // Point
     data.point_list.push_back(PointT(2.055643, 0.065643, 0.684357));
     data.point_list.push_back(PointT(1.963083, -0.765833, 0.653833));
     data.point_list.push_back(PointT(2.927500, 0.707000, 0.125250));
     data.point_list.push_back(PointT(2.957833, 0.384667, 0.123667));
     data.point_list.push_back(PointT(2.756000, 0.712000, -0.298000));
 
-    // Pixel
+    // // Pixel
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(621, 67));
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(878, 76));
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(491, 279));
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(559, 282));
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(481, 388));
 
-    std::cout << data.CameraModel << std::endl;
-    std::cout << data.camera_lidar_frame << std::endl;
+    std::cerr << data.CameraModel << std::endl;
+    std::cerr << data.camera_lidar_frame << std::endl;
 
     cost = new CalibrationCost<MODEL_PARAMS>(2 * data.point_list.size(), &data);
     optimizator = new GenericOptimizator<MODEL_PARAMS>(cost); // Ptr
@@ -84,11 +83,7 @@ int main(int argc, char **argv)
 
 TEST(LaserCameraCalibration, Test0)
 {
-    // Add noise
-    float noise = 0.0001;
-
-    addNoise(data,noise);
-
+    
     VectorN x0;
     x0.setZero();
     optimizator->minimize(x0);
@@ -108,6 +103,25 @@ TEST(LaserCameraCalibration, Test0)
 TEST(LaserCameraCalibration, Test1)
 {
     // Add noise
+    float noise = 0.0001;
+
+    addNoise(data,noise);
+
+    VectorN x0;
+    x0.setZero();
+    optimizator->minimize(x0);
+
+    Eigen::Map<const Eigen::Matrix<float,MODEL_PARAMS,1>> v_sol(matlab_solution, MODEL_PARAMS);
+    Eigen::Matrix<float,MODEL_PARAMS,2> compare;
+    compare.col(0) = v_sol;
+    compare.col(1) = x0;
+    std::cout << "Solution: " << compare << "\n";
+    EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
+}
+
+TEST(LaserCameraCalibration, Test2)
+{
+    // Add noise
     float noise = 0.0005;
 
     addNoise(data,noise);
@@ -120,17 +134,14 @@ TEST(LaserCameraCalibration, Test1)
     Eigen::Matrix<float,MODEL_PARAMS,2> compare;
     compare.col(0) = v_sol;
     compare.col(1) = x0;
-    std::cout << "Solution: " << compare << "\n";
-
-    for (int i = 0 ; i < 6; ++ i){
-        EXPECT_NEAR(x0[i], matlab_solution[i], FLOAT_TOL);
-    }
+    std::cerr << "\nSolution: " << compare << "\n";
+    EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
 }
 
-TEST(LaserCameraCalibration, Test2)
+TEST(LaserCameraCalibration, Test3)
 {
     // Add noise
-    float noise = 0.001;
+    float noise = 0.0007;
 
     addNoise(data,noise);
 
@@ -142,9 +153,8 @@ TEST(LaserCameraCalibration, Test2)
     Eigen::Matrix<float,MODEL_PARAMS,2> compare;
     compare.col(0) = v_sol;
     compare.col(1) = x0;
-    std::cout << "Solution: " << compare << "\n";
+    std::cerr << "\nSolution: " << compare << "\n";
 
-    for (int i = 0 ; i < 6; ++ i){
-        EXPECT_NEAR(x0[i], matlab_solution[i], FLOAT_TOL);
-    }
+    EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
+    
 }
