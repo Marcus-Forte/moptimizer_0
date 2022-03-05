@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(duna_optimizer VERSION 0.1 LANGUAGES CXX)
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.10 REQUIRED COMPONENTS io common search)
+find_package(PCL 1.10 REQUIRED COMPONENTS io common search registration)
 
 link_libraries(Eigen3::Eigen)
 include_directories(include src)
@@ -68,6 +68,6 @@ add_definitions(-DTEST_DATA_DIR="${bunny_path}")
 include(GoogleTest)
 gtest_discover_tests(model_test)
 gtest_discover_tests(camera_calibration_test)
-# gtest_discover_tests(registration_test)
+gtest_discover_tests(registration_test)
 
 # TODO auotmate tests execution after build

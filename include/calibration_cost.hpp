@@ -1,13 +1,14 @@
 #pragma once
 
 #include "cost_function.hpp"
-#include <assert.h>
+#include "so3.hpp"
+
 
 #include <Eigen/Dense>
 #include <vector>
 #include <pcl/point_types.h>
 
-/* Define your dataset */
+/* Define your dataset structure*/
 struct camera_calibration_data_t
 {
     camera_calibration_data_t()
@@ -50,7 +51,8 @@ public:
         camera_calibration_data_t *l_dataset = reinterpret_cast<camera_calibration_data_t *>(m_dataset);
         double sum = 0;
 
-        Eigen::Matrix4d transform = param2Matrix(x);
+        Eigen::Matrix4d transform;
+        so3::param2Matrix<double>(x,transform);
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)
         {
@@ -78,7 +80,8 @@ public:
         b.setZero();
 
         // Build matrix from xi
-        Eigen::Matrix4d transform = param2Matrix(x);
+        Eigen::Matrix4d transform;
+        so3::param2Matrix<double>(x,transform);
 
         Eigen::Matrix<double, 2, NPARAM> jacobian_row;
 
@@ -99,8 +102,8 @@ public:
             x_plus[j] += epsilon;
             x_minus[j] -= epsilon;
 
-            transform_plus[j] = param2Matrix(x_plus);
-            transform_minus[j] = param2Matrix(x_minus);
+            so3::param2Matrix(x_plus,transform_plus[j]);
+            so3::param2Matrix(x_minus,transform_minus[j]);
         }
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)
@@ -137,28 +140,11 @@ public:
         }
 
         hessian_.template triangularView<Eigen::Upper>() = hessian_.transpose();
-
-
         hessian = hessian_.template cast<float>();
         b = b_.template cast<float>();
         return sum;
     }
 
 private:
-    inline Eigen::Matrix4d param2Matrix(const VectorN &x) const
-    {
-        Eigen::Matrix4d transform_matrix_;
-        transform_matrix_.setZero();
-        transform_matrix_(0, 3) = x[0];
-        transform_matrix_(1, 3) = x[1];
-        transform_matrix_(2, 3) = x[2];
-        transform_matrix_(3, 3) = 1;
 
-        // Compute w from the unit quaternion
-        Eigen::Quaternion<double> q(0, x[3], x[4], x[5]);
-        q.w() = static_cast<double>(std::sqrt(1 - q.dot(q)));
-        q.normalize();
-        transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
-        return transform_matrix_;
-    }
 };

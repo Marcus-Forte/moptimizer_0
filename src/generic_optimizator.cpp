@@ -34,10 +34,15 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         // linearization
         double y0 = m_cost->linearize(x0,hessian,b);
 
+        double y0_ = m_cost->computeCost(x0);
+
+         DUNA_DEBUG_STREAM("y0: " << y0 << std::endl);
+         DUNA_DEBUG_STREAM("y0_: " << y0_ << std::endl);
+
         if (lm_lambda_ < 0.0)
         {
-            // lm_lambda_ = lm_init_lambda_factor_ * Hessian.diagonal().array().abs().maxCoeff();
-            lm_lambda_ = 0.0f;
+            // lm_lambda_ = lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
+            lm_lambda_ = lm_init_lambda_factor_;
         }
 
         // // LM Iterations
@@ -51,6 +56,10 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             VectorN delta = (hessian + lm_lambda_ * diag_).inverse() * b;
 
             xi = x0 - delta;
+
+            // DUNA_DEBUG_STREAM("x0: " << x0 << std::endl);
+            // DUNA_DEBUG_STREAM("delta: " << delta << std::endl);
+            // DUNA_DEBUG_STREAM("xi: " << xi << std::endl);
 
             // Uncomment below to use Gauss Newton approach
             // x0 = xi;
@@ -84,13 +93,13 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         // Test Convergence
 
         // Post process
-        m_cost->postprocess(x0);
+        // m_cost->postprocess(x0);
     }
 
     return 0;
 }
 
-// TODO automate
+// TODO automate ?
 template class GenericOptimizator<2>;
 template class GenericOptimizator<3>;
 template class GenericOptimizator<6>;

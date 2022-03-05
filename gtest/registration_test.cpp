@@ -6,12 +6,15 @@
 #include <pcl/common/transforms.h>
 #include <gtest/gtest.h>
 
+#include <pcl/registration/icp.h>
+#include <pcl/registration/transformation_estimation_lm.h>
 #ifndef TEST_DATA_DIR
 #warning "NO 'TEST_DATA_DIR' DEFINED"
 #define TEST_DATA_DIR "./"
 #endif
 
 #define MODEL_PARAM 6
+#define MAXIT 25
 // Optimization objects
 Registration<MODEL_PARAM>* registration;
 RegistrationCost<MODEL_PARAM>* cost;
@@ -60,9 +63,11 @@ TEST(RegistrationTest, Test0){
           Eigen::AngleAxisf(0.15 , Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.45 , Eigen::Vector3f::UnitZ());
     
-    referece_transform.topLeftCorner<3,3>() = rot;
+    // referece_transform.topLeftCorner<3,3>() = rot;
     // Translation
-    referece_transform.col(3) = Eigen::Vector4f(1,2,3,1);
+    referece_transform.col(3) = Eigen::Vector4f(0.5,0.5,0.5,1);
+
+   
 
     pcl::transformPointCloud(*target,*source,referece_transform);
 
@@ -72,15 +77,30 @@ TEST(RegistrationTest, Test0){
     Eigen::Vector4f source_centroid;
     pcl::compute3DCentroid(*source,source_centroid);
 
-    for(int i=0; i < 3; ++i){
-        ASSERT_NE(target_centroid[i], source_centroid[i]);
-    }
+    // for(int i=0; i < 3; ++i){
+    //     ASSERT_NE(target_centroid[i], source_centroid[i]);
+    // }
 
     
 
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree (new pcl::search::KdTree<pcl::PointXYZ>);
     kdtree->setInputCloud(target);
 
+    pcl::IterativeClosestPoint<pcl::PointXYZ,pcl::PointXYZ> icp;
+    icp.setInputSource(source);
+    icp.setInputTarget(target);
+    icp.setMaxCorrespondenceDistance(1.0);
+    icp.setMaximumIterations(MAXIT);
+    pcl::registration::TransformationEstimationLM<pcl::PointXYZ,pcl::PointXYZ>::Ptr lm_est(new pcl::registration::TransformationEstimationLM<pcl::PointXYZ,pcl::PointXYZ>);
+    icp.setTransformationEstimation(lm_est);
+    
+
+    pcl::PointCloud<pcl::PointXYZ> aligned;
+
+    icp.align(aligned);
+
+    Eigen::Matrix4f final_reg_pcl = icp.getFinalTransformation();
+    
     // Prepare dataset
     data.source = source;
     data.target = target;
@@ -88,11 +108,24 @@ TEST(RegistrationTest, Test0){
     cost = new RegistrationCost<MODEL_PARAM>(target->size(),&data);
     registration = new Registration<MODEL_PARAM>(cost);
 
-    cost->setMaxCorrDist(15);
+    registration->setMaxIt(MAXIT);
+
+    cost->setMaxCorrDist(1);
 
     VectorN x0;
     x0.setZero();
     registration->minimize(x0);
+
+    Eigen::Matrix4f final_reg_duna;
+    so3::param2Matrix(x0,final_reg_duna);
+
+    std::cerr << "Reference:\n" << referece_transform << std::endl;
+    std::cerr << "PCL:\n" << final_reg_pcl << std::endl;
+    std::cerr << "Duna:\n" << final_reg_duna << std::endl;
+
+    for(int i=0;i <final_reg_pcl.size();i++ ){
+        EXPECT_NEAR(final_reg_pcl.data()[i], final_reg_duna.data()[i], 0.01);
+    }
 
 
     exit(-1);
