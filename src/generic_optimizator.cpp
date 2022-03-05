@@ -1,6 +1,5 @@
 #include "generic_optimizator.h"
 
-
 template <int NPARAM>
 int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 {
@@ -10,13 +9,11 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         throw std::runtime_error("no cost object.");
     }
 
-
     // LM Configuration
     double lm_init_lambda_factor_ = 1e-9;
     double lm_lambda_ = -1.0;
     int lm_max_iterations_ = 10;
 
-    
     MatrixN diag_;
     diag_.setIdentity();
 
@@ -30,14 +27,10 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         DUNA_DEBUG_STREAM("## IT: " << j << " ##\n");
         m_cost->preprocess(x0);
 
-
         // linearization
-        double y0 = m_cost->linearize(x0,hessian,b);
+        double y0 = m_cost->linearize(x0, hessian, b);
 
         double y0_ = m_cost->computeCost(x0);
-
-         DUNA_DEBUG_STREAM("y0: " << y0 << std::endl);
-         DUNA_DEBUG_STREAM("y0_: " << y0_ << std::endl);
 
         if (lm_lambda_ < 0.0)
         {
@@ -75,6 +68,7 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             {
                 if (testConvergence(delta) == 0)
                 {
+                    m_cost->finalize(x0);
                     return 0;
                 }
 
@@ -93,15 +87,33 @@ int GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         // Test Convergence
 
         // Post process
-        // m_cost->postprocess(x0);
+        m_cost->postprocess(x0);
     }
+
+    m_cost->finalize(x0);
 
     return 0;
 }
+
+template <int NPARAM>
+int GenericOptimizator<NPARAM>::testConvergence(const VectorN &delta) 
+{
+    double epsilon = delta.array().abs().maxCoeff();
+    DUNA_DEBUG_STREAM("epsilon: " << epsilon);
+
+    if (epsilon < 0.005)
+        return 0; // TODO
+    return 1;
+}
+
+
+
+
+
+
+
 
 // TODO automate ?
 template class GenericOptimizator<2>;
 template class GenericOptimizator<3>;
 template class GenericOptimizator<6>;
-
-

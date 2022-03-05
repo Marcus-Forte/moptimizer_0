@@ -52,7 +52,7 @@ public:
         double sum = 0;
 
         Eigen::Matrix4d transform;
-        so3::param2Matrix<double>(x,transform);
+        so3::param2Matrix<double>(x.template cast<double>(),transform);
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)
         {
@@ -81,7 +81,7 @@ public:
 
         // Build matrix from xi
         Eigen::Matrix4d transform;
-        so3::param2Matrix<double>(x,transform);
+        so3::param2Matrix<double>(x.template cast<double>(),transform);
 
         Eigen::Matrix<double, 2, NPARAM> jacobian_row;
 
@@ -102,8 +102,8 @@ public:
             x_plus[j] += epsilon;
             x_minus[j] -= epsilon;
 
-            so3::param2Matrix(x_plus,transform_plus[j]);
-            so3::param2Matrix(x_minus,transform_minus[j]);
+            so3::param2Matrix<double>(x_plus.template cast<double>(),transform_plus[j]);
+            so3::param2Matrix<double>(x_minus.template cast<double>(),transform_minus[j]);
         }
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)

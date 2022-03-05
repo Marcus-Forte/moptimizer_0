@@ -46,8 +46,12 @@ public:
     }
 
     // Process data after of iteration
-    virtual void postprocess(const VectorN &x0)
+    virtual void postprocess(VectorN &x0)
     {
+    }
+
+    virtual void finalize(VectorN &x0){
+        
     }
 
     virtual double computeCost(const VectorN& x) = 0;

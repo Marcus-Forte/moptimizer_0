@@ -21,20 +21,10 @@ public:
     }
 
     virtual ~GenericOptimizator() = default;
-
     int minimize(VectorN &x0) override;
 
 protected:
-
-    int testConvergence(const VectorN &delta) override
-    {
-        double epsilon = delta.array().abs().maxCoeff();
-        DUNA_DEBUG_STREAM("epsilon: " << epsilon);
-
-        if (epsilon < 1e-8)
-            return 0; // TODO
-        return 1;
-    }
+    int testConvergence(const VectorN &delta) override;
 };
 
 #endif

@@ -36,7 +36,11 @@ public:
     RegistrationCost(unsigned int data_size, void *dataset) : CostFunction<NPARAM>(data_size, dataset)
     {
         datatype_t *l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
-        // m_source_transformed = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+        m_source_transformed = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+        m_final_transform = Matrix4::Identity();
+
+        // Checkdataset
+        DUNA_DEBUG("source pts : %ld, tgt pts: %ld\n", l_dataset->source->size(),l_dataset->target->size());
     }
     virtual ~RegistrationCost() = default;
 
@@ -45,37 +49,36 @@ public:
         m_max_correspondence_dist = dist;
     }
 
-    // void init(const VectorN &x0)
-    // {
+    void init(const VectorN &x0)
+    {
 
-    //     datatype_t *l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
+        datatype_t *l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
 
-    //     // Matrix4 transform_matrix_;
-    //     // so3::param2Matrix(x0, transform_matrix_);
+        Matrix4 transform_matrix_;
+        so3::param2Matrix(x0, transform_matrix_);
 
-    //     // move point cloud
-    //     // pcl::transformPointCloud(*l_dataset->source, *m_source_transformed, transform_matrix_);
-    // }
+        // move point cloud
+        pcl::transformPointCloud(*l_dataset->source, *m_source_transformed, transform_matrix_);
+    }
 
     void preprocess(const VectorN &x0) override
     {
         datatype_t *l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
 
         m_correspondences.clear();
-        m_correspondences.reserve(l_dataset->source->size());
+        m_correspondences.reserve(m_source_transformed->size());
 
         pcl::Indices indices(m_k_neighboors);
         std::vector<float> k_distances(m_k_neighboors);
 
         Eigen::Matrix4f transform_;
-        so3::param2Matrix(x0,transform_);
+        so3::param2Matrix(x0, transform_);
 
         // compute correspondences
-        for (int i = 0; i < l_dataset->source->size(); ++i)
+        for (int i = 0; i < m_source_transformed->size(); ++i)
         {
-            
-            pcl::PointXYZ pt_warped;
-            pt_warped.getVector4fMap() = transform_ * l_dataset->source->points[i].getVector4fMap();
+
+            const pcl::PointXYZ &pt_warped = m_source_transformed->points[i];
 
             l_dataset->tgt_kdtree->nearestKSearch(pt_warped, m_k_neighboors, indices, k_distances);
 
@@ -98,39 +101,47 @@ public:
         }
     }
 
-    // void postprocess(const VectorN &x0) override
-    // {
-    //     Matrix4 transform_matrix_;
-    //     so3::param2Matrix(x0, transform_matrix_);
+    void finalize(VectorN& x0) override
+    {
+        so3::matrix2Param(m_final_transform,x0);
+        std::cerr << m_final_transform << std::endl;
+        
+    }
 
-    //     // move point cloud
-    //     pcl::transformPointCloud(*m_source_transformed, *m_source_transformed, transform_matrix_);
-    // }
+    void postprocess(VectorN &x0) override
+    {
+        Matrix4 transform_matrix_;
+        so3::param2Matrix(x0, transform_matrix_);
+
+        // move point cloud
+        pcl::transformPointCloud(*m_source_transformed, *m_source_transformed, transform_matrix_);
+
+        m_final_transform = transform_matrix_ *m_final_transform;        
+        
+        x0.setZero();
+    }
 
     double computeCost(const VectorN &x) override
     {
         datatype_t *l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
-        double sum = 0;
+        
 
         Matrix4 transform_;
         so3::param2Matrix(x, transform_);
-        
-        //  DUNA_DEBUG_STREAM("x\n" << x << "\n");
-        // DUNA_DEBUG_STREAM("transform\n" << transform_ << "\n");
-
+        double sum = 0;
         for (int i = 0; i < m_correspondences.size(); ++i)
         {
-            const pcl::PointXYZ &src_pt = l_dataset->source->points[m_correspondences[i].index_query];
+            const pcl::PointXYZ &src_pt = m_source_transformed->points[m_correspondences[i].index_query];
             const pcl::PointXYZ &tgt_pt = l_dataset->target->points[m_correspondences[i].index_match];
 
-            const Eigen::Vector4f &src_pt_vec = src_pt.getVector4fMap();
-            const Eigen::Vector4f &tgt_pt_vec = tgt_pt.getVector4fMap();
+            const Eigen::Vector4f src_pt_vec = src_pt.getVector4fMap();
+            const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
+            const Eigen::Vector4f src_pt_warped_vec = transform_ * src_pt_vec;
 
-            double xout = computeError(src_pt_vec, tgt_pt_vec, transform_);
+            double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
 
             sum += xout;
         }
-
         return sum;
     }
 
@@ -138,50 +149,50 @@ public:
     {
         datatype_t *l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
 
-        double sum = 0;
-    
         hessian.setZero();
         b.setZero();
 
-        // Build incremental transformations
+        Eigen::Matrix<float, 1, NPARAM> jacobian_row;
         Eigen::Matrix4f transform_plus[NPARAM];
-        // Eigen::Matrix4f transform_minus[NPARAM];
+        Eigen::Matrix4f transform_minus[NPARAM];
         Eigen::Matrix4f transform_;
 
         so3::param2Matrix(x, transform_);
 
-        Eigen::Matrix<float, 1, NPARAM> jacobian_row;
-
-        const double epsilon = 0.0000001;
+        const float epsilon = 1e-6;
         for (int j = 0; j < NPARAM; ++j)
         {
             VectorN x_plus(x);
+            VectorN x_minus(x);
+
             x_plus[j] += epsilon;
+            x_minus[j] -= epsilon;
 
             so3::param2Matrix(x_plus, transform_plus[j]);
+            so3::param2Matrix(x_minus, transform_minus[j]);
         }
 
-        
+        double sum = 0;
         for (int i = 0; i < m_correspondences.size(); ++i)
         {
-            const pcl::PointXYZ &src_pt = l_dataset->source->points[m_correspondences[i].index_query];
+            const pcl::PointXYZ &src_pt = m_source_transformed->points[m_correspondences[i].index_query];
             const pcl::PointXYZ &tgt_pt = l_dataset->target->points[m_correspondences[i].index_match];
 
-            const Eigen::Vector4f &src_pt_vec = src_pt.getVector4fMap();
-            const Eigen::Vector4f &tgt_pt_vec = tgt_pt.getVector4fMap();
+            const Eigen::Vector4f src_pt_vec = src_pt.getVector4fMap();
+            const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
+            const Eigen::Vector4f src_pt_warped_vec = transform_ * src_pt_vec;
 
-            // DUNA_DEBUG_STREAM("src[" << m_correspondences[i].index_query << "] " 
-            //                 "<--> tgt[" << m_correspondences[i].index_match << "]\n"
-            //                  << src_pt_vec << "-\n"  << tgt_pt_vec << std::endl);
+            double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
 
-            double xout = computeError(src_pt_vec, tgt_pt_vec, transform_);
-
-    
             for (int j = 0; j < NPARAM; ++j)
             {
-                double xout_plus = computeError(src_pt_vec, tgt_pt_vec, transform_plus[j]);
+                Eigen::Vector4f src_pt_warped_plus_vec = transform_plus[j] * src_pt_vec;
+                Eigen::Vector4f src_pt_warped_minus_vec = transform_minus[j] * src_pt_vec;
 
-                jacobian_row[j] = (xout_plus - xout) / epsilon;
+                double xout_plus = computeError(src_pt_warped_plus_vec, tgt_pt_vec);
+                double xout_minus = computeError(src_pt_warped_minus_vec, tgt_pt_vec);
+
+                jacobian_row[j] = (xout_plus - xout_minus) / (2 * epsilon);
             }
 
             hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
@@ -190,7 +201,7 @@ public:
             sum += xout;
         }
 
-         hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
+        hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
 
         return sum;
     }
@@ -199,16 +210,20 @@ private:
     float m_max_correspondence_dist = 1.0;
     unsigned int m_k_neighboors = 5;
     pcl::Correspondences m_correspondences;
-    // pcl::PointCloud<pcl::PointXYZ>::Ptr m_source_transformed;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr m_source_transformed;
+    Matrix4 m_final_transform;
 
-    double computeError(const Eigen::Vector4f &src_vec, const Eigen::Vector4f &tgt_vec, const Eigen::Matrix4f &transform_)
+    template <typename Scalar>
+    inline double computeError(const Eigen::Matrix<Scalar, 3, 1> &src_vec, const Eigen::Matrix<Scalar, 3, 1> &tgt_vec)
     {
-        Eigen::Vector4f src_pt_vec_warped = transform_ * src_vec;
+        return (src_vec.template cast<Scalar>() - tgt_vec.template cast<Scalar>()).norm();
+    }
 
-        Eigen::Vector3f src(src_pt_vec_warped[0],src_pt_vec_warped[1],src_pt_vec_warped[2]);
-        Eigen::Vector3f tgt(tgt_vec[0],tgt_vec[1],tgt_vec[2]);
-       
-
-        return (src-tgt).norm();
+    template <typename Scalar>
+    inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &src_vec, const Eigen::Matrix<Scalar, 4, 1> &tgt_vec)
+    {
+        Eigen::Matrix<Scalar, 3, 1> src_vec3(src_vec[0], src_vec[1], src_vec[2]);
+        Eigen::Matrix<Scalar, 3, 1> tgt_vec3(tgt_vec[0], tgt_vec[1], tgt_vec[2]);
+        return (src_vec3 - tgt_vec3).norm();
     }
 };

@@ -63,7 +63,9 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "numericaldiff": "cpp",
+        "*.ipp": "cpp"
     },
 
     "todohighlight.include": [

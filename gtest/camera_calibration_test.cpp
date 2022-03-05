@@ -92,7 +92,7 @@ TEST(LaserCameraCalibration, Test0)
     Eigen::Matrix<float,MODEL_PARAMS,2> compare;
     compare.col(0) = v_sol;
     compare.col(1) = x0;
-    std::cout << "Solution: " << compare << "\n";
+    std::cerr << "Solution: " << compare << "\n";
 
     for (int i = 0 ; i < 6; ++ i){
         EXPECT_NEAR(x0[i], matlab_solution[i], FLOAT_TOL);
@@ -115,7 +115,7 @@ TEST(LaserCameraCalibration, Test1)
     Eigen::Matrix<float,MODEL_PARAMS,2> compare;
     compare.col(0) = v_sol;
     compare.col(1) = x0;
-    std::cout << "Solution: " << compare << "\n";
+    std::cerr << "Solution: " << compare << "\n";
     EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
 }
 
