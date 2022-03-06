@@ -25,7 +25,10 @@ jobs:
           command: "sudo apt install -y libeigen3-dev libpcl-dev && ls"
       - run:
           name: "create build files"
-          command: "mkdir build && cd build && cmake .."
+          command: "mkdir build && cd build && cmake .. && make -j"
+      - run:
+          name: "running tetsts"
+          command: "ctest"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
