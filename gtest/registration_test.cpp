@@ -65,7 +65,7 @@ TEST_F(RegistrationTestClass, Translation6DOF)
 {
 
     // Translation
-    referece_transform.col(3) = Eigen::Vector4f(1.0, 0., 0., 1);
+    referece_transform.col(3) = Eigen::Vector4f(-0.5, 0.2, 0., 1);
     pcl::transformPointCloud(*target, *source, referece_transform);
 
     data.source = source;
@@ -75,7 +75,7 @@ TEST_F(RegistrationTestClass, Translation6DOF)
     RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
-    registration->setMaxOptimizationIterations(2);
+    registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(100);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
@@ -104,8 +104,8 @@ TEST_F(RegistrationTestClass, Rotation6DOF)
     // Rotation
     Eigen::Matrix3f rot;
     rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitZ());
+          Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.6, Eigen::Vector3f::UnitZ());
 
     referece_transform.topLeftCorner(3, 3) = rot;
 
@@ -120,7 +120,7 @@ TEST_F(RegistrationTestClass, Rotation6DOF)
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
     registration->setMaxOptimizationIterations(2);
-    registration->setMaxIcpIterations(100);
+    registration->setMaxIcpIterations(150);
     registration->setMaxCorrespondenceDistance(2);
 
     VectorN x0;
@@ -153,10 +153,10 @@ TEST_F(RegistrationTestClass, RotationPlusTranslation6DOF)
     Eigen::Matrix3f rot;
     rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
           Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitZ());
+          Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitZ());
 
     referece_transform.topLeftCorner(3, 3) = rot;
-    referece_transform.col(3) = Eigen::Vector4f(0.1, -0.2, 0., 1);
+    referece_transform.col(3) = Eigen::Vector4f(-0.5, -0.2, 0.1, 1);
 
     pcl::transformPointCloud(*target, *source, referece_transform);
 
@@ -168,9 +168,9 @@ TEST_F(RegistrationTestClass, RotationPlusTranslation6DOF)
     RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
-    registration->setMaxOptimizationIterations(2);
+    registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(100);
-    registration->setMaxCorrespondenceDistance(2);
+    registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
     VectorN x0;
     x0.setZero();
@@ -200,8 +200,8 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
     // Rotation
     Eigen::Matrix3f rot;
     rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitZ());
+          Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.6, Eigen::Vector3f::UnitZ());
 
     referece_transform.topLeftCorner(3, 3) = rot;
 

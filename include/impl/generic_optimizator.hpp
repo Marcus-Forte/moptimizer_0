@@ -80,7 +80,7 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             double yi = m_cost->computeCost(xi);
 
             double rho = (yi - y0) / delta.dot(lm_lambda_ * delta - b);
-            DUNA_DEBUG("--- LM Opt --- : %d | %f %f %f %f %f\n", k, y0, yi, rho, lm_lambda_, nu);
+            DUNA_DEBUG("--- LM Opt --- : %d/%d | %f %f %f %f %f\n", k+1, lm_max_iterations_, y0, yi, rho, lm_lambda_, nu);
 
             // check if output is worse
             if (rho < 0)
@@ -118,7 +118,7 @@ int GenericOptimizator<NPARAM>::testConvergence(const VectorN &delta)
     double epsilon = delta.array().abs().maxCoeff();
     DUNA_DEBUG_STREAM("epsilon: " << epsilon << "\n");
 
-    if (epsilon < 0.00001)
+    if (epsilon < 1e-5)
         return 0;
     return 1;
 }

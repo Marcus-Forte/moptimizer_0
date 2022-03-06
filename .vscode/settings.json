@@ -65,7 +65,9 @@
         "variant": "cpp",
         "bit": "cpp",
         "numericaldiff": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "polynomials": "cpp",
+        "*.txx": "cpp"
     },
 
     "todohighlight.include": [

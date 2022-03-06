@@ -3,6 +3,7 @@
 #include "cost_function.hpp"
 #include "so3.h"
 
+#include <limits>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
@@ -80,7 +81,7 @@ public:
 
             double xout = computeError(src_pt_warped_vec, tgt_pt);
 
-            sum += xout;
+            sum += xout ;
         }
         return sum;
     }
@@ -91,13 +92,7 @@ public:
         hessian.setZero();
         b.setZero();
 
-        // Eigen::Matrix<double,NPARAM,NPARAM> hessian_double;
-        // Eigen::Matrix<double,NPARAM,1> b_double;
-
-        // hessian_double.setZero();
-        // b_double.setZero();
-
-        // VectorNd x_double(x.template cast<double>());
+  
 
         Eigen::Matrix<float, 1, NPARAM> jacobian_row;
         Eigen::Matrix4f transform_plus[NPARAM];
@@ -107,8 +102,10 @@ public:
         so3::param2Matrix(x, transform);
 
 
-        // TODO we're having all kinds of numeric error here :(
-        const float epsilon = 1e-5;
+        // TODO we're having all kinds of numeric errors here :(. Usually we want smallest possible without breaking
+        float epsilon = std::numeric_limits<float>::epsilon();
+        
+        
         for (int j = 0; j < NPARAM; ++j)
         {
             VectorN x_plus(x);
@@ -148,7 +145,7 @@ public:
 
             hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
             // hessian += jacobian_row.transpose()*jacobian_row;
-            b += jacobian_row.transpose() * xout;
+            b += jacobian_row.transpose() * (xout);
 
             sum += xout;
         }
@@ -169,9 +166,9 @@ private:
     template <typename Scalar>
     inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZ& tgt_pt)
     {
-        Eigen::Vector3d tgt(tgt_pt.x,tgt_pt.y,tgt_pt.z);
-        Eigen::Vector3d src(warped_src_pt[0],warped_src_pt[1],warped_src_pt[2]);
-        return (src-tgt).norm();
+        Eigen::Vector4f tgt(tgt_pt.x,tgt_pt.y,tgt_pt.z,0);
+        Eigen::Vector4f src(warped_src_pt[0],warped_src_pt[1],warped_src_pt[2],0);
+        return (src-tgt).norm(); // TODO norm vs norm² ?
     }
 
 };
