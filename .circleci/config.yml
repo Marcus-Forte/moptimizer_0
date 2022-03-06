@@ -15,12 +15,19 @@ jobs:
     steps:
       - checkout
       - run:
-          name: "PKGS"
+          name: "update"
           command: "sudo apt update && sudo apt upgrade"
       - run:
-          name: "build"
+          name: "build-tools"
           command: "sudo apt install gcc g++ cmake"
-  
+
+      - run:
+          name: "create build files"
+          command: "cmake -B build"
+
+      - run:
+          name: "compile"
+          command: "cmake --build build"
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
