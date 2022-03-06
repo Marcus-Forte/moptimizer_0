@@ -19,10 +19,10 @@ jobs:
           command: "sudo apt update && sudo apt upgrade"
       - run:
           name: "build-tools"
-          command: "sudo apt install gcc g++ cmake"
+          command: "sudo apt install -y gcc g++ cmake"
       - run:
           name: "dependencies"
-          command: "sudo apt install libeigen3-dev && sudo apt install libpcl-dev"
+          command: "sudo apt install -y libeigen3-dev libpcl-dev"
       - run:
           name: "create build files"
           command: "cmake -B build"
