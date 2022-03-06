@@ -20,7 +20,9 @@ jobs:
       - run:
           name: "build-tools"
           command: "sudo apt install gcc g++ cmake"
-
+      - run:
+          name: "dependencies"
+          command: "sudo apt install libeigen3-dev && sudo apt install libpcl-dev"
       - run:
           name: "create build files"
           command: "cmake -B build"
