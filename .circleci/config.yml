@@ -25,7 +25,7 @@ jobs:
           command: "sudo apt install -y libeigen3-dev libpcl-dev"
       - run:
           name: "create build files"
-          command: "cmake -H. -B build"
+          command: "mkdir build && cmake -H. -B build"
 
       - run:
           name: "compile"
