@@ -11,6 +11,9 @@ include_directories(include src)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
+#set (CMAKE_BUILD_TYPE RELEASE)
+#add_compile_options(-msse2 -msse3)
+
 # duna libraries
 file (GLOB duna_opt_src "src/*.cpp")
 add_library(${PROJECT_NAME} SHARED ${duna_opt_src})
@@ -71,3 +74,17 @@ gtest_discover_tests(camera_calibration_test)
 gtest_discover_tests(registration_test)
 
 # TODO auotmate tests execution after build
+file(GLOB header_files "include/*" LIST_DIRECTORIES false)
+
+message(STATUS ${header_files})
+#set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${header_files}")
+install(TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION lib
+)
+
+install(DIRECTORY include/
+        DESTINATION include/${PROJECT_NAME}
+        FILES_MATCHING
+        PATTERN "*.h"
+        PATTERN "*.hpp"
+)
