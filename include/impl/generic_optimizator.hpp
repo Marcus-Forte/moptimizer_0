@@ -14,6 +14,8 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         throw std::runtime_error("no cost object.");
     }
 
+    m_cost->checkData();
+
     // LM Configuration
     double lm_init_lambda_factor_ = 1e-9;
     double lm_lambda_ = -1.0;

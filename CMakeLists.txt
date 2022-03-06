@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(duna_optimizer VERSION 0.1 LANGUAGES CXX)
+project(duna_optimizator VERSION 0.1 LANGUAGES CXX)
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.10 REQUIRED COMPONENTS io common search registration)
@@ -30,7 +30,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(gTest_libraries gtest pthread)
 enable_testing()
 
-# TODO implement test class  
 add_executable(
     model_test
     gtest/model_test.cpp

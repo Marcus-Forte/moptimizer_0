@@ -26,7 +26,9 @@ public:
     inline void* getDataset()
     {
         return m_dataset;
-    }    
+    }  
+
+    virtual void checkData() = 0;
 
     virtual double computeCost(const VectorN& x) = 0;
     // computes hessian and residual vector
