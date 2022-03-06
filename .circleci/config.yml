@@ -16,7 +16,7 @@ jobs:
       - checkout
       - run:
           name: "update"
-          command: "sudo apt update && sudo apt upgrade"
+          command: "sudo apt update && sudo apt upgrade -y"
       - run:
           name: "build-tools"
           command: "sudo apt install -y gcc g++ cmake"
