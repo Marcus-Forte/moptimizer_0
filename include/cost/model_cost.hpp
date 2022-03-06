@@ -36,6 +36,11 @@ public:
     }
     virtual ~ModelCost() = default;
 
+    virtual void checkData() override
+    {
+
+    }
+
     double computeCost(const VectorN &x) override
     {
         double sum = 0;

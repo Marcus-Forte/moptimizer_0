@@ -7,6 +7,8 @@
 #include <vector>
 #include <pcl/point_types.h>
 
+
+
 /* Define your dataset structure*/
 struct camera_calibration_data_t
 {
@@ -43,6 +45,24 @@ public:
         l_dataset = reinterpret_cast<camera_calibration_data_t *>(m_dataset);
     }
     virtual ~CalibrationCost() = default;
+
+    virtual void checkData() override
+    {
+        if (l_dataset->point_list.size() == 0)
+            throw std::runtime_error("Empty point list.");
+
+        if (l_dataset->pixel_list.size() == 0)
+            throw std::runtime_error("Empty pixel list.");
+
+        if (l_dataset->pixel_list.size() != l_dataset->point_list.size())
+        {
+            std::stringstream msg;
+            msg << "Pixel list and point list with different sizes. (" << std::to_string(l_dataset->pixel_list.size()) << ") != "
+            << "(" << l_dataset->point_list.size() << ")";
+            
+            throw std::runtime_error(msg.str());
+        }
+    }
 
     double computeCost(const VectorN &x) override
     {

@@ -43,6 +43,12 @@ public:
     virtual ~RegistrationCost() = default;
 
 
+    // TODO implement
+    void checkData() override 
+    {
+        
+    }
+
     inline void setTransformedSourcePtr(pcl::PointCloud<pcl::PointXYZ>::ConstPtr transformed_src ){
         m_transformed_source = transformed_src;
     }
