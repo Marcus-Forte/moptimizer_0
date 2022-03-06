@@ -18,6 +18,7 @@ struct test_dataype1_t
 {
     float *x; // model output
     float *y; // model input
+    int data_size;
 };
 
 template <int NPARAM>
@@ -26,19 +27,19 @@ class ModelCost : public CostFunction<NPARAM>
 public:
     using VectorN = typename CostFunction<NPARAM>::VectorN;
     using MatrixN = typename CostFunction<NPARAM>::MatrixN;
-    using VectorX = typename CostFunction<NPARAM>::VectorX;
-    using MatrixX = typename CostFunction<NPARAM>::MatrixX;
-    using CostFunction<NPARAM>::m_dataset;
-    using CostFunction<NPARAM>::m_data_size;
 
-    ModelCost(unsigned int data_size, void *dataset) : CostFunction<NPARAM>(data_size, dataset) {}
+    using CostFunction<NPARAM>::m_dataset;
+
+    ModelCost(void *dataset) : CostFunction<NPARAM>(dataset)
+    {
+       l_dataset = reinterpret_cast<test_dataype1_t *>(m_dataset);
+    }
     virtual ~ModelCost() = default;
 
     double computeCost(const VectorN &x) override
     {
-        test_dataype1_t *l_dataset = reinterpret_cast<test_dataype1_t *>(m_dataset);
         double sum = 0;
-        for (int i = 0; i < m_data_size; ++i)
+        for (int i = 0; i < l_dataset->data_size; ++i)
         {
 
             // fout
@@ -51,15 +52,14 @@ public:
 
     double linearize(const VectorN &x, MatrixN &hessian, VectorN &b) override
     {
-        test_dataype1_t *l_dataset = reinterpret_cast<test_dataype1_t *>(m_dataset);
-
+         test_dataype1_t *l_dataset = reinterpret_cast<test_dataype1_t *>(m_dataset);
         double sum = 0;
         hessian.setZero();
         b.setZero();
 
         Eigen::Matrix<float, 1, NPARAM> jacobian_row;
 
-        for (int i = 0; i < m_data_size; ++i)
+        for (int i = 0; i < l_dataset->data_size; ++i)
         {
 
             // fout
@@ -89,4 +89,5 @@ public:
     }
 
 private:
+    test_dataype1_t *l_dataset;
 };

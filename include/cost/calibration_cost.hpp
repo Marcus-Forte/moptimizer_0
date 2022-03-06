@@ -1,8 +1,7 @@
 #pragma once
 
 #include "cost_function.hpp"
-#include "so3.hpp"
-
+#include "so3.h"
 
 #include <Eigen/Dense>
 #include <vector>
@@ -37,28 +36,27 @@ class CalibrationCost : public CostFunction<NPARAM>
 public:
     using VectorN = typename CostFunction<NPARAM>::VectorN;
     using MatrixN = typename CostFunction<NPARAM>::MatrixN;
-    using VectorX = typename CostFunction<NPARAM>::VectorX;
-    using MatrixX = typename CostFunction<NPARAM>::MatrixX;
 
     using CostFunction<NPARAM>::m_dataset;
-    // using CostFunction<NPARAM>::m_data_size;
-
-    CalibrationCost(unsigned int data_size, void *dataset) : CostFunction<NPARAM>(data_size, dataset) {}
+    CalibrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
+    {
+        l_dataset = reinterpret_cast<camera_calibration_data_t *>(m_dataset);
+    }
     virtual ~CalibrationCost() = default;
 
     double computeCost(const VectorN &x) override
     {
-        camera_calibration_data_t *l_dataset = reinterpret_cast<camera_calibration_data_t *>(m_dataset);
+
         double sum = 0;
 
         Eigen::Matrix4d transform;
-        so3::param2Matrix<double>(x.template cast<double>(),transform);
+        so3::param2Matrix6DOF<double>(x.template cast<double>(), transform);
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)
         {
 
             Eigen::Vector3d out_pixel;
-            out_pixel = l_dataset->CameraModel * transform * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast <double>();
+            out_pixel = l_dataset->CameraModel * transform * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast<double>();
 
             // compose error vector
             Eigen::Vector2d xout;
@@ -73,15 +71,13 @@ public:
     double linearize(const VectorN &x, MatrixN &hessian, VectorN &b) override
     {
 
-        camera_calibration_data_t *l_dataset = reinterpret_cast<camera_calibration_data_t *>(m_dataset);
-
         double sum = 0;
         hessian.setZero();
         b.setZero();
 
         // Build matrix from xi
         Eigen::Matrix4d transform;
-        so3::param2Matrix<double>(x.template cast<double>(),transform);
+        so3::param2Matrix6DOF<double>(x.template cast<double>(), transform);
 
         Eigen::Matrix<double, 2, NPARAM> jacobian_row;
 
@@ -89,12 +85,12 @@ public:
         Eigen::Matrix4d transform_plus[NPARAM];
         Eigen::Matrix4d transform_minus[NPARAM];
 
-        Eigen::Matrix<double,NPARAM,NPARAM> hessian_;
-        Eigen::Matrix<double,NPARAM,1> b_;
+        Eigen::Matrix<double, NPARAM, NPARAM> hessian_;
+        Eigen::Matrix<double, NPARAM, 1> b_;
         hessian_.setZero();
         b_.setZero();
 
-        const double epsilon = 0.00001;
+        const double epsilon = 1e-7;
         for (int j = 0; j < NPARAM; ++j)
         {
             VectorN x_plus(x);
@@ -102,15 +98,15 @@ public:
             x_plus[j] += epsilon;
             x_minus[j] -= epsilon;
 
-            so3::param2Matrix<double>(x_plus.template cast<double>(),transform_plus[j]);
-            so3::param2Matrix<double>(x_minus.template cast<double>(),transform_minus[j]);
+            so3::param2Matrix6DOF<double>(x_plus.template cast<double>(), transform_plus[j]);
+            so3::param2Matrix6DOF<double>(x_minus.template cast<double>(), transform_minus[j]);
         }
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)
         {
 
             Eigen::Vector3d out_pixel;
-            out_pixel = l_dataset->CameraModel * transform * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast <double>();
+            out_pixel = l_dataset->CameraModel * transform * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast<double>();
 
             // compose error vector
             Eigen::Vector2d xout;
@@ -121,8 +117,8 @@ public:
             {
 
                 Eigen::Vector3d out_pixel_plus, out_pixel_minus;
-                out_pixel_plus = l_dataset->CameraModel * transform_plus[j] * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast <double>();
-                out_pixel_minus = l_dataset->CameraModel * transform_minus[j] * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast <double>();
+                out_pixel_plus = l_dataset->CameraModel * transform_plus[j] * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast<double>();
+                out_pixel_minus = l_dataset->CameraModel * transform_minus[j] * l_dataset->camera_lidar_frame * l_dataset->point_list[i].getVector4fMap().cast<double>();
 
                 Eigen::Vector2d xout_plus, xout_minus;
                 xout_plus[0] = l_dataset->pixel_list[i].x - (out_pixel_plus[0] / out_pixel_plus[2]);
@@ -146,5 +142,5 @@ public:
     }
 
 private:
-
+    camera_calibration_data_t *l_dataset;
 };

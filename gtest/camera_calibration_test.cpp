@@ -1,5 +1,5 @@
 #include "generic_optimizator.h"
-#include "calibration_cost.hpp"
+#include "cost/calibration_cost.hpp"
 #include "duna_log.h"
 
 #include <gtest/gtest.h>
@@ -70,13 +70,13 @@ int main(int argc, char **argv)
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(559, 282));
     data.pixel_list.push_back(camera_calibration_data_t::pixel_pair(481, 388));
 
-    std::cerr << data.CameraModel << std::endl;
-    std::cerr << data.camera_lidar_frame << std::endl;
+    // std::cerr << data.CameraModel << std::endl;
+    // std::cerr << data.camera_lidar_frame << std::endl;
 
-    cost = new CalibrationCost<MODEL_PARAMS>(2 * data.point_list.size(), &data);
+    cost = new CalibrationCost<MODEL_PARAMS>(&data);
     optimizator = new GenericOptimizator<MODEL_PARAMS>(cost); // Ptr
 
-    optimizator->setMaxIt(10);
+    optimizator->setMaxOptimizationIterations(10);
 
     return RUN_ALL_TESTS();
 }

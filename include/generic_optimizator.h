@@ -11,17 +11,18 @@ template <int NPARAM>
 class GenericOptimizator : public Optimizator<NPARAM>
 {
 public:
+
+
+
     using VectorN = typename Optimizator<NPARAM>::VectorN; // Generic Vector
     using MatrixN = typename Optimizator<NPARAM>::MatrixN; // Generic Vector
-    using Optimizator<NPARAM>::m_cost;                     // Cost Function
-    using Optimizator<NPARAM>::max_it;
+    using Optimizator<NPARAM>::m_cost;                    
+    using Optimizator<NPARAM>::m_max_it;
     // template <typename datatype>
-    GenericOptimizator(CostFunction<NPARAM> *cost) : Optimizator<NPARAM>(cost) {
-        
-    }
+    GenericOptimizator(CostFunction<NPARAM> *cost);
 
     virtual ~GenericOptimizator() = default;
-    int minimize(VectorN &x0) override;
+    virtual opt_status minimize(VectorN &x0) override;
 
 protected:
     int testConvergence(const VectorN &delta) override;

@@ -1,5 +1,5 @@
 #include "generic_optimizator.h"
-#include "model_cost.hpp"
+#include "cost/model_cost.hpp"
 #include "duna_log.h"
 
 #include <gtest/gtest.h>
@@ -14,14 +14,11 @@ using VectorN = GenericOptimizator<2>::VectorN;
 
 float x_data[] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
 float y_data[] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
-test_dataype1_t input_set = {x_data, y_data};
+test_dataype1_t input_set = {x_data, y_data, 7};
 
 // Cost Class
-ModelCost<2> cost(7, &input_set);
-
+ModelCost<2> cost(&input_set);
 GenericOptimizator<2>::VectorN x0;
-
-// Pass the cost class
 GenericOptimizator<2> optimizator(&cost);
 
 // TODO use classes to encapsulate all testing
@@ -34,7 +31,7 @@ int main(int argc, char **argv)
         printf("arg: %2d = %s\n", i, argv[i]);
     }
 
-    optimizator.setMaxIt(10);
+    optimizator.setMaxOptimizationIterations(10);
 
     return RUN_ALL_TESTS();
 }
