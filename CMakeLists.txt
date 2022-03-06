@@ -81,6 +81,7 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
 )
 
+# TODO fix inter-header inclusions
 install(DIRECTORY include/
         DESTINATION include/${PROJECT_NAME}
         FILES_MATCHING
