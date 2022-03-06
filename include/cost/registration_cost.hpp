@@ -17,7 +17,6 @@ template <int NPARAM, typename PointSource, typename PointTarget>
 class RegistrationCost : public CostFunction<NPARAM>
 {
 public:
-  
     struct datatype_t
     {
         typename pcl::PointCloud<PointSource>::ConstPtr source;
@@ -68,9 +67,12 @@ public:
             const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
             const Eigen::Vector4f src_pt_warped_vec = transform_ * src_pt_vec;
 
-            double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
+            Eigen::Vector4f tgt_pt_normal = tgt_pt.getNormalVector4fMap();
+            tgt_pt_normal[3] = 0;
+            // double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
+            double xout = (src_pt_warped_vec - tgt_pt_vec).dot(tgt_pt_normal);
 
-            sum += xout;
+            sum += xout*xout;
         }
         return sum;
     }
@@ -83,7 +85,7 @@ public:
 
         Eigen::Matrix<float, 1, NPARAM> jacobian_row;
         Eigen::Matrix4f transform_plus[NPARAM];
-        Eigen::Matrix4f transform_minus[NPARAM];
+        // Eigen::Matrix4f transform_minus[NPARAM];
         Eigen::Matrix4f transform_;
 
         so3::param2Matrix6DOF(x, transform_);
@@ -95,10 +97,10 @@ public:
             VectorN x_minus(x);
 
             x_plus[j] += epsilon;
-            x_minus[j] -= epsilon;
+            // x_minus[j] -= epsilon;
 
             so3::param2Matrix6DOF(x_plus, transform_plus[j]);
-            so3::param2Matrix6DOF(x_minus, transform_minus[j]);
+            // so3::param2Matrix6DOF(x_minus, transform_minus[j]);
         }
 
         double sum = 0;
@@ -111,23 +113,28 @@ public:
             const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
             const Eigen::Vector4f src_pt_warped_vec = transform_ * src_pt_vec;
 
-            double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
+            Eigen::Vector4f tgt_pt_normal = tgt_pt.getNormalVector4fMap();
+            tgt_pt_normal[3] = 0;
+
+            double xout = (src_pt_warped_vec - tgt_pt_vec).dot(tgt_pt_normal);
+            // double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
 
             for (int j = 0; j < NPARAM; ++j)
             {
                 Eigen::Vector4f src_pt_warped_plus_vec = transform_plus[j] * src_pt_vec;
-                Eigen::Vector4f src_pt_warped_minus_vec = transform_minus[j] * src_pt_vec;
+    
 
-                double xout_plus = computeError(src_pt_warped_plus_vec, tgt_pt_vec);
-                double xout_minus = computeError(src_pt_warped_minus_vec, tgt_pt_vec);
 
-                jacobian_row[j] = (xout_plus - xout_minus) / (2 * epsilon);
+                double xout_plus = (src_pt_warped_plus_vec - tgt_pt_vec).dot(tgt_pt_normal);
+
+
+                jacobian_row[j] = (xout_plus - xout) / ( epsilon);
             }
 
             hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
             b += jacobian_row.transpose() * xout;
 
-            sum += xout;
+            sum += xout*xout;
         }
 
         hessian.template triangularView<Eigen::Upper>() = hessian.transpose();

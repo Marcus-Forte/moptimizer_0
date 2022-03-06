@@ -105,7 +105,7 @@ int GenericOptimizator<NPARAM>::testConvergence(const VectorN &delta)
     double epsilon = delta.array().abs().maxCoeff();
     DUNA_DEBUG_STREAM("epsilon: " << epsilon << "\n");
 
-    if (epsilon < 0.00001)
+    if (epsilon < 0.00000001)
         return 0; 
     return 1;
 }

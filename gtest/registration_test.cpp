@@ -5,6 +5,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/transforms.h>
 #include <gtest/gtest.h>
+#include <pcl/features/normal_3d.h>
 
 #include <pcl/registration/icp.h>
 #include <pcl/registration/transformation_estimation_lm.h>
@@ -33,6 +34,11 @@ public:
         {
             std::cerr << "Make sure you run the rest at the binaries folder.\n";
         }
+
+        pcl::NormalEstimation<pcl::PointNormal,pcl::PointNormal> ne;
+        ne.setInputCloud(target);
+        ne.setKSearch(5);
+        ne.compute(*target);
 
         referece_transform = Eigen::Matrix4f::Identity();
     }
@@ -110,10 +116,10 @@ TEST_F(RegistrationTestClass, Rotation)
 
     Eigen::Matrix3f rot;
     rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitZ());
 
-   referece_transform.col(3) = Eigen::Vector4f(0.1,0,0,1);
+   referece_transform.col(3) = Eigen::Vector4f(0.0,0.5,0,1);
 
     referece_transform.topLeftCorner(3, 3) = rot;
 
