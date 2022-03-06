@@ -31,7 +31,7 @@ jobs:
           command: "ctest | tee test-results"
           working_directory: "~/project/build"
       - store_test_results:
-          path: test-results
+          path: ~/project/build/test-results
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
