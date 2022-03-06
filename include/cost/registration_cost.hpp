@@ -12,46 +12,46 @@
 /*
 
 /* Define your dataset */
-struct datatype_t
-{
-    pcl::PointCloud<pcl::PointXYZ>::ConstPtr source;
-    pcl::PointCloud<pcl::PointXYZ>::ConstPtr target;
-    pcl::search::KdTree<pcl::PointXYZ>::ConstPtr tgt_kdtree;
-};
 
-template <int NPARAM>
+template <int NPARAM, typename PointSource, typename PointTarget>
 class RegistrationCost : public CostFunction<NPARAM>
 {
 public:
+  
+    struct datatype_t
+    {
+        typename pcl::PointCloud<PointSource>::ConstPtr source;
+        typename pcl::PointCloud<PointTarget>::ConstPtr target;
+        typename pcl::search::KdTree<PointTarget>::ConstPtr tgt_kdtree;
+    };
+
     using VectorN = typename CostFunction<NPARAM>::VectorN;
     using MatrixN = typename CostFunction<NPARAM>::MatrixN;
- 
+
     using Matrix4 = Eigen::Matrix4f;
 
     using CostFunction<NPARAM>::m_dataset;
-   
 
     RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
     {
         l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
         // Checkdataset
-        DUNA_DEBUG("source pts : %ld, tgt pts: %ld\n", l_dataset->source->size(),l_dataset->target->size());
+        DUNA_DEBUG("source pts : %ld, tgt pts: %ld\n", l_dataset->source->size(), l_dataset->target->size());
         // TODO check KDTREE
     }
 
     // TODO check numerical stability
     virtual ~RegistrationCost() = default;
 
-
-    inline void setTransformedSourcePtr(pcl::PointCloud<pcl::PointXYZ>::ConstPtr transformed_src ){
+    inline void setTransformedSourcePtr(pcl::PointCloud<pcl::PointXYZ>::ConstPtr transformed_src)
+    {
         m_transformed_source = transformed_src;
     }
 
-    inline void setCorrespondencesPtr(pcl::CorrespondencesConstPtr correspondences){
+    inline void setCorrespondencesPtr(pcl::CorrespondencesConstPtr correspondences)
+    {
         m_correspondences = correspondences;
     }
-
-
 
     double computeCost(const VectorN &x) override
     {
@@ -61,8 +61,8 @@ public:
         double sum = 0;
         for (int i = 0; i < m_correspondences->size(); ++i)
         {
-            const pcl::PointXYZ &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
-            const pcl::PointXYZ &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
+            const PointSource &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
+            const PointTarget &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
 
             const Eigen::Vector4f src_pt_vec = src_pt.getVector4fMap();
             const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
@@ -104,8 +104,8 @@ public:
         double sum = 0;
         for (int i = 0; i < m_correspondences->size(); ++i)
         {
-            const pcl::PointXYZ &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
-            const pcl::PointXYZ &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
+            const PointSource &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
+            const PointTarget &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
 
             const Eigen::Vector4f src_pt_vec = src_pt.getVector4fMap();
             const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
@@ -139,7 +139,6 @@ private:
     pcl::CorrespondencesConstPtr m_correspondences;
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr m_transformed_source;
     datatype_t *l_dataset; // cast
-    
 
     template <typename Scalar>
     inline double computeError(const Eigen::Matrix<Scalar, 3, 1> &src_vec, const Eigen::Matrix<Scalar, 3, 1> &tgt_vec)

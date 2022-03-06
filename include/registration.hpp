@@ -7,7 +7,7 @@
 #include <pcl/correspondence.h>
 #include <pcl/common/transforms.h>
 
-template <int NPARAM>
+template <int NPARAM,typename PointSource, typename PointTarget>
 class Registration : public GenericOptimizator<NPARAM>
 {
 public:
@@ -19,10 +19,10 @@ public:
         m_source_transformed = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
         m_correspondences = pcl::make_shared<pcl::Correspondences>();
 
-        RegistrationCost<NPARAM> *l_cost = reinterpret_cast<RegistrationCost<NPARAM> *>(cost);
+        RegistrationCost<NPARAM,PointSource,PointTarget> *l_cost = reinterpret_cast<RegistrationCost<NPARAM,PointSource,PointTarget> *>(cost);
         l_cost->setCorrespondencesPtr(m_correspondences);
         l_cost->setTransformedSourcePtr(m_source_transformed);
-        l_dataset = reinterpret_cast<datatype_t *>(cost->getDataset());
+        l_dataset = reinterpret_cast<typename RegistrationCost<NPARAM,PointSource,PointTarget>::datatype_t *>(cost->getDataset());
     }
 
     virtual ~Registration()
@@ -77,7 +77,7 @@ protected:
     unsigned int m_k_neighboors = 5;
 
     // data
-    datatype_t *l_dataset;
+    typename RegistrationCost<NPARAM,PointSource,PointTarget>::datatype_t *l_dataset;
     pcl::CorrespondencesPtr m_correspondences;
     pcl::PointCloud<pcl::PointXYZ>::Ptr m_source_transformed;
     Eigen::Matrix4f m_final_transform;
@@ -96,7 +96,7 @@ protected:
 
             const pcl::PointXYZ &pt_warped = m_source_transformed->points[i];
 
-            l_dataset->tgt_kdtree->nearestKSearch(pt_warped, m_k_neighboors, indices, k_distances);
+            l_dataset->tgt_kdtree->nearestKSearchT(pt_warped, m_k_neighboors, indices, k_distances);
 
             if (k_distances[0] > m_max_corr_dist * m_max_corr_dist)
                 continue;
