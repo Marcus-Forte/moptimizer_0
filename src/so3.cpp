@@ -3,7 +3,7 @@
 namespace so3
 {
     template <typename Scalar>
-    void param2Matrix6DOF(const Eigen::Matrix<Scalar, 6, 1> &x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
+    void param2Matrix(const Eigen::Matrix<Scalar, 6, 1> &x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {
 
         transform_matrix_.setZero();
@@ -20,7 +20,20 @@ namespace so3
     }
 
     template <typename Scalar>
-    void matrix2Param6DOF(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 6, 1> &x){
+    void param2Matrix(const Eigen::Matrix<Scalar, 3, 1> &x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
+    {
+
+        transform_matrix_.setZero();
+        transform_matrix_(3,3) = 1;
+        // Compute w from the unit quaternion
+        Eigen::Quaternion<Scalar> q(0, x[0], x[1], x[2]);
+        q.w() = static_cast<Scalar>(std::sqrt(1 - q.dot(q)));
+        q.normalize();
+        transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
+    }
+
+    template <typename Scalar>
+    void matrix2Param(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 6, 1> &x){
         x[0] = transform_matrix_(0,3);
         x[1] = transform_matrix_(1,3);
         x[2] = transform_matrix_(2,3);
@@ -35,14 +48,20 @@ namespace so3
         x[5] = ea[2];//ea[2];
     }
 
+    // 
+
 
     // Instantiation
     
-    template void param2Matrix6DOF<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    template void param2Matrix6DOF<float>(const Eigen::Matrix<float, 6, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+    template void so3::param2Matrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void so3::param2Matrix<float>(const Eigen::Matrix<float, 6, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-    template void matrix2Param6DOF<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
-    template void matrix2Param6DOF<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 6, 1> &x);
+    // 3DOF
+    template void so3::param2Matrix<double>(const Eigen::Matrix<double, 3, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void so3::param2Matrix<float>(const Eigen::Matrix<float, 3, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+
+    template void so3::matrix2Param<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
+    template void so3::matrix2Param<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 6, 1> &x);
 
 }
 

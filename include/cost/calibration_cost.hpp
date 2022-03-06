@@ -38,6 +38,7 @@ class CalibrationCost : public CostFunction<NPARAM>
 public:
     using VectorN = typename CostFunction<NPARAM>::VectorN;
     using MatrixN = typename CostFunction<NPARAM>::MatrixN;
+    using VectorNd = Eigen::Matrix<double,NPARAM,1>;
 
     using CostFunction<NPARAM>::m_dataset;
     CalibrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
@@ -70,7 +71,12 @@ public:
         double sum = 0;
 
         Eigen::Matrix4d transform;
-        so3::param2Matrix6DOF<double>(x.template cast<double>(), transform);
+        VectorNd x_double(x.template cast<double>());
+        
+        // Eigen::Matrix4f transform;
+
+
+        so3::param2Matrix(x_double,transform);
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)
         {
@@ -97,7 +103,14 @@ public:
 
         // Build matrix from xi
         Eigen::Matrix4d transform;
-        so3::param2Matrix6DOF<double>(x.template cast<double>(), transform);
+
+        VectorNd x_double;
+        for (int i=0;i < NPARAM; ++i)
+        {
+            x_double[i] = x[i];
+        }
+
+        so3::param2Matrix<double>(x_double, transform);
 
         Eigen::Matrix<double, 2, NPARAM> jacobian_row;
 
@@ -110,16 +123,16 @@ public:
         hessian_.setZero();
         b_.setZero();
 
-        const double epsilon = 1e-7;
+        const double epsilon = 1e-6;
         for (int j = 0; j < NPARAM; ++j)
         {
-            VectorN x_plus(x);
-            VectorN x_minus(x);
+            VectorNd x_plus(x_double);
+            VectorNd x_minus(x_double);
             x_plus[j] += epsilon;
             x_minus[j] -= epsilon;
 
-            so3::param2Matrix6DOF<double>(x_plus.template cast<double>(), transform_plus[j]);
-            so3::param2Matrix6DOF<double>(x_minus.template cast<double>(), transform_minus[j]);
+            so3::param2Matrix<double>(x_plus, transform_plus[j]);
+            so3::param2Matrix<double>(x_minus, transform_minus[j]);
         }
 
         for (int i = 0; i < l_dataset->point_list.size(); ++i)

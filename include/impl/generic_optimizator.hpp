@@ -30,10 +30,14 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
     for (int j = 0; j < m_max_it; ++j)
     {
-        DUNA_DEBUG_STREAM("## OPTIMIZATION IT: " << j+1 << "/" << m_max_it << " ##\n");
+        DUNA_DEBUG_STREAM("## OPTIMIZATION IT: " << j + 1 << "/" << m_max_it << " ##\n");
 
         // linearization
         double y0 = m_cost->linearize(x0, hessian, b);
+
+        // DUNA_DEBUG_STREAM("Hessian:\n"
+        //                   << hessian << std::endl);
+
 
         if (lm_lambda_ < 0.0)
         {
@@ -46,10 +50,17 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         for (int k = 0; k < lm_max_iterations_; ++k)
         {
 
-            // Eigen::LDLT<Matrix6d> solver(H + lm_lambda_ * Matrix6d::Identity());
-            // Vector6d d = solver.solve(-b);
-            diag_ = hessian.diagonal().asDiagonal();
-            VectorN delta = (hessian + lm_lambda_ * diag_).inverse() * b;
+            diag_ = hessian.diagonal().asDiagonal(); // MatrixN::Identity(); 
+
+            // DUNA_DEBUG_STREAM("A: \n"
+            //                   << (hessian + lm_lambda_ * diag_) << "\n");
+            // DUNA_DEBUG_STREAM("b: \n"
+            //                   << b << "\n");
+          
+            // VectorN delta = (hessian + lm_lambda_ * diag_).inverse() * b;
+            // Eigen::LDLT<MatrixN> solver(hessian + lm_lambda_ * diag_);
+            Eigen::HouseholderQR<MatrixN> solver(hessian + lm_lambda_ * diag_);
+            VectorN delta = solver.solve(b);
 
             if (testConvergence(delta) == 0)
             {
@@ -86,7 +97,7 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
             x0 = xi;
             lm_lambda_ = lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff(); // lm_lambda_ * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
-            
+
             break;
         }
 
@@ -108,6 +119,6 @@ int GenericOptimizator<NPARAM>::testConvergence(const VectorN &delta)
     DUNA_DEBUG_STREAM("epsilon: " << epsilon << "\n");
 
     if (epsilon < 0.00001)
-        return 0; 
+        return 0;
     return 1;
 }

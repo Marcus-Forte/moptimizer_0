@@ -24,6 +24,7 @@ class RegistrationCost : public CostFunction<NPARAM>
 {
 public:
     using VectorN = typename CostFunction<NPARAM>::VectorN;
+    using VectorNd = Eigen::Matrix<double,NPARAM,1>;
     using MatrixN = typename CostFunction<NPARAM>::MatrixN;
  
     using Matrix4 = Eigen::Matrix4f;
@@ -62,19 +63,22 @@ public:
     double computeCost(const VectorN &x) override
     {
 
-        Matrix4 transform_;
-        so3::param2Matrix6DOF(x, transform_);
+        VectorNd x_double (x.template cast<double>());
+        Eigen::Matrix4d transform;
+        so3::param2Matrix(x_double, transform);
+
+
         double sum = 0;
         for (int i = 0; i < m_correspondences->size(); ++i)
         {
             const pcl::PointXYZ &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
             const pcl::PointXYZ &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
 
-            const Eigen::Vector4f src_pt_vec = src_pt.getVector4fMap();
-            const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
-            const Eigen::Vector4f src_pt_warped_vec = transform_ * src_pt_vec;
+            const Eigen::Vector4f& src_pt_vec = src_pt.getVector4fMap();
+            
+            const Eigen::Vector4d src_pt_warped_vec = transform * src_pt_vec.template cast<double>();
 
-            double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
+            double xout = computeError(src_pt_warped_vec, tgt_pt);
 
             sum += xout;
         }
@@ -87,24 +91,34 @@ public:
         hessian.setZero();
         b.setZero();
 
+        // Eigen::Matrix<double,NPARAM,NPARAM> hessian_double;
+        // Eigen::Matrix<double,NPARAM,1> b_double;
+
+        // hessian_double.setZero();
+        // b_double.setZero();
+
+        // VectorNd x_double(x.template cast<double>());
+
         Eigen::Matrix<float, 1, NPARAM> jacobian_row;
         Eigen::Matrix4f transform_plus[NPARAM];
-        Eigen::Matrix4f transform_minus[NPARAM];
-        Eigen::Matrix4f transform_;
+        // Eigen::Matrix4d transform_minus[NPARAM];
+        Eigen::Matrix4f transform;
 
-        so3::param2Matrix6DOF(x, transform_);
+        so3::param2Matrix(x, transform);
 
-        const float epsilon = 1e-6;
+
+        // TODO we're having all kinds of numeric error here :(
+        const float epsilon = 1e-5;
         for (int j = 0; j < NPARAM; ++j)
         {
             VectorN x_plus(x);
-            VectorN x_minus(x);
+            // VectorNd x_minus(x_double);
 
             x_plus[j] += epsilon;
-            x_minus[j] -= epsilon;
+            // x_minus[j] -= epsilon;
 
-            so3::param2Matrix6DOF(x_plus, transform_plus[j]);
-            so3::param2Matrix6DOF(x_minus, transform_minus[j]);
+            so3::param2Matrix(x_plus, transform_plus[j]);
+            // so3::param2Matrix(x_minus, transform_minus[j]);
         }
 
         double sum = 0;
@@ -113,30 +127,35 @@ public:
             const pcl::PointXYZ &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
             const pcl::PointXYZ &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
 
-            const Eigen::Vector4f src_pt_vec = src_pt.getVector4fMap();
-            const Eigen::Vector4f tgt_pt_vec = tgt_pt.getVector4fMap();
-            const Eigen::Vector4f src_pt_warped_vec = transform_ * src_pt_vec;
+            const Eigen::Vector4f& src_pt_vec = src_pt.getVector4fMap();
+            
+            const Eigen::Vector4f src_pt_warped_vec = transform * src_pt_vec;
 
-            double xout = computeError(src_pt_warped_vec, tgt_pt_vec);
+            double xout = computeError(src_pt_warped_vec, tgt_pt);
 
             for (int j = 0; j < NPARAM; ++j)
             {
+                
                 Eigen::Vector4f src_pt_warped_plus_vec = transform_plus[j] * src_pt_vec;
-                Eigen::Vector4f src_pt_warped_minus_vec = transform_minus[j] * src_pt_vec;
+                // Eigen::Vector4d src_pt_warped_minus_vec = transform_minus[j] * src_pt_vec.template cast<double>();
 
-                double xout_plus = computeError(src_pt_warped_plus_vec, tgt_pt_vec);
-                double xout_minus = computeError(src_pt_warped_minus_vec, tgt_pt_vec);
+                double xout_plus = computeError(src_pt_warped_plus_vec, tgt_pt);
+                // double xout_minus = computeError(src_pt_warped_minus_vec, tgt_pt);
 
-                jacobian_row[j] = (xout_plus - xout_minus) / (2 * epsilon);
+                // TODO this is numerically unstable
+                jacobian_row[j] = (xout_plus - xout) / (epsilon); 
             }
 
             hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
+            // hessian += jacobian_row.transpose()*jacobian_row;
             b += jacobian_row.transpose() * xout;
 
             sum += xout;
         }
 
-        hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
+        // hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
+
+  
 
         return sum;
     }
@@ -148,16 +167,11 @@ private:
     
 
     template <typename Scalar>
-    inline double computeError(const Eigen::Matrix<Scalar, 3, 1> &src_vec, const Eigen::Matrix<Scalar, 3, 1> &tgt_vec)
+    inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZ& tgt_pt)
     {
-        return (src_vec.template cast<Scalar>() - tgt_vec.template cast<Scalar>()).norm();
+        Eigen::Vector3d tgt(tgt_pt.x,tgt_pt.y,tgt_pt.z);
+        Eigen::Vector3d src(warped_src_pt[0],warped_src_pt[1],warped_src_pt[2]);
+        return (src-tgt).norm();
     }
 
-    template <typename Scalar>
-    inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &src_vec, const Eigen::Matrix<Scalar, 4, 1> &tgt_vec)
-    {
-        Eigen::Matrix<Scalar, 3, 1> src_vec3(src_vec[0], src_vec[1], src_vec[2]);
-        Eigen::Matrix<Scalar, 3, 1> tgt_vec3(tgt_vec[0], tgt_vec[1], tgt_vec[2]);
-        return (src_vec3 - tgt_vec3).norm();
-    }
 };
