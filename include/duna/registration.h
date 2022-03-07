@@ -7,11 +7,12 @@
 #include <pcl/correspondence.h>
 #include <pcl/common/transforms.h>
 
-template <int NPARAM>
+template <int NPARAM,typename PointSource, typename PointTarget>
 class Registration : public GenericOptimizator<NPARAM>
 {
 public:
     using VectorN = typename GenericOptimizator<NPARAM>::VectorN;
+    using DatasetType = typename RegistrationCost<NPARAM,PointSource,PointTarget>::dataset_t;
     using Optimizator<NPARAM>::m_cost;
 
     Registration(CostFunction<NPARAM> *cost);
@@ -32,7 +33,7 @@ protected:
     unsigned int m_k_neighboors = 5;
 
     // data
-    reg_cost_data_t *l_dataset;
+    DatasetType *l_dataset;
     pcl::CorrespondencesPtr m_correspondences;
     pcl::PointCloud<pcl::PointXYZ>::Ptr m_source_transformed;
     Eigen::Matrix4f m_final_transform;

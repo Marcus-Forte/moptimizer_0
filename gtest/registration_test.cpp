@@ -5,6 +5,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/transforms.h>
 #include <gtest/gtest.h>
+#include <pcl/features/normal_3d.h>
 
 // #include <pcl/registration/icp.h>
 // #include <pcl/registration/transformation_estimation_lm.h>
@@ -18,9 +19,15 @@
 #define MAXCORRDIST 2.0
 // Optimization objects
 
-using PointCloudT = pcl::PointCloud<pcl::PointXYZ>;
+using PointSource = pcl::PointXYZ;
+using PointTarget = pcl::PointNormal;
+
+using PointCloudT = pcl::PointCloud<PointSource>;
+using PointCloudNT = pcl::PointCloud<PointTarget>;
+
 using VectorN = CostFunction<MODEL_PARAM>::VectorN;
 using Vector3N = Eigen::Matrix<float, 3, 1>;
+
 
 class RegistrationTestClass : public testing::Test
 {
@@ -28,14 +35,19 @@ public:
     RegistrationTestClass()
     {
         source.reset(new PointCloudT);
-        target.reset(new PointCloudT);
+        target.reset(new PointCloudNT);
         if (pcl::io::loadPCDFile(TEST_DATA_DIR, *target) != 0)
         {
             std::cerr << "Make sure you run the rest at the binaries folder.\n";
         }
 
+        pcl::NormalEstimation<PointTarget,PointTarget> ne;
+        ne.setInputCloud(target);
+        ne.setKSearch(5);
+        ne.compute(*target);
+
         referece_transform = Eigen::Matrix4f::Identity();
-        kdtree.reset(new pcl::search::KdTree<pcl::PointXYZ>);
+        kdtree.reset(new pcl::search::KdTree<PointTarget>);
         kdtree->setInputCloud(target);
     }
 
@@ -43,9 +55,9 @@ public:
 
 protected:
     PointCloudT::Ptr source;
-    PointCloudT::Ptr target;
-    pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree;
-    reg_cost_data_t data;
+    PointCloudNT::Ptr target;
+    pcl::search::KdTree<PointTarget>::Ptr kdtree;
+    RegistrationCost<MODEL_PARAM,PointSource,PointTarget>::dataset_t data;
     Eigen::MatrixX4f referece_transform;
 };
 
@@ -64,26 +76,33 @@ int main(int argc, char **argv)
 TEST_F(RegistrationTestClass, Translation6DOFSimple)
 {
     target->clear();
-    target->push_back(pcl::PointXYZ(1, 1, 1));
-    target->push_back(pcl::PointXYZ(-1.2, 7, 2));
-    target->push_back(pcl::PointXYZ(-1, 1.5, 1));
-    target->push_back(pcl::PointXYZ(6, 1.98, 1));
-    target->push_back(pcl::PointXYZ(9, 2, 4));
-    target->push_back(pcl::PointXYZ(-9, 2, 4));
-    target->push_back(pcl::PointXYZ(9, -2, 4));
-    target->push_back(pcl::PointXYZ(9, 2, -4));
+
+    for(int i=0; i < 10; ++ i){
+    PointTarget pt;
+    pt.x = 10 * static_cast<float> (std::rand() / static_cast<float> (RAND_MAX));
+    pt.y = 10* static_cast<float> (std::rand() / static_cast<float> (RAND_MAX));
+    pt.z = 10 * static_cast<float> (std::rand() / static_cast<float> (RAND_MAX));
+    target->push_back(pt);
+    }
+
+    std::cerr << *target << "\n";
+
+   
+  
 
     kdtree->setInputCloud(target);
 
     referece_transform.col(3) = Eigen::Vector4f(1, 2, 3, 1);
-    pcl::transformPointCloud(*target, *source, referece_transform);
+
+    pcl::copyPointCloud(*target,*source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
 
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
-    Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
+    RegistrationCost<MODEL_PARAM,PointSource,PointTarget> *cost = new RegistrationCost<MODEL_PARAM,PointSource,PointTarget>(&data);
+    Registration<MODEL_PARAM,PointSource,PointTarget> *registration = new Registration<MODEL_PARAM,PointSource,PointTarget>(cost);
 
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(50);
@@ -113,14 +132,18 @@ TEST_F(RegistrationTestClass, Translation6DOF)
 
     // Translation
     referece_transform.col(3) = Eigen::Vector4f(-0.5, 0.2, 0., 1);
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    
+    pcl::copyPointCloud(*target,*source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
+
+    
 
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
-    Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
+    RegistrationCost<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal> *cost = new RegistrationCost<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal>(&data);
+    Registration<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal> *registration = new Registration<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal>(cost);
 
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(100);
@@ -156,15 +179,16 @@ TEST_F(RegistrationTestClass, Rotation6DOF)
 
     referece_transform.topLeftCorner(3, 3) = rot;
 
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    pcl::copyPointCloud(*target,*source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
 
     // Prepare dataset
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
-    Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
+    RegistrationCost<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal> *cost = new RegistrationCost<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal>(&data);
+    Registration<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal> *registration = new Registration<MODEL_PARAM,pcl::PointXYZ,pcl::PointNormal>(cost);
 
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(150);
@@ -205,15 +229,16 @@ TEST_F(RegistrationTestClass, RotationPlusTranslation6DOF)
     referece_transform.topLeftCorner(3, 3) = rot;
     referece_transform.col(3) = Eigen::Vector4f(-0.5, -0.2, 0.1, 1);
 
-    pcl::transformPointCloud(*target, *source, referece_transform);
+        pcl::copyPointCloud(*target,*source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
 
     // Prepare dataset
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
-    Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
+    RegistrationCost<MODEL_PARAM,PointSource,PointTarget> *cost = new RegistrationCost<MODEL_PARAM,PointSource,PointTarget>(&data);
+    Registration<MODEL_PARAM,PointSource,PointTarget> *registration = new Registration<MODEL_PARAM,PointSource,PointTarget>(cost);
 
     registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(50);
@@ -252,14 +277,15 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
 
     referece_transform.topLeftCorner(3, 3) = rot;
 
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    pcl::copyPointCloud(*target,*source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
 
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<3> *cost = new RegistrationCost<3>(&data);
-    Registration<3> *registration = new Registration<3>(cost);
+    RegistrationCost<3,PointSource,PointTarget> *cost = new RegistrationCost<3,PointSource,PointTarget>(&data);
+    Registration<3,PointSource,PointTarget> *registration = new Registration<3,PointSource,PointTarget>(cost);
 
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(100);

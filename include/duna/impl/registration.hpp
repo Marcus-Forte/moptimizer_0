@@ -2,28 +2,28 @@
 
 #include "duna/registration.h"
 
-template <int NPARAM>
-Registration<NPARAM>::Registration(CostFunction<NPARAM> *cost) : GenericOptimizator<NPARAM>(cost)
+template <int NPARAM,typename PointSource, typename PointTarget>
+Registration<NPARAM,PointSource,PointTarget>::Registration(CostFunction<NPARAM> *cost) : GenericOptimizator<NPARAM>(cost)
 {
     m_source_transformed = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     m_correspondences = pcl::make_shared<pcl::Correspondences>();
 
-    RegistrationCost<NPARAM> *l_cost = reinterpret_cast<RegistrationCost<NPARAM> *>(cost);
+    RegistrationCost<NPARAM,PointSource,PointTarget> *l_cost = reinterpret_cast<RegistrationCost<NPARAM,PointSource,PointTarget>*>(cost);
     l_cost->setCorrespondencesPtr(m_correspondences);
     l_cost->setTransformedSourcePtr(m_source_transformed);
-    l_dataset = reinterpret_cast<reg_cost_data_t *>(cost->getDataset());
+    l_dataset = reinterpret_cast<DatasetType *>(cost->getDataset());
 
     // By Default, we want to set the internal optimization loop to a single iteration to allow ICP to transform source more often.
     Optimizator<NPARAM>::setMaxOptimizationIterations(1);
 }
 
-template <int NPARAM>
-Registration<NPARAM>::~Registration()
+template <int NPARAM,typename PointSource, typename PointTarget>
+Registration<NPARAM,PointSource,PointTarget>::~Registration()
 {
 }
 
-template <int NPARAM>
-opt_status Registration<NPARAM>::minimize(VectorN &x0)
+template <int NPARAM,typename PointSource, typename PointTarget>
+opt_status Registration<NPARAM,PointSource,PointTarget>::minimize(VectorN &x0)
 {
 
     m_final_transform = Eigen::Matrix4f::Identity();
@@ -56,14 +56,14 @@ opt_status Registration<NPARAM>::minimize(VectorN &x0)
     return opt_status::MAX_IT_REACHED;
 }
 
-template <int NPARAM>
-Eigen::Matrix4f Registration<NPARAM>::getFinalTransformation() const
+template <int NPARAM,typename PointSource, typename PointTarget>
+Eigen::Matrix4f Registration<NPARAM, PointSource, PointTarget>::getFinalTransformation() const
 {
     return m_final_transform;
 }
 
-template <int NPARAM>
-void Registration<NPARAM>::update_correspondences()
+template <int NPARAM,typename PointSource, typename PointTarget>
+void Registration<NPARAM, PointSource, PointTarget>::update_correspondences()
 {
     m_correspondences->clear();
     m_correspondences->reserve(m_source_transformed->size());
@@ -77,7 +77,7 @@ void Registration<NPARAM>::update_correspondences()
 
         const pcl::PointXYZ &pt_warped = m_source_transformed->points[i];
 
-        l_dataset->tgt_kdtree->nearestKSearch(pt_warped, m_k_neighboors, indices, k_distances);
+        l_dataset->tgt_kdtree->nearestKSearchT(pt_warped, m_k_neighboors, indices, k_distances);
 
         if (k_distances[0] > m_max_corr_dist * m_max_corr_dist)
             continue;

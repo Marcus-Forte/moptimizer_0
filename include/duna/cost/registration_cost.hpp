@@ -13,17 +13,18 @@
 /*
 
 /* Define your dataset */
-struct reg_cost_data_t
-{
-    pcl::PointCloud<pcl::PointXYZ>::ConstPtr source;
-    pcl::PointCloud<pcl::PointXYZ>::ConstPtr target;
-    pcl::search::KdTree<pcl::PointXYZ>::ConstPtr tgt_kdtree;
-};
 
-template <int NPARAM>
+template <int NPARAM, typename PointSource, typename PointTarget>
 class RegistrationCost : public CostFunction<NPARAM>
 {
 public:
+    struct dataset_t
+    {
+        typename pcl::PointCloud<PointSource>::ConstPtr source;
+        typename pcl::PointCloud<PointTarget>::ConstPtr target;
+        typename pcl::search::KdTree<PointTarget>::ConstPtr tgt_kdtree;
+    };
+
     using VectorN = typename CostFunction<NPARAM>::VectorN;
     using VectorNd = Eigen::Matrix<double, NPARAM, 1>;
     using MatrixN = typename CostFunction<NPARAM>::MatrixN;
@@ -34,7 +35,7 @@ public:
 
     RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
     {
-        l_dataset = reinterpret_cast<reg_cost_data_t *>(m_dataset);
+        l_dataset = reinterpret_cast<dataset_t *>(m_dataset);
 
         if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_kdtree == nullptr)
         {
@@ -74,8 +75,8 @@ public:
         double sum = 0;
         for (int i = 0; i < m_correspondences->size(); ++i)
         {
-            const pcl::PointXYZ &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
-            const pcl::PointXYZ &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
+            const PointSource &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
+            const PointTarget &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
 
             const Eigen::Vector4f &src_pt_vec = src_pt.getVector4fMap();
 
@@ -124,8 +125,8 @@ public:
         double sum = 0;
         for (int i = 0; i < m_correspondences->size(); ++i)
         {
-            const pcl::PointXYZ &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
-            const pcl::PointXYZ &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
+            const PointSource &src_pt = m_transformed_source->points[(*m_correspondences)[i].index_query];
+            const PointTarget &tgt_pt = l_dataset->target->points[(*m_correspondences)[i].index_match];
 
             const Eigen::Vector4f &src_pt_vec = src_pt.getVector4fMap();
 
@@ -165,10 +166,10 @@ public:
 private:
     pcl::CorrespondencesConstPtr m_correspondences;
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr m_transformed_source;
-    reg_cost_data_t *l_dataset; // cast
+    dataset_t *l_dataset; // cast
 
     template <typename Scalar>
-    inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZ &tgt_pt)
+    inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const PointTarget &tgt_pt)
     {
         Eigen::Vector4f tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
         Eigen::Vector4f src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
