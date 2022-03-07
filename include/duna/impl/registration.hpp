@@ -5,7 +5,7 @@
 template <int NPARAM,typename PointSource, typename PointTarget>
 Registration<NPARAM,PointSource,PointTarget>::Registration(CostFunction<NPARAM> *cost) : GenericOptimizator<NPARAM>(cost)
 {
-    m_source_transformed = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+    m_source_transformed = pcl::make_shared<pcl::PointCloud<PointSource>>();
     m_correspondences = pcl::make_shared<pcl::Correspondences>();
 
     RegistrationCost<NPARAM,PointSource,PointTarget> *l_cost = reinterpret_cast<RegistrationCost<NPARAM,PointSource,PointTarget>*>(cost);
@@ -75,7 +75,7 @@ void Registration<NPARAM, PointSource, PointTarget>::update_correspondences()
     for (int i = 0; i < m_source_transformed->size(); ++i)
     {
 
-        const pcl::PointXYZ &pt_warped = m_source_transformed->points[i];
+        const PointSource &pt_warped = m_source_transformed->points[i];
 
         l_dataset->tgt_kdtree->nearestKSearchT(pt_warped, m_k_neighboors, indices, k_distances);
 

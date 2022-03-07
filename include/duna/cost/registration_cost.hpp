@@ -46,6 +46,8 @@ public:
 
     using Matrix4 = Eigen::Matrix4f;
 
+    using PointCloudSourceConstPtr = typename pcl::PointCloud<PointSource>::ConstPtr;
+
     using CostFunction<NPARAM>::m_dataset;
 
     RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
@@ -70,7 +72,8 @@ public:
     {
     }
 
-    inline void setTransformedSourcePtr(pcl::PointCloud<pcl::PointXYZ>::ConstPtr transformed_src)
+    
+    inline void setTransformedSourcePtr(PointCloudSourceConstPtr transformed_src)
     {
         m_transformed_source = transformed_src;
     }
@@ -179,14 +182,8 @@ public:
 
 private:
     pcl::CorrespondencesConstPtr m_correspondences;
-    pcl::PointCloud<pcl::PointXYZ>::ConstPtr m_transformed_source;
+    PointCloudSourceConstPtr m_transformed_source;
     dataset_t *l_dataset; // cast
 
-    // template <typename Scalar>
-    // inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const PointTarget &tgt_pt)
-    // {
-    //     Eigen::Vector4f tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
-    //     Eigen::Vector4f src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
-    //     return (src - tgt).norm(); // TODO norm vs norm² ?
-    // }
+    
 };

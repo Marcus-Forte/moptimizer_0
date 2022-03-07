@@ -35,7 +35,7 @@ protected:
     // data
     DatasetType *l_dataset;
     pcl::CorrespondencesPtr m_correspondences;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr m_source_transformed;
+    typename pcl::PointCloud<PointSource>::Ptr m_source_transformed;
     Eigen::Matrix4f m_final_transform;
 
     void update_correspondences();
