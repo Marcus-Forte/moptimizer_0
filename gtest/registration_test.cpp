@@ -288,10 +288,10 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
     }
 }
 
-TEST(RegistrationTestClass, DISABLED_PointNormals)
+TEST_F(RegistrationTestClass, PointToNormal)
 {
 }
 
-TEST(RegistrationTestClass, DISABLED_Multipleinstances)
+TEST_F(RegistrationTestClass, SeriesofCalls3DOF)
 {
 }

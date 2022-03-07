@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
-TEST(LaserCameraCalibration, Test0)
+TEST(LaserCameraCalibration, NoNoise)
 {
     
     VectorN x0;
@@ -100,7 +100,7 @@ TEST(LaserCameraCalibration, Test0)
 }
 
 
-TEST(LaserCameraCalibration, Test1)
+TEST(LaserCameraCalibration, SmallNoise)
 {
     // Add noise
     float noise = 0.0001;
@@ -119,7 +119,7 @@ TEST(LaserCameraCalibration, Test1)
     EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
 }
 
-TEST(LaserCameraCalibration, Test2)
+TEST(LaserCameraCalibration, SmallNoise2)
 {
     // Add noise
     float noise = 0.0005;
@@ -138,7 +138,7 @@ TEST(LaserCameraCalibration, Test2)
     EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
 }
 
-TEST(LaserCameraCalibration, Test3)
+TEST(LaserCameraCalibration, MediumNoise)
 {
     // Add noise
     float noise = 0.0007;
