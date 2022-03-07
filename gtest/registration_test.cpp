@@ -45,7 +45,7 @@ protected:
     PointCloudT::Ptr source;
     PointCloudT::Ptr target;
     pcl::search::KdTree<pcl::PointXYZ>::Ptr kdtree;
-    datatype_t data;
+    reg_cost_data_t data;
     Eigen::MatrixX4f referece_transform;
 };
 
@@ -85,6 +85,8 @@ TEST_F(RegistrationTestClass, Translation6DOFSimple)
     RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
+    // registration->setMaxOptimizationIterations(3);
+    registration->setMaxIcpIterations(50);
     registration->setMaxCorrespondenceDistance(20);
 
     VectorN x0;
@@ -120,7 +122,7 @@ TEST_F(RegistrationTestClass, Translation6DOF)
     RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
-    registration->setMaxOptimizationIterations(3);
+    // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(100);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
@@ -164,7 +166,7 @@ TEST_F(RegistrationTestClass, Rotation6DOF)
     RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
-    registration->setMaxOptimizationIterations(2);
+    // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(150);
     registration->setMaxCorrespondenceDistance(2);
 
@@ -214,7 +216,7 @@ TEST_F(RegistrationTestClass, RotationPlusTranslation6DOF)
     Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
 
     registration->setMaxOptimizationIterations(3);
-    registration->setMaxIcpIterations(100);
+    registration->setMaxIcpIterations(50);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
     VectorN x0;
@@ -259,7 +261,7 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
     RegistrationCost<3> *cost = new RegistrationCost<3>(&data);
     Registration<3> *registration = new Registration<3>(cost);
 
-    registration->setMaxOptimizationIterations(2);
+    // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(100);
     registration->setMaxCorrespondenceDistance(2);
 

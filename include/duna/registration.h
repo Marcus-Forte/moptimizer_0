@@ -32,7 +32,7 @@ protected:
     unsigned int m_k_neighboors = 5;
 
     // data
-    datatype_t *l_dataset;
+    reg_cost_data_t *l_dataset;
     pcl::CorrespondencesPtr m_correspondences;
     pcl::PointCloud<pcl::PointXYZ>::Ptr m_source_transformed;
     Eigen::Matrix4f m_final_transform;

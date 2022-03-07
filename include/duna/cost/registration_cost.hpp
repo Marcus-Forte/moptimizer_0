@@ -13,7 +13,7 @@
 /*
 
 /* Define your dataset */
-struct datatype_t
+struct reg_cost_data_t
 {
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr source;
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr target;
@@ -34,8 +34,8 @@ public:
 
     RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
     {
-        l_dataset = reinterpret_cast<datatype_t *>(m_dataset);
-        
+        l_dataset = reinterpret_cast<reg_cost_data_t *>(m_dataset);
+
         if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_kdtree == nullptr)
         {
             throw std::runtime_error("Invalid dataset. Check if dataset pointers are allocated.\n");
@@ -67,9 +67,9 @@ public:
     double computeCost(const VectorN &x) override
     {
 
-        VectorNd x_double(x.template cast<double>());
-        Eigen::Matrix4d transform;
-        so3::param2Matrix(x_double, transform);
+      
+        Eigen::Matrix4f transform;
+        so3::param2Matrix(x, transform);
 
         double sum = 0;
         for (int i = 0; i < m_correspondences->size(); ++i)
@@ -79,11 +79,11 @@ public:
 
             const Eigen::Vector4f &src_pt_vec = src_pt.getVector4fMap();
 
-            const Eigen::Vector4d src_pt_warped_vec = transform * src_pt_vec.template cast<double>();
+            const Eigen::Vector4f src_pt_warped_vec = transform * src_pt_vec;
 
             double xout = computeError(src_pt_warped_vec, tgt_pt);
 
-            sum += xout;
+            sum += xout * xout;
         }
         return sum;
     }
@@ -102,14 +102,19 @@ public:
         so3::param2Matrix(x, transform);
 
         // TODO we're having all kinds of numeric errors here :(. Usually we want smallest possible without breaking
-        float epsilon = std::numeric_limits<float>::epsilon();
-
+        // const float epsilon = std::numeric_limits<float>::epsilon();
+        const float epsilon = 8*(std::numeric_limits<float>::epsilon());
+        float h = epsilon;
         for (int j = 0; j < NPARAM; ++j)
         {
+            // float h = epsilon * abs(x[j]);
+            // if (h == 0.)
+            //  h = epsilon;
+
             VectorN x_plus(x);
             // VectorNd x_minus(x_double);
 
-            x_plus[j] += epsilon;
+            x_plus[j] += h;
             // x_minus[j] -= epsilon;
 
             so3::param2Matrix(x_plus, transform_plus[j]);
@@ -130,6 +135,9 @@ public:
 
             for (int j = 0; j < NPARAM; ++j)
             {
+                // float h = epsilon * abs(x[j]);
+                // if (h == 0.)
+                //  h = epsilon;
 
                 Eigen::Vector4f src_pt_warped_plus_vec = transform_plus[j] * src_pt_vec;
                 // Eigen::Vector4d src_pt_warped_minus_vec = transform_minus[j] * src_pt_vec.template cast<double>();
@@ -138,17 +146,18 @@ public:
                 // double xout_minus = computeError(src_pt_warped_minus_vec, tgt_pt);
 
                 // TODO this is numerically unstable
-                jacobian_row[j] = (xout_plus - xout) / (epsilon);
+                jacobian_row[j] = (xout_plus - xout) / (h);
             }
 
             hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
             // hessian += jacobian_row.transpose()*jacobian_row;
             b += jacobian_row.transpose() * (xout);
 
-            sum += xout;
+            sum += xout * xout;
         }
 
-        // hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
+        // Crazingly engouth, we may comment this
+        hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
 
         return sum;
     }
@@ -156,7 +165,7 @@ public:
 private:
     pcl::CorrespondencesConstPtr m_correspondences;
     pcl::PointCloud<pcl::PointXYZ>::ConstPtr m_transformed_source;
-    datatype_t *l_dataset; // cast
+    reg_cost_data_t *l_dataset; // cast
 
     template <typename Scalar>
     inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZ &tgt_pt)

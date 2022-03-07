@@ -21,8 +21,7 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
     double lm_lambda_ = -1.0;
     int lm_max_iterations_ = 10;
 
-    MatrixN diag_;
-    diag_.setIdentity();
+    MatrixN hessian_diag_;
 
     MatrixN hessian;
     VectorN xi(NPARAM);
@@ -30,14 +29,16 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
     for (int j = 0; j < m_max_it; ++j)
     {
-        DUNA_DEBUG_STREAM("## OPTIMIZATION IT: " << j + 1 << "/" << m_max_it << " ##\n");
+        DUNA_DEBUG_STREAM("## GenericOptimizator Iteration: " << j + 1 << "/" << m_max_it << " ##\n");
 
         // linearization
         double y0 = m_cost->linearize(x0, hessian, b);
 
+        hessian_diag_ = hessian.diagonal().asDiagonal(); // MatrixN::Identity();
+                                                         // diag_ =  MatrixN::Identity();
+
         // DUNA_DEBUG_STREAM("Hessian:\n"
         //                   << hessian << std::endl);
-
 
         if (lm_lambda_ < 0.0)
         {
@@ -50,17 +51,28 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
         for (int k = 0; k < lm_max_iterations_; ++k)
         {
 
-            diag_ = hessian.diagonal().asDiagonal(); // MatrixN::Identity(); 
-
             // DUNA_DEBUG_STREAM("A: \n"
             //                   << (hessian + lm_lambda_ * diag_) << "\n");
             // DUNA_DEBUG_STREAM("b: \n"
             //                   << b << "\n");
-          
+
             // VectorN delta = (hessian + lm_lambda_ * diag_).inverse() * b;
             // Eigen::LDLT<MatrixN> solver(hessian + lm_lambda_ * diag_);
-            Eigen::HouseholderQR<MatrixN> solver(hessian + lm_lambda_ * diag_);
+
+            // DUNA_DEBUG_STREAM("Hessian: " << hessian << std::endl);
+            // DUNA_DEBUG_STREAM("b: " << b << std::endl);
+
+            Eigen::LDLT<MatrixN> solver(hessian + lm_lambda_ * hessian_diag_);
             VectorN delta = solver.solve(b);
+
+            // VectorN delta = (hessian + lm_lambda_ * hessian_diag_).inverse() * b;
+
+            DUNA_DEBUG("--- Solver delta: ");
+            for (int n = 0; n < NPARAM; ++n)
+            {
+                fprintf(stderr," %f", delta[n]);
+            }//
+            fprintf(stderr,"\n");
 
             if (testConvergence(delta) == 0)
             {
@@ -78,9 +90,8 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             // break;
 
             double yi = m_cost->computeCost(xi);
-
             double rho = (yi - y0) / delta.dot(lm_lambda_ * delta - b);
-            DUNA_DEBUG("--- LM Opt --- : %d/%d | %f %f %f %f %f\n", k+1, lm_max_iterations_, y0, yi, rho, lm_lambda_, nu);
+            DUNA_DEBUG("--- Internal LM Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, lm_max_iterations_, y0, yi, rho, lm_lambda_, nu);
 
             // check if output is worse
             if (rho < 0)
@@ -116,7 +127,7 @@ template <int NPARAM>
 int GenericOptimizator<NPARAM>::testConvergence(const VectorN &delta)
 {
     double epsilon = delta.array().abs().maxCoeff();
-    DUNA_DEBUG_STREAM("epsilon: " << epsilon << "\n");
+    // DUNA_DEBUG_STREAM("epsilon: " << epsilon << "\n");
 
     if (epsilon < 1e-5)
         return 0;

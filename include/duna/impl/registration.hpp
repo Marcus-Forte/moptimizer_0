@@ -11,7 +11,10 @@ Registration<NPARAM>::Registration(CostFunction<NPARAM> *cost) : GenericOptimiza
     RegistrationCost<NPARAM> *l_cost = reinterpret_cast<RegistrationCost<NPARAM> *>(cost);
     l_cost->setCorrespondencesPtr(m_correspondences);
     l_cost->setTransformedSourcePtr(m_source_transformed);
-    l_dataset = reinterpret_cast<datatype_t *>(cost->getDataset());
+    l_dataset = reinterpret_cast<reg_cost_data_t *>(cost->getDataset());
+
+    // By Default, we want to set the internal optimization loop to a single iteration to allow ICP to transform source more often.
+    Optimizator<NPARAM>::setMaxOptimizationIterations(1);
 }
 
 template <int NPARAM>
@@ -33,7 +36,7 @@ opt_status Registration<NPARAM>::minimize(VectorN &x0)
     // Perform optimization @ every ICP iteration
     for (int i = 0; i < m_icp_iterations; ++i)
     {
-        DUNA_DEBUG_STREAM("## ICP ITERATION: " << i + 1 << "/" << m_icp_iterations << " ##\n");
+        DUNA_DEBUG_STREAM("## ICP Iteration: " << i + 1 << "/" << m_icp_iterations << " ##\n");
         update_correspondences();
 
         opt_status status = GenericOptimizator<NPARAM>::minimize(x0);
