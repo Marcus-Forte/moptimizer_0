@@ -83,7 +83,7 @@ install(TARGETS ${PROJECT_NAME}
 
 # TODO fix inter-header inclusions
 install(DIRECTORY include/
-        DESTINATION include/${PROJECT_NAME}
+        DESTINATION include
         FILES_MATCHING
         PATTERN "*.h"
         PATTERN "*.hpp"

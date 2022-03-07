@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cost_function.hpp"
-#include "so3.h"
+#include "duna/cost_function.hpp"
+#include "duna/so3.h"
 
 #include <Eigen/Dense>
 #include <vector>

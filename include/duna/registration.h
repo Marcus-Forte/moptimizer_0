@@ -1,7 +1,7 @@
 #pragma once
 
 #include "generic_optimizator.h"
-#include "cost/registration_cost.hpp" // for dataset type
+#include "duna/cost/registration_cost.hpp" // for dataset type
 
 #include <pcl/search/kdtree.h>
 #include <pcl/correspondence.h>

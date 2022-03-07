@@ -1,6 +1,6 @@
 #pragma once
 
-#include "registration.h"
+#include "duna/registration.h"
 
 template <int NPARAM>
 Registration<NPARAM>::Registration(CostFunction<NPARAM> *cost) : GenericOptimizator<NPARAM>(cost)

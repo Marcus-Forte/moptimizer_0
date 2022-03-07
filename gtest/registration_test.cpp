@@ -1,6 +1,6 @@
-#include "registration.h"
-#include "cost/registration_cost.hpp"
-#include "duna_log.h"
+#include "duna/registration.h"
+#include "duna/cost/registration_cost.hpp"
+#include "duna/duna_log.h"
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/transforms.h>
@@ -20,7 +20,7 @@
 
 using PointCloudT = pcl::PointCloud<pcl::PointXYZ>;
 using VectorN = CostFunction<MODEL_PARAM>::VectorN;
-using Vector3N = Eigen::Matrix<float,3,1>;
+using Vector3N = Eigen::Matrix<float, 3, 1>;
 
 class RegistrationTestClass : public testing::Test
 {
@@ -59,6 +59,51 @@ int main(int argc, char **argv)
     }
 
     return RUN_ALL_TESTS();
+}
+
+TEST_F(RegistrationTestClass, Translation6DOFSimple)
+{
+    target->clear();
+    target->push_back(pcl::PointXYZ(1, 1, 1));
+    target->push_back(pcl::PointXYZ(-1.2, 7, 2));
+    target->push_back(pcl::PointXYZ(-1, 1.5, 1));
+    target->push_back(pcl::PointXYZ(6, 1.98, 1));
+    target->push_back(pcl::PointXYZ(9, 2, 4));
+    target->push_back(pcl::PointXYZ(-9, 2, 4));
+    target->push_back(pcl::PointXYZ(9, -2, 4));
+    target->push_back(pcl::PointXYZ(9, 2, -4));
+
+    kdtree->setInputCloud(target);
+
+    referece_transform.col(3) = Eigen::Vector4f(1, 2, 3, 1);
+    pcl::transformPointCloud(*target, *source, referece_transform);
+
+    data.source = source;
+    data.target = target;
+    data.tgt_kdtree = kdtree;
+
+    RegistrationCost<MODEL_PARAM> *cost = new RegistrationCost<MODEL_PARAM>(&data);
+    Registration<MODEL_PARAM> *registration = new Registration<MODEL_PARAM>(cost);
+
+    registration->setMaxCorrespondenceDistance(20);
+
+    VectorN x0;
+    x0.setZero();
+    registration->minimize(x0);
+
+    Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
+
+    std::cerr << "Reference:\n"
+              << referece_transform << std::endl;
+    // std::cerr << "PCL:\n"
+    //           << final_reg_pcl << std::endl;
+    std::cerr << "Duna:\n"
+              << final_reg_duna << std::endl;
+
+    for (int i = 0; i < 16; i++)
+    {
+        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+    }
 }
 
 TEST_F(RegistrationTestClass, Translation6DOF)

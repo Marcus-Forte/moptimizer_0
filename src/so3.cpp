@@ -1,4 +1,4 @@
-#include "so3.h"
+#include "duna/so3.h"
 
 namespace so3
 {

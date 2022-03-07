@@ -1,6 +1,6 @@
-#include "generic_optimizator.h"
-#include "cost/calibration_cost.hpp"
-#include "duna_log.h"
+#include "duna/generic_optimizator.h"
+#include "duna/cost/calibration_cost.hpp"
+#include "duna/duna_log.h"
 
 #include <gtest/gtest.h>
 

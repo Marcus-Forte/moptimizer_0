@@ -1,4 +1,4 @@
-#include "generic_optimizator.h"
+#include "duna/generic_optimizator.h"
 
 template <int NPARAM>
 GenericOptimizator<NPARAM>::GenericOptimizator(CostFunction<NPARAM> *cost) : Optimizator<NPARAM>(cost)
