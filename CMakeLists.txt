@@ -25,52 +25,30 @@ target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 # target_link_libraries(test_registration ${PROJECT_NAME})
 # add_test(NAME test_registration0 COMMAND test_registration "bunny.pcd" WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test/data)
 
-#gtest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-set(gTest_libraries gtest pthread)
-enable_testing()
-
-add_executable(
-    model_test
-    gtest/model_test.cpp
-)
-
-add_executable(
-    camera_calibration_test
-    gtest/camera_calibration_test.cpp
-)
-
-add_executable(
-    registration_test
-    gtest/registration_test.cpp
-)
-
-
-target_link_libraries(model_test
-    ${PROJECT_NAME}
-    ${gTest_libraries}
-)
-
-
-
-target_link_libraries(camera_calibration_test
-    ${PROJECT_NAME}
-    ${gTest_libraries}
-)
-
-target_link_libraries(registration_test
-    ${PROJECT_NAME}
-    ${gTest_libraries}
-)
 
 
 get_filename_component(bunny_path gtest/data/bunny.pcd REALPATH)
 add_definitions(-DTEST_DATA_DIR="${bunny_path}")
 
+#gtest
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+enable_testing()
 include(GoogleTest)
-gtest_discover_tests(model_test)
-gtest_discover_tests(camera_calibration_test)
-gtest_discover_tests(registration_test)
+
+
+# Make test cases
+file(GLOB test_src "gtest/*.cpp")
+foreach(test_case ${test_src})
+get_filename_component(test_src_name ${test_case} NAME_WE)
+message(STATUS ${filename})    
+add_executable(${test_src_name} ${test_case})
+target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} gtest pthread)
+gtest_discover_tests(${test_src_name})
+endforeach()
+
+# gtest_discover_tests(model_test)
+# gtest_discover_tests(camera_calibration_test)
+# gtest_discover_tests(registration_test)
 
 # TODO auotmate tests execution after build
 file(GLOB header_files "include/*" LIST_DIRECTORIES false)
@@ -81,7 +59,6 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
 )
 
-# TODO fix inter-header inclusions
 install(DIRECTORY include/
         DESTINATION include
         FILES_MATCHING
