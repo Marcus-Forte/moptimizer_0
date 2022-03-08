@@ -12,7 +12,7 @@ Registration<NPARAM,PointSource,PointTarget>::Registration(CostFunction<NPARAM> 
     l_cost->setCorrespondencesPtr(m_correspondences);
     l_cost->setTransformedSourcePtr(m_source_transformed);
     l_dataset = reinterpret_cast<DatasetType *>(cost->getDataset());
-
+    m_final_transform = Eigen::Matrix4f::Identity(); // TODO move away ?
     // By Default, we want to set the internal optimization loop to a single iteration to allow ICP to transform source more often.
     Optimizator<NPARAM>::setMaxOptimizationIterations(1);
 }
@@ -22,11 +22,12 @@ Registration<NPARAM,PointSource,PointTarget>::~Registration()
 {
 }
 
-template <int NPARAM,typename PointSource, typename PointTarget>
-opt_status Registration<NPARAM,PointSource,PointTarget>::minimize(VectorN &x0)
+// TODO i dont like a return type that is tottaly NOT parametrized (simple ENUM) to have TYPENAME just to return it...
+template <int NPARAM,class PointSource, typename PointTarget>
+typename Registration<NPARAM,PointSource,PointTarget>::Status Registration<NPARAM,PointSource,PointTarget>::minimize(VectorN &x0)
 {
 
-    m_final_transform = Eigen::Matrix4f::Identity();
+    
 
     Eigen::Matrix4f init_transform;
     so3::param2Matrix<float>(x0, init_transform);
@@ -39,7 +40,7 @@ opt_status Registration<NPARAM,PointSource,PointTarget>::minimize(VectorN &x0)
         DUNA_DEBUG_STREAM("## ICP Iteration: " << i + 1 << "/" << m_icp_iterations << " ##\n");
         update_correspondences();
 
-        opt_status status = GenericOptimizator<NPARAM>::minimize(x0);
+        Status status = GenericOptimizator<NPARAM>::minimize(x0);
 
         Eigen::Matrix4f delta_transform;
         so3::param2Matrix<float>(x0, delta_transform);
@@ -49,11 +50,11 @@ opt_status Registration<NPARAM,PointSource,PointTarget>::minimize(VectorN &x0)
 
         m_final_transform = delta_transform * m_final_transform;
 
-        if (status == opt_status::SMALL_DELTA)
+        if (status == Status::SMALL_DELTA)
             return status;
     }
 
-    return opt_status::MAX_IT_REACHED;
+    return Status::MAX_IT_REACHED;
 }
 
 template <int NPARAM,typename PointSource, typename PointTarget>

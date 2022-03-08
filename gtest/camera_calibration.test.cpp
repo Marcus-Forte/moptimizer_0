@@ -119,7 +119,7 @@ TEST(LaserCameraCalibration, SmallNoise)
     EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
 }
 
-TEST(LaserCameraCalibration, SmallNoise2)
+TEST(LaserCameraCalibration, MediumNoise)
 {
     // Add noise
     float noise = 0.0005;
@@ -138,7 +138,7 @@ TEST(LaserCameraCalibration, SmallNoise2)
     EXPECT_NEAR((v_sol-x0).norm(),0.0f,FLOAT_TOL);
 }
 
-TEST(LaserCameraCalibration, MediumNoise)
+TEST(LaserCameraCalibration, HeavyNoise)
 {
     // Add noise
     float noise = 0.0007;

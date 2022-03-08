@@ -14,7 +14,8 @@
 #define TEST_DATA_DIR "./"
 #endif
 
-#define MODEL_PARAM 6
+#define DOF6 6
+#define DOF3 3
 #define MAXIT 50
 #define MAXCORRDIST 2.0
 // Optimization objects
@@ -37,7 +38,7 @@ using PointNormal = pcl::PointNormal;
 using PointCloudT = pcl::PointCloud<PointXYZ>;
 using PointCloudNT = pcl::PointCloud<PointNormal>;
 
-using VectorN = CostFunction<MODEL_PARAM>::VectorN;
+using VectorN = CostFunction<DOF6>::VectorN;
 using Vector3N = Eigen::Matrix<float, 3, 1>;
 
 class RegistrationTestClass : public testing::Test
@@ -63,7 +64,7 @@ protected:
     PointCloudT::Ptr source;
     PointCloudT::Ptr target;
     pcl::search::KdTree<PointXYZ>::Ptr kdtree;
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>::dataset_t data;
+
     Eigen::MatrixX4f referece_transform;
 };
 
@@ -89,12 +90,13 @@ TEST_F(RegistrationTestClass, Translation6DOFSimple)
     pcl::copyPointCloud(*target, *source);
     pcl::transformPointCloud(*source, *source, referece_transform);
 
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
 
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
@@ -107,7 +109,7 @@ TEST_F(RegistrationTestClass, Translation6DOFSimple)
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
     std::cerr << "Reference:\n"
-              << referece_transform << std::endl;
+              << referece_transform.inverse() << std::endl;
     // std::cerr << "PCL:\n"
     //           << final_reg_pcl << std::endl;
     std::cerr << "Duna:\n"
@@ -127,12 +129,13 @@ TEST_F(RegistrationTestClass, Translation6DOF)
 
     pcl::transformPointCloud(*target, *source, referece_transform);
 
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -171,12 +174,13 @@ TEST_F(RegistrationTestClass, Rotation6DOF)
     pcl::transformPointCloud(*source, *source, referece_transform);
 
     // Prepare dataset
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
 
     registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
@@ -221,12 +225,13 @@ TEST_F(RegistrationTestClass, RotationPlusTranslation6DOF)
     pcl::transformPointCloud(*source, *source, referece_transform);
 
     // Prepare dataset
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
     registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(5);
@@ -267,12 +272,13 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
     pcl::copyPointCloud(*target, *source);
     pcl::transformPointCloud(*source, *source, referece_transform);
 
+    RegistrationCost<DOF3, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<3, PointXYZ, PointXYZ> *cost = new RegistrationCost<3, PointXYZ, PointXYZ>(&data);
-    Registration<3, PointXYZ, PointXYZ> *registration = new Registration<3, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF3, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF3, PointXYZ, PointXYZ>(&data);
+    Registration<DOF3, PointXYZ, PointXYZ> *registration = new Registration<DOF3, PointXYZ, PointXYZ>(cost);
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(2);
@@ -339,10 +345,15 @@ protected:
     pcl::search::KdTree<PointXYZ>::Ptr kdtree;
     pcl::search::KdTree<PointNormal>::Ptr kdtree_normals;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointNormal>::dataset_t data;
+    RegistrationCost<DOF6, PointXYZ, PointNormal>::dataset_t data;
     Eigen::MatrixX4f referece_transform;
 };
 
-TEST_F(RegistrationTestClass, SeriesofCalls3DOF)
+TEST_F(RegistrationTestClass, DISABLED_SeriesofCalls3DOF)
 {
+}
+
+TEST_F(RegistrationTestClass, DISABLED_InitialCondition)
+{
+
 }

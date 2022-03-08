@@ -6,7 +6,7 @@ GenericOptimizator<NPARAM>::GenericOptimizator(CostFunction<NPARAM> *cost) : Opt
 }
 
 template <int NPARAM>
-opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
+typename GenericOptimizator<NPARAM>::Status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 {
     if (m_cost == 0)
     {
@@ -42,8 +42,8 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
         if (lm_lambda_ < 0.0)
         {
-            // lm_lambda_ = lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
-            lm_lambda_ = lm_init_lambda_factor_;
+            lm_lambda_ = lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
+            // lm_lambda_ = lm_init_lambda_factor_;
         }
 
         // // LM Iterations
@@ -62,7 +62,7 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             // DUNA_DEBUG_STREAM("Hessian: " << hessian << std::endl);
             // DUNA_DEBUG_STREAM("b: " << b << std::endl);
 
-            Eigen::LDLT<MatrixN> solver(hessian + lm_lambda_ * hessian_diag_);
+            Eigen::LDLT<MatrixN> solver(hessian + lm_lambda_ * MatrixN::Identity());
             VectorN delta = solver.solve(b);
 
             // VectorN delta = (hessian + lm_lambda_ * hessian_diag_).inverse() * b;
@@ -76,7 +76,7 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
 
             if (testConvergence(delta) == 0)
             {
-                return opt_status::SMALL_DELTA;
+                return Status::SMALL_DELTA;
             }
 
             xi = x0 - delta;
@@ -98,7 +98,7 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             {
                 if (testConvergence(delta) == 0)
                 {
-                    return opt_status::SMALL_DELTA;
+                    return Status::SMALL_DELTA;
                 }
 
                 lm_lambda_ = nu * lm_lambda_;
@@ -107,19 +107,13 @@ opt_status GenericOptimizator<NPARAM>::minimize(VectorN &x0)
             }
 
             x0 = xi;
-            lm_lambda_ = lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff(); // lm_lambda_ * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
+            lm_lambda_ = lm_lambda_ * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
 
             break;
         }
-
-        // final_hessian_ = H;
-
-        // Test Convergence
-
-        // Post process
     }
-
-    return opt_status::MAX_IT_REACHED;
+    
+    return Status::MAX_IT_REACHED;
 }
 
 // TODO improve!!
@@ -129,7 +123,7 @@ int GenericOptimizator<NPARAM>::testConvergence(const VectorN &delta)
     double epsilon = delta.array().abs().maxCoeff();
     // DUNA_DEBUG_STREAM("epsilon: " << epsilon << "\n");
 
-    if (epsilon < 1e-5)
+    if (epsilon < 5e-6)
         return 0;
     return 1;
 }
