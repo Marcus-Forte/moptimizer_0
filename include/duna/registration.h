@@ -23,7 +23,11 @@ public:
     inline void setMaxCorrespondenceDistance(float max_dist) { m_max_corr_dist = max_dist; }
     inline void setMaxIcpIterations(unsigned int max_it) { m_icp_iterations = max_it; }
 
+
+    Status minimize(Eigen::Matrix4f &x0_matrix);
     Status minimize(VectorN &x0) override;
+    Status minimize();
+    
 
     Eigen::Matrix4f getFinalTransformation() const;
 
@@ -40,4 +44,5 @@ protected:
     Eigen::Matrix4f m_final_transform;
 
     void update_correspondences();
+    Status registration_loop();
 };

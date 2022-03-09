@@ -10,7 +10,8 @@ public:
     enum Status
     {
         MAX_IT_REACHED,
-        SMALL_DELTA
+        SMALL_DELTA,
+        ERROR
     };
 
     using VectorN = Eigen::Matrix<float, NPARAM, 1>;
