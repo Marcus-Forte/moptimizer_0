@@ -1,3 +1,4 @@
+#pragma once
 #include "duna/generic_optimizator.h"
 
 template <int NPARAM>

@@ -1,9 +1,8 @@
-#ifndef CPU_OPTIMIZATOR_HPP
-#define CPU_OPTIMIZATOR_HPP
+#pragma once
 
-#include "optimizator.h"
+#include "duna/optimizator.h"
 #include <iostream>
-#include "duna_log.h"
+#include "duna/duna_log.h"
 
 // #define USE_GAUSSNEWTON // Gauss Newton
 
@@ -27,5 +26,3 @@ public:
 protected:
     int testConvergence(const VectorN &delta) override;
 };
-
-#endif

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "duna/cost_function.hpp"
+#include "duna/duna_log.h"
 #include "duna/so3.h"
 
 #include <limits>

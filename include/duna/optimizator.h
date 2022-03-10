@@ -1,5 +1,4 @@
-#ifndef OPTIMIZATOR_HPP
-#define OPTIMIZATOR_HPP
+#pragma once
 
 #include "cost_function.hpp"
 
@@ -31,5 +30,3 @@ protected:
     CostFunction<NPARAM> *m_cost = 0;
     unsigned int m_max_it = 5;
 };
-
-#endif
