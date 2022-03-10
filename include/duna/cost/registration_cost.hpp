@@ -30,6 +30,16 @@ inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, con
     return (src - tgt).dot(tgt_normal); // TODO norm vs norm² ?
 }
 
+// Error function
+template <typename Scalar>
+inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZINormal &tgt_pt)
+{
+    Eigen::Matrix<Scalar,4,1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
+    Eigen::Matrix<Scalar,4,1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
+    Eigen::Matrix<Scalar,4,1> tgt_normal(tgt_pt.normal_x, tgt_pt.normal_y, tgt_pt.normal_z,0);
+    return (src - tgt).dot(tgt_normal); // TODO norm vs norm² ?
+}
+
 template <int NPARAM, typename PointSource, typename PointTarget>
 class RegistrationCost : public CostFunction<NPARAM>
 {

@@ -84,7 +84,7 @@ void Registration<NPARAM, PointSource, PointTarget>::update_correspondences()
         m_correspondences->push_back(correspondence);
     }
 
-    DUNA_DEBUG("source pts : %ld, corr pts: %ld\n", l_dataset->source->size(), m_correspondences->size());
+    DUNA_DEBUG("source pts : %ld, target pts : %ld, corr pts: %ld\n", l_dataset->source->size(), l_dataset->target->size(), m_correspondences->size());
 
     if (m_correspondences->size() == 0)
     {

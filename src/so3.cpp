@@ -1,5 +1,5 @@
 #include "duna/so3.h"
-#include <iostream>
+
 namespace so3
 {
     // TODO check for errors in conversion. High angles are problematic
@@ -30,7 +30,7 @@ namespace so3
         // Compute w from the unit quaternion
         Eigen::Quaternion<Scalar> q(0, x[0], x[1], x[2]);
         q.w() = static_cast<Scalar>(std::sqrt(1 - q.dot(q)));
-        std::cerr << "quat: " << q.coeffs() << std::endl;
+        
         q.normalize();
         transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
     }

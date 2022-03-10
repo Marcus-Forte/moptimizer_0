@@ -69,11 +69,13 @@ typename GenericOptimizator<NPARAM>::Status GenericOptimizator<NPARAM>::minimize
             // VectorN delta = (hessian + lm_lambda_ * hessian_diag_).inverse() * b;
 
             DUNA_DEBUG("--- Solver delta: ");
+            #ifndef NDEBUG
             for (int n = 0; n < NPARAM; ++n)
             {
                 fprintf(stderr," %f", delta[n]);
             }//
             fprintf(stderr,"\n");
+            #endif
 
             if (testConvergence(delta) == 0)
             {
