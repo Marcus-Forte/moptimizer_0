@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
 
 
-TEST(ModelTest, InitialConditions0)
+TEST(SimpleModel, InitialConditions0)
 {
 
     // INITIAL CONDITIONS
@@ -50,7 +50,7 @@ TEST(ModelTest, InitialConditions0)
     EXPECT_NEAR(x0[1], 0.556, 0.05);
 }
 
-TEST(ModelTest, InitialConditions1)
+TEST(SimpleModel, InitialConditions1)
 {  
     // INITIAL CONDITIONS
     x0[0] = 0.1;
@@ -61,7 +61,7 @@ TEST(ModelTest, InitialConditions1)
     EXPECT_NEAR(x0[1], 0.556, 0.05);
 }
 
-TEST(ModelTest, InitialConditions2)
+TEST(SimpleModel, InitialConditions2)
 {
     
     // INITIAL CONDITIONS
@@ -73,7 +73,7 @@ TEST(ModelTest, InitialConditions2)
     EXPECT_NEAR(x0[1], 0.556, 0.05);
 }
 
-TEST(ModelTest, InitialConditions3)
+TEST(SimpleModel, InitialConditions3)
 {
 
     // INITIAL CONDITIONS

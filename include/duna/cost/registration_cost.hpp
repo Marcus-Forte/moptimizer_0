@@ -1,6 +1,7 @@
 #pragma once
 
 #include "duna/cost_function.hpp"
+#include "duna/duna_log.h"
 #include "duna/so3.h"
 
 #include <limits>
@@ -12,20 +13,30 @@
 
 // Error function
 template <typename Scalar, typename PointTarget>
-inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const PointTarget &tgt_pt)
+inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const PointTarget &tgt_pt)
 {
-    Eigen::Vector4f tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
-    Eigen::Vector4f src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
+    Eigen::Matrix<Scalar,4,1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
+    Eigen::Matrix<Scalar,4,1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
     return (src - tgt).norm(); // TODO norm vs norm² ?
 }
 
 // Error function
 template <typename Scalar>
-inline double computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointNormal &tgt_pt)
+inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointNormal &tgt_pt)
 {
-    Eigen::Vector4f tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
-    Eigen::Vector4f src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
-    Eigen::Vector4f tgt_normal(tgt_pt.normal_x, tgt_pt.normal_y, tgt_pt.normal_z,0);
+    Eigen::Matrix<Scalar,4,1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
+    Eigen::Matrix<Scalar,4,1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
+    Eigen::Matrix<Scalar,4,1> tgt_normal(tgt_pt.normal_x, tgt_pt.normal_y, tgt_pt.normal_z,0);
+    return (src - tgt).dot(tgt_normal); // TODO norm vs norm² ?
+}
+
+// Error function
+template <typename Scalar>
+inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZINormal &tgt_pt)
+{
+    Eigen::Matrix<Scalar,4,1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
+    Eigen::Matrix<Scalar,4,1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
+    Eigen::Matrix<Scalar,4,1> tgt_normal(tgt_pt.normal_x, tgt_pt.normal_y, tgt_pt.normal_z,0);
     return (src - tgt).dot(tgt_normal); // TODO norm vs norm² ?
 }
 
@@ -64,7 +75,7 @@ public:
         // TODO check KDTREE
     }
 
-    // TODO check numerical stability
+  
     virtual ~RegistrationCost() = default;
 
     // TODO implement
@@ -119,9 +130,8 @@ public:
 
         so3::param2Matrix(x, transform);
 
-        // TODO we're having all kinds of numeric errors here :(. Usually we want smallest possible without breaking
-        // const float epsilon = std::numeric_limits<float>::epsilon();
-        const float epsilon = 8 * (std::numeric_limits<float>::epsilon());
+        // TODO we're having all kinds of numeric errors here :(. Usually we want smallest possible without breaking numeric stability.
+        const float epsilon = 12 * (std::numeric_limits<float>::epsilon());
         float h = epsilon;
         for (int j = 0; j < NPARAM; ++j)
         {

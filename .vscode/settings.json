@@ -67,7 +67,8 @@
         "numericaldiff": "cpp",
         "*.ipp": "cpp",
         "polynomials": "cpp",
-        "*.txx": "cpp"
+        "*.txx": "cpp",
+        "nonlinearoptimization": "cpp"
     },
 
     "todohighlight.include": [
