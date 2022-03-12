@@ -5,19 +5,18 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
-                sh 'cd build'
-                sh 'cmake ..'
-                sh 'make'
+                dir('build') {
+                    sh 'cmake ..'
+                    sh 'make'
+                }
             }
         }
         stage('Test') {
             steps {
                 echo 'Testing..'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying....'
+                dir('build') {
+                    sh 'ctest'
+                }
             }
         }
     }
