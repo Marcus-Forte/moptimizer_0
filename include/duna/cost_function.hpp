@@ -1,5 +1,4 @@
-#ifndef COST_FUNCTION_HPP
-#define COST_FUNCTION_HPP
+#pragma once
 
 #include <Eigen/Dense>
 
@@ -40,5 +39,3 @@ public:
 
  
 };
-
-#endif

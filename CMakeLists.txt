@@ -59,6 +59,8 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
 )
 
+
+# TODO how to make sure client code will access header correctly?
 install(DIRECTORY include/
         DESTINATION include
         FILES_MATCHING

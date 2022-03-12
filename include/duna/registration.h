@@ -1,6 +1,6 @@
 #pragma once
 
-#include "generic_optimizator.h"
+#include "duna/generic_optimizator.h"
 #include "duna/cost/registration_cost.hpp" // for dataset type
 
 #include <pcl/search/kdtree.h>
@@ -11,6 +11,7 @@ template <int NPARAM,typename PointSource, typename PointTarget>
 class Registration : public GenericOptimizator<NPARAM>
 {
 public:
+    using Status = typename Optimizator<NPARAM>::Status;
     using VectorN = typename GenericOptimizator<NPARAM>::VectorN;
     using DatasetType = typename RegistrationCost<NPARAM,PointSource,PointTarget>::dataset_t;
     using Optimizator<NPARAM>::m_cost;
@@ -22,7 +23,11 @@ public:
     inline void setMaxCorrespondenceDistance(float max_dist) { m_max_corr_dist = max_dist; }
     inline void setMaxIcpIterations(unsigned int max_it) { m_icp_iterations = max_it; }
 
-    opt_status minimize(VectorN &x0) override;
+
+    Status minimize(Eigen::Matrix4f &x0_matrix);
+    Status minimize(VectorN &x0) override;
+    Status minimize();
+    
 
     Eigen::Matrix4f getFinalTransformation() const;
 
@@ -39,4 +44,5 @@ protected:
     Eigen::Matrix4f m_final_transform;
 
     void update_correspondences();
+    Status registration_loop();
 };

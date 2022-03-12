@@ -14,7 +14,8 @@
 #define TEST_DATA_DIR "./"
 #endif
 
-#define MODEL_PARAM 6
+#define DOF6 6
+#define DOF3 3
 #define MAXIT 50
 #define MAXCORRDIST 2.0
 // Optimization objects
@@ -37,7 +38,7 @@ using PointNormal = pcl::PointNormal;
 using PointCloudT = pcl::PointCloud<PointXYZ>;
 using PointCloudNT = pcl::PointCloud<PointNormal>;
 
-using VectorN = CostFunction<MODEL_PARAM>::VectorN;
+using VectorN = CostFunction<DOF6>::VectorN;
 using Vector3N = Eigen::Matrix<float, 3, 1>;
 
 class RegistrationTestClass : public testing::Test
@@ -63,7 +64,7 @@ protected:
     PointCloudT::Ptr source;
     PointCloudT::Ptr target;
     pcl::search::KdTree<PointXYZ>::Ptr kdtree;
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>::dataset_t data;
+
     Eigen::MatrixX4f referece_transform;
 };
 
@@ -89,25 +90,25 @@ TEST_F(RegistrationTestClass, Translation6DOFSimple)
     pcl::copyPointCloud(*target, *source);
     pcl::transformPointCloud(*source, *source, referece_transform);
 
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
 
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(20);
 
-    VectorN x0;
-    x0.setZero();
-    registration->minimize(x0);
+
+    registration->minimize();
 
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
     std::cerr << "Reference:\n"
-              << referece_transform << std::endl;
+              << referece_transform.inverse() << std::endl;
     // std::cerr << "PCL:\n"
     //           << final_reg_pcl << std::endl;
     std::cerr << "Duna:\n"
@@ -123,23 +124,23 @@ TEST_F(RegistrationTestClass, Translation6DOF)
 {
 
     // Translation
-    referece_transform.col(3) = Eigen::Vector4f(-0.5, 0.2, 0., 1);
+    referece_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1);
 
     pcl::transformPointCloud(*target, *source, referece_transform);
 
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
-    VectorN x0;
-    x0.setZero();
-    registration->minimize(x0);
+
+    registration->minimize();
 
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
@@ -171,23 +172,23 @@ TEST_F(RegistrationTestClass, Rotation6DOF)
     pcl::transformPointCloud(*source, *source, referece_transform);
 
     // Prepare dataset
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
 
     registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(2);
 
-    VectorN x0;
-    x0.setZero();
+
 
     try
     {
-        registration->minimize(x0);
+        registration->minimize();
     }
     catch (std::runtime_error &er)
     {
@@ -221,26 +222,20 @@ TEST_F(RegistrationTestClass, RotationPlusTranslation6DOF)
     pcl::transformPointCloud(*source, *source, referece_transform);
 
     // Prepare dataset
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ> *cost = new RegistrationCost<MODEL_PARAM, PointXYZ, PointXYZ>(&data);
-    Registration<MODEL_PARAM, PointXYZ, PointXYZ> *registration = new Registration<MODEL_PARAM, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
     registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(5);
 
-    VectorN x0;
-    x0.setZero();
 
-    try
-    {
-        registration->minimize(x0);
-    }
-    catch (std::runtime_error &er)
-    {
-    }
+    registration->minimize();
+
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
     std::cerr << "Reference (inverse):\n"
@@ -267,22 +262,21 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
     pcl::copyPointCloud(*target, *source);
     pcl::transformPointCloud(*source, *source, referece_transform);
 
+    RegistrationCost<DOF3, PointXYZ, PointXYZ>::dataset_t data;
     data.source = source;
     data.target = target;
     data.tgt_kdtree = kdtree;
 
-    RegistrationCost<3, PointXYZ, PointXYZ> *cost = new RegistrationCost<3, PointXYZ, PointXYZ>(&data);
-    Registration<3, PointXYZ, PointXYZ> *registration = new Registration<3, PointXYZ, PointXYZ>(cost);
+    RegistrationCost<DOF3, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF3, PointXYZ, PointXYZ>(&data);
+    Registration<DOF3, PointXYZ, PointXYZ> *registration = new Registration<DOF3, PointXYZ, PointXYZ>(cost);
     // registration->setMaxOptimizationIterations(3);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(2);
 
-    Vector3N x0;
-    x0.setZero();
 
     try
     {
-        registration->minimize(x0);
+        registration->minimize();
     }
     catch (std::runtime_error &er)
     {
@@ -300,49 +294,93 @@ TEST_F(RegistrationTestClass, Rotation3DOF)
     }
 }
 
-class RegistrationTestClassPoint2Plane : public testing::Test
+TEST_F(RegistrationTestClass, Tough6DOF)
 {
-public:
-    RegistrationTestClassPoint2Plane()
+
+    Eigen::Matrix3f rot;
+    rot = Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitX()) *
+          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitZ());
+
+    referece_transform.topLeftCorner(3, 3) = rot;
+    referece_transform.col(3) = Eigen::Vector4f(-0.9, -0.5, 0.5, 1);
+
+    pcl::copyPointCloud(*target, *source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
+
+    // Prepare dataset
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
+    data.source = source;
+    data.target = target;
+    data.tgt_kdtree = kdtree;
+
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
+    registration->setMaxOptimizationIterations(3);
+    registration->setMaxIcpIterations(MAXIT);
+    registration->setMaxCorrespondenceDistance(5);
+
+    registration->minimize();
+
+    Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
+
+    std::cerr << "Reference (inverse):\n"
+              << referece_transform.inverse() << std::endl;
+    std::cerr << "Duna:\n"
+              << final_reg_duna << std::endl;
+
+    for (int i = 0; i < 16; i++)
     {
-        source.reset(new PointCloudT);
-        target.reset(new PointCloudT);
-        target_normals.reset(new PointCloudNT);
-        if (pcl::io::loadPCDFile(TEST_DATA_DIR, *target) != 0)
-        {
-            std::cerr << "Make sure you run the rest at the binaries folder.\n";
-        }
-
-        pcl::copyPointCloud(*target, *target_normals);
-
-        pcl::NormalEstimation<PointXYZ, PointNormal> ne;
-        ne.setInputCloud(target);
-        ne.setKSearch(5);
-        ne.compute(*target_normals);
-
-        referece_transform = Eigen::Matrix4f::Identity();
-        kdtree.reset(new pcl::search::KdTree<PointXYZ>);
-        kdtree->setInputCloud(target);
-
-        kdtree_normals.reset(new pcl::search::KdTree<PointNormal>);
-        kdtree_normals->setInputCloud(target_normals);
-
-        
+        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
     }
 
-    virtual ~RegistrationTestClassPoint2Plane() {}
+}
 
-protected:
-    PointCloudT::Ptr source;
-    PointCloudT::Ptr target;
-    PointCloudNT::Ptr target_normals;
-    pcl::search::KdTree<PointXYZ>::Ptr kdtree;
-    pcl::search::KdTree<PointNormal>::Ptr kdtree_normals;
 
-    RegistrationCost<MODEL_PARAM, PointXYZ, PointNormal>::dataset_t data;
-    Eigen::MatrixX4f referece_transform;
-};
-
-TEST_F(RegistrationTestClass, SeriesofCalls3DOF)
+TEST_F(RegistrationTestClass, Guess6DOF)
 {
+
+    Eigen::Matrix3f rot;
+    rot = Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitX()) *
+          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitZ());
+
+    referece_transform.topLeftCorner(3, 3) = rot;
+    referece_transform.col(3) = Eigen::Vector4f(-15.9, -35.5, 12.9, 1);
+
+    pcl::copyPointCloud(*target, *source);
+    pcl::transformPointCloud(*source, *source, referece_transform);
+
+    // Prepare dataset
+    RegistrationCost<DOF6, PointXYZ, PointXYZ>::dataset_t data;
+    data.source = source;
+    data.target = target;
+    data.tgt_kdtree = kdtree;
+
+    RegistrationCost<DOF6, PointXYZ, PointXYZ> *cost = new RegistrationCost<DOF6, PointXYZ, PointXYZ>(&data);
+    Registration<DOF6, PointXYZ, PointXYZ> *registration = new Registration<DOF6, PointXYZ, PointXYZ>(cost);
+    registration->setMaxOptimizationIterations(3);
+    registration->setMaxIcpIterations(MAXIT);
+    registration->setMaxCorrespondenceDistance(10);
+
+    Eigen::Matrix4f guess = referece_transform.inverse();
+
+    // Apply a small transform to move guess a bit further from reference
+    guess(0,3) += 0.5;
+    guess(1,3) += 0.2;
+    guess(2,3) += 0.1;
+    registration->minimize(guess);
+
+    Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
+
+    std::cerr << "Reference (inverse):\n"
+              << referece_transform.inverse() << std::endl;
+    std::cerr << "Duna:\n"
+              << final_reg_duna << std::endl;
+
+    for (int i = 0; i < 16; i++)
+    {
+        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+    }
+
 }
