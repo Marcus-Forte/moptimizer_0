@@ -71,7 +71,7 @@ void Registration<NPARAM, PointSource, PointTarget>::update_correspondences()
 
         const PointSource &pt_warped = m_source_transformed->points[i];
 
-        l_dataset->tgt_kdtree->nearestKSearchT(pt_warped, m_k_neighboors, indices, k_distances);
+        l_dataset->tgt_search_method->nearestKSearchT(pt_warped, m_k_neighboors, indices, k_distances);
 
         if (k_distances[0] > m_max_corr_dist * m_max_corr_dist)
             continue;

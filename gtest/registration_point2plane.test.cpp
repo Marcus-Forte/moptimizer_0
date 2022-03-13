@@ -63,7 +63,7 @@ public:
         ne.setKSearch(5);
         ne.compute(*target_normals);
 
-        referece_transform = Eigen::Matrix4f::Identity();
+        reference_transform = Eigen::Matrix4f::Identity();
         kdtree.reset(new pcl::search::KdTree<PointXYZ>);
         kdtree->setInputCloud(target);
 
@@ -80,20 +80,20 @@ protected:
     pcl::search::KdTree<PointXYZ>::Ptr kdtree;
     pcl::search::KdTree<PointNormal>::Ptr kdtree_normals;
 
-    Eigen::Matrix4f referece_transform;
+    Eigen::Matrix4f reference_transform;
 };
 
 TEST_F(RegistrationTestClassPoint2Plane, Translation6DOF)
 {
     // Translation
-    referece_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1); // Much faster than point 2 point
+    reference_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1); // Much faster than point 2 point
 
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    pcl::transformPointCloud(*target, *source, reference_transform);
 
     RegistrationCost<DOF6, PointXYZ, PointNormal>::dataset_t data;
     data.source = source;
     data.target = target_normals;
-    data.tgt_kdtree = kdtree_normals;
+    data.tgt_search_method = kdtree_normals;
 
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF6, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF6, PointXYZ, PointNormal>(&data);
@@ -127,7 +127,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Translation6DOF)
     icp.align(aligned);
 
     std::cerr << "Reference:\n"
-              << referece_transform.inverse() << std::endl;
+              << reference_transform.inverse() << std::endl;
     std::cerr << "PCL:\n"
               << icp.getFinalTransformation() << std::endl;
     std::cerr << "Duna:\n"
@@ -135,7 +135,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Translation6DOF)
 
     for (int i = 0; i < 16; i++)
     {
-        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+        EXPECT_NEAR(reference_transform.inverse()(i), final_reg_duna(i), 0.01);
     }
 }
 
@@ -152,15 +152,15 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation6DOF)
           Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitZ());
 
-    referece_transform.topLeftCorner(3, 3) = rot;
+    reference_transform.topLeftCorner(3, 3) = rot;
 
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    pcl::transformPointCloud(*target, *source, reference_transform);
 
     // Prepare dataset
     RegistrationCost<DOF6, PointXYZ, PointNormal>::dataset_t data;
     data.source = source;
     data.target = target_normals;
-    data.tgt_kdtree = kdtree_normals;
+    data.tgt_search_method = kdtree_normals;
 
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF6, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF6, PointXYZ, PointNormal>(&data);
@@ -194,7 +194,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation6DOF)
     icp.align(aligned);
 
     std::cerr << "Reference:\n"
-              << referece_transform.inverse() << std::endl;
+              << reference_transform.inverse() << std::endl;
     std::cerr << "PCL:\n"
               << icp.getFinalTransformation() << std::endl;
     std::cerr << "Duna:\n"
@@ -202,7 +202,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation6DOF)
 
     for (int i = 0; i < 16; i++)
     {
-        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+        EXPECT_NEAR(reference_transform.inverse()(i), final_reg_duna(i), 0.01);
     }
 }
 
@@ -213,15 +213,15 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
           Eigen::AngleAxisf(-0.9, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitZ());
 
-    referece_transform.topLeftCorner(3, 3) = rot;
+    reference_transform.topLeftCorner(3, 3) = rot;
 
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    pcl::transformPointCloud(*target, *source, reference_transform);
 
     // Prepare dataset
     RegistrationCost<DOF3, PointXYZ, PointNormal>::dataset_t data;
     data.source = source;
     data.target = target_normals;
-    data.tgt_kdtree = kdtree_normals;
+    data.tgt_search_method = kdtree_normals;
 
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
@@ -253,7 +253,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
     icp.align(aligned);
 
     std::cerr << "Reference:\n"
-              << referece_transform.inverse() << std::endl;
+              << reference_transform.inverse() << std::endl;
     std::cerr << "PCL 6DOF:\n"
               << icp.getFinalTransformation() << std::endl;
     std::cerr << "Duna 3DOF:\n"
@@ -261,7 +261,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
 
     for (int i = 0; i < 16; i++)
     {
-        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+        EXPECT_NEAR(reference_transform.inverse()(i), final_reg_duna(i), 0.01);
     }
 }
 
@@ -273,14 +273,14 @@ TEST_F(RegistrationTestClassPoint2Plane, RefEqualsGuess)
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitZ());
 
-    referece_transform.topLeftCorner(3, 3) = rot;
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    reference_transform.topLeftCorner(3, 3) = rot;
+    pcl::transformPointCloud(*target, *source, reference_transform);
 
     // Prepare dataset
     RegistrationCost<DOF3, PointXYZ, PointNormal>::dataset_t data;
     data.source = source;
     data.target = target_normals;
-    data.tgt_kdtree = kdtree_normals;
+    data.tgt_search_method = kdtree_normals;
 
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
@@ -292,18 +292,18 @@ TEST_F(RegistrationTestClassPoint2Plane, RefEqualsGuess)
 
     // Our guess 
     // Vector3N x0(0.7,0.7,0.7);
-    Eigen::Matrix4f reference_inverse = referece_transform.inverse();
+    Eigen::Matrix4f reference_inverse = reference_transform.inverse();
     registration->minimize(reference_inverse);
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
     std::cerr << "Reference:\n"
-              << referece_transform.inverse() << std::endl;
+              << reference_transform.inverse() << std::endl;
     std::cerr << "Duna 3DOF:\n"
               << final_reg_duna << std::endl;
 
     for (int i = 0; i < 16; i++)
     {
-        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+        EXPECT_NEAR(reference_transform.inverse()(i), final_reg_duna(i), 0.01);
     }
 }
 
@@ -315,14 +315,14 @@ TEST_F(RegistrationTestClassPoint2Plane, Guess3DOF)
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitZ());
 
-    referece_transform.topLeftCorner(3, 3) = rot;
-    pcl::transformPointCloud(*target, *source, referece_transform);
+    reference_transform.topLeftCorner(3, 3) = rot;
+    pcl::transformPointCloud(*target, *source, reference_transform);
 
     // Prepare dataset
     RegistrationCost<DOF3, PointXYZ, PointNormal>::dataset_t data;
     data.source = source;
     data.target = target_normals;
-    data.tgt_kdtree = kdtree_normals;
+    data.tgt_search_method = kdtree_normals;
 
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
@@ -338,13 +338,13 @@ TEST_F(RegistrationTestClassPoint2Plane, Guess3DOF)
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
     std::cerr << "Reference:\n"
-              << referece_transform.inverse() << std::endl;
+              << reference_transform.inverse() << std::endl;
     std::cerr << "Duna 3DOF:\n"
               << final_reg_duna << std::endl;
 
     for (int i = 0; i < 16; i++)
     {
-        EXPECT_NEAR(referece_transform.inverse()(i), final_reg_duna(i), 0.01);
+        EXPECT_NEAR(reference_transform.inverse()(i), final_reg_duna(i), 0.01);
     }
 }
 
@@ -355,7 +355,7 @@ TEST_F(RegistrationTestClassPoint2Plane, DISABLED_SeriesOfCalls3DOF)
     RegistrationCost<DOF3, PointXYZ, PointNormal>::dataset_t data;
     data.source = source;
     data.target = target_normals;
-    data.tgt_kdtree = kdtree_normals;
+    data.tgt_search_method = kdtree_normals;
 
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);

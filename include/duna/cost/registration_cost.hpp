@@ -48,7 +48,7 @@ public:
     {
         typename pcl::PointCloud<PointSource>::ConstPtr source;
         typename pcl::PointCloud<PointTarget>::ConstPtr target;
-        typename pcl::search::KdTree<PointTarget>::ConstPtr tgt_kdtree;
+        typename pcl::search::Search<PointTarget>::ConstPtr tgt_search_method;
     };
 
     using VectorN = typename CostFunction<NPARAM>::VectorN;
@@ -65,7 +65,7 @@ public:
     {
         l_dataset = reinterpret_cast<dataset_t *>(m_dataset);
 
-        if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_kdtree == nullptr)
+        if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_search_method == nullptr)
         {
             throw std::runtime_error("Invalid dataset. Check if dataset pointers are allocated.\n");
         }
