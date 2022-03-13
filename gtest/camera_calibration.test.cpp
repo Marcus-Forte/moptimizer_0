@@ -7,6 +7,8 @@
 #define MODEL_PARAMS 6
 #define FLOAT_TOL 0.0025
 
+using namespace duna;
+
 using VectorN = GenericOptimizator<MODEL_PARAMS>::VectorN;
 using PointT = pcl::PointXYZ;
 

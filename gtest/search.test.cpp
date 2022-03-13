@@ -4,9 +4,13 @@
 #include <gtest/gtest.h>
 
 #include "duna/registration.h"
-
+using namespace duna;
 using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;
+
+
+
+
 
 int main(int argc, char **argv)
 {

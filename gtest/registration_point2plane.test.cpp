@@ -10,7 +10,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/registration/transformation_estimation_point_to_plane.h>
 #include <pcl/registration/transformation_estimation_point_to_plane_lls.h>
-
+using namespace duna;
 #ifndef TEST_DATA_DIR
 #warning "NO 'TEST_DATA_DIR' DEFINED"
 #define TEST_DATA_DIR "./"

@@ -1,6 +1,6 @@
 #include <duna/impl/registration.hpp>
 
-
+using namespace duna;
 
 template class Registration<6,pcl::PointXYZ,pcl::PointXYZ>;
 template class Registration<6,pcl::PointXYZ,pcl::PointNormal>;

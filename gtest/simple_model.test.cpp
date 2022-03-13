@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+using namespace duna;
+
 using VectorN = GenericOptimizator<2>::VectorN;
 
 //     model: y(x) = b0*x / (b1 + x)

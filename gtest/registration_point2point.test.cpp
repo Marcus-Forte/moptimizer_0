@@ -6,7 +6,7 @@
 #include <pcl/common/transforms.h>
 #include <gtest/gtest.h>
 #include <pcl/features/normal_3d.h>
-
+using namespace duna;
 // #include <pcl/registration/icp.h>
 // #include <pcl/registration/transformation_estimation_lm.h>
 #ifndef TEST_DATA_DIR
