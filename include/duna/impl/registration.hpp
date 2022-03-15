@@ -71,6 +71,7 @@ namespace duna
         std::vector<float> k_distances(m_k_neighboors);
 
         // compute correspondences
+        float max_corr_dist_sqr = m_max_corr_dist*m_max_corr_dist;
         for (int i = 0; i < m_source_transformed->size(); ++i)
         {
 
@@ -78,7 +79,7 @@ namespace duna
 
             l_dataset->tgt_search_method->nearestKSearchT(pt_warped, m_k_neighboors, indices, k_distances);
 
-            if (k_distances[0] > m_max_corr_dist * m_max_corr_dist)
+            if (k_distances[0] > max_corr_dist_sqr)
                 continue;
 
             // Assume normals are computed

@@ -19,6 +19,13 @@ pipeline {
                 }
             }
         }
+        stage ('Profile') {
+            steps {
+                dir('build') {
+                    sh 'valgrind --tool=callgrind bin/slam '
+                }
+            }
+        }
     }
 }
 
