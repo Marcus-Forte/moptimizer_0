@@ -66,13 +66,13 @@ namespace duna
         {
             l_dataset = reinterpret_cast<dataset_t *>(m_dataset);
 
-            if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_search_method == nullptr)
-            {
-                throw std::runtime_error("Invalid dataset. Check if dataset pointers are allocated.\n");
-            }
+            // if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_search_method == nullptr)
+            // {
+            //     throw std::runtime_error("Invalid dataset. Check if dataset pointers are allocated.\n");
+            // }
 
-            // Checkdataset
-            DUNA_DEBUG("source pts : %ld, tgt pts: %ld\n", l_dataset->source->size(), l_dataset->target->size());
+            // // Checkdataset
+            // DUNA_DEBUG("source pts : %ld, tgt pts: %ld\n", l_dataset->source->size(), l_dataset->target->size());
             // TODO check Search
         }
 
@@ -83,6 +83,7 @@ namespace duna
         {
         }
 
+        // TODO should not be public
         inline void setTransformedSourcePtr(PointCloudSourceConstPtr transformed_src)
         {
             m_transformed_source = transformed_src;

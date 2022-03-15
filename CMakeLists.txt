@@ -27,8 +27,8 @@ target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 
 
-get_filename_component(bunny_path gtest/data/bunny.pcd REALPATH)
-add_definitions(-DTEST_DATA_DIR="${bunny_path}")
+get_filename_component(DATASET_PATH gtest/data/ REALPATH)
+add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
 
 #gtest
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

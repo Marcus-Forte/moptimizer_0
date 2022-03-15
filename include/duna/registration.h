@@ -1,9 +1,8 @@
 #pragma once
 
 #include "duna/generic_optimizator.h"
-#include "duna/cost/registration_cost.hpp" // for dataset type
+#include "duna/cost/registration_cost.hpp" // TODO can we decouple ?
 
-#include <pcl/search/kdtree.h>
 #include <pcl/correspondence.h>
 #include <pcl/common/transforms.h>
 

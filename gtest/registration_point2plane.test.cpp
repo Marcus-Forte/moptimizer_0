@@ -51,7 +51,7 @@ public:
         source.reset(new PointCloudT);
         target.reset(new PointCloudT);
         target_normals.reset(new PointCloudNT);
-        if (pcl::io::loadPCDFile(TEST_DATA_DIR, *target) != 0)
+        if (pcl::io::loadPCDFile(TEST_DATA_DIR "/bunny.pcd", *target) != 0)
         {
             std::cerr << "Make sure you run the rest at the binaries folder.\n";
         }

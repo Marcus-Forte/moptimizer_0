@@ -37,14 +37,18 @@ namespace duna
     OptimizationStatus Registration<NPARAM, PointSource, PointTarget>::minimize(Eigen::Matrix4f &x0_matrix)
     {
 
+        if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_search_method == nullptr)
+        {
+            throw std::runtime_error("Invalid dataset. Check if dataset pointers are allocated.\n");
+        }
+
         m_final_transform = x0_matrix;
         OptimizationStatus status = registration_loop();
         return status;
     }
 
-    // TODO i dont like a return type that is tottaly NOT parametrized (simple ENUM) to have TYPENAME just to return it...
     template <int NPARAM, class PointSource, typename PointTarget>
-     OptimizationStatus Registration<NPARAM, PointSource, PointTarget>::minimize(VectorN &x0)
+    OptimizationStatus Registration<NPARAM, PointSource, PointTarget>::minimize(VectorN &x0)
     {
         so3::param2Matrix<float>(x0, m_final_transform);
         OptimizationStatus status = registration_loop();
