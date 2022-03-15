@@ -27,7 +27,7 @@ pipeline {
         stage ('Profile') {
             steps {
                 dir('build') {
-                    sh 'valgrind --tool=callgrind bin/slam '
+                    sh 'valgrind --tool=callgrind --callgrind-out-file=callgrind.out bin/slam '
                 }
             }
         }
