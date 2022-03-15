@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     stages {
-        stage ('Dependencies') {
+       // stage ('Dependencies') {
       //      steps {
                // sh 'sudo apt install -y libeigen3-dev libpcl-dev libgtest-dev'
         //    }
-        }
+     //   }
         stage('Build') {
             steps {
                 sh 'mkdir -p build'
