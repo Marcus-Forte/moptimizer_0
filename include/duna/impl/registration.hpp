@@ -14,7 +14,7 @@ namespace duna
         l_cost->setCorrespondencesPtr(m_correspondences);
         l_cost->setTransformedSourcePtr(m_source_transformed);
         l_dataset = reinterpret_cast<DatasetType *>(cost->getDataset());
-        m_final_transform = Eigen::Matrix4f::Identity(); // TODO move away ?
+        // m_final_transform = Eigen::Matrix4f::Identity(); // TODO move away ?
         // By Default, we want to set the internal optimization loop to a single iteration to allow ICP to transform source more often.
         Optimizator<NPARAM>::setMaxOptimizationIterations(1);
     }
@@ -71,7 +71,7 @@ namespace duna
         std::vector<float> k_distances(m_k_neighboors);
 
         // compute correspondences
-        float max_corr_dist_sqr = m_max_corr_dist*m_max_corr_dist;
+        float max_corr_dist_sqr = m_damping_dists * (m_max_corr_dist * m_max_corr_dist);
         for (int i = 0; i < m_source_transformed->size(); ++i)
         {
 
@@ -91,6 +91,9 @@ namespace duna
         }
 
         DUNA_DEBUG("source pts : %ld, target pts : %ld, corr pts: %ld\n", l_dataset->source->size(), l_dataset->target->size(), m_correspondences->size());
+        DUNA_DEBUG("damping corrs: %f", m_damping_dists);
+
+        m_damping_dists = m_damping_factor * m_damping_dists;
 
         if (m_correspondences->size() == 0)
         {
@@ -105,6 +108,8 @@ namespace duna
         pcl::transformPointCloud(*l_dataset->source, *m_source_transformed, m_final_transform);
         // Perform optimization @ every ICP iteration
         VectorN x0_reg;
+
+        m_damping_dists = 1;
         for (int i = 0; i < m_icp_iterations; ++i)
         {
             DUNA_DEBUG_STREAM("## ICP Iteration: " << i + 1 << "/" << m_icp_iterations << " ##\n");

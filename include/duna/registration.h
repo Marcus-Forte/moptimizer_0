@@ -22,6 +22,7 @@ namespace duna
 
         inline void setMaxCorrespondenceDistance(float max_dist) { m_max_corr_dist = max_dist; }
         inline void setMaxIcpIterations(unsigned int max_it) { m_icp_iterations = max_it; }
+        inline void setCorrespondenceDistanceDamping(float damp) { m_damping_factor = damp;}
 
         OptimizationStatus minimize(Eigen::Matrix4f &x0_matrix);
         OptimizationStatus minimize(VectorN &x0) override;
@@ -34,6 +35,10 @@ namespace duna
         unsigned int m_icp_iterations = 20;
         float m_max_corr_dist = 1.0;
         unsigned int m_k_neighboors = 1;
+
+        // Dists damping
+        float m_damping_factor = 0.98;
+        float m_damping_dists = 1;
 
         // data
         DatasetType *l_dataset;
