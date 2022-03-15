@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage ('Dependencies') {
             steps {
-                sh 'sudo apt install -y libeigen3-dev libpcl-dev libgtest-dev'
+               // sh 'sudo apt install -y libeigen3-dev libpcl-dev libgtest-dev'
             }
         }
         stage('Build') {
