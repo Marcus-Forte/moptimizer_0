@@ -81,7 +81,7 @@ namespace duna
             if (k_distances[0] > m_max_corr_dist * m_max_corr_dist)
                 continue;
 
-            // Compute normal
+            // Assume normals are computed
 
             pcl::Correspondence correspondence;
             correspondence.index_match = indices[0];

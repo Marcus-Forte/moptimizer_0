@@ -348,27 +348,4 @@ TEST_F(RegistrationTestClassPoint2Plane, Guess3DOF)
     }
 }
 
-// Extremmely useful for SLAM
-TEST_F(RegistrationTestClassPoint2Plane, DISABLED_SeriesOfCalls3DOF)
-{
-
-    RegistrationCost<DOF3, PointXYZ, PointNormal>::dataset_t data;
-    data.source = source;
-    data.target = target_normals;
-    data.tgt_search_method = kdtree_normals;
-
-    RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
-    Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
-
-    for(int i=0; i < 10; ++ i)
-    {
-
-
-
-    }
-
-   
-}
-
-
 
