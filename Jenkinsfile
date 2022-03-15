@@ -28,6 +28,7 @@ pipeline {
             steps {
                 dir('build') {
                     sh 'valgrind --tool=callgrind --callgrind-out-file=callgrind.out bin/slam '
+                    sh 'cat callgrind.out '
                 }
             }
         }
