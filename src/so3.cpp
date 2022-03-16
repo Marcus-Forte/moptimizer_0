@@ -56,15 +56,15 @@ namespace so3
 
     // Instantiation
     
-    template void so3::param2Matrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    template void so3::param2Matrix<float>(const Eigen::Matrix<float, 6, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+    template void param2Matrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void param2Matrix<float>(const Eigen::Matrix<float, 6, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
     // 3DOF
-    template void so3::param2Matrix<double>(const Eigen::Matrix<double, 3, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    template void so3::param2Matrix<float>(const Eigen::Matrix<float, 3, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+    template void param2Matrix<double>(const Eigen::Matrix<double, 3, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void param2Matrix<float>(const Eigen::Matrix<float, 3, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-    template void so3::matrix2Param<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
-    template void so3::matrix2Param<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 6, 1> &x);
+    template void matrix2Param<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
+    template void matrix2Param<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 6, 1> &x);
 
 }
 

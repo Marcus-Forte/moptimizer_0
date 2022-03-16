@@ -4,7 +4,7 @@ project(duna_optimizator VERSION 0.1 LANGUAGES CXX)
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.10 REQUIRED COMPONENTS io common search registration)
-
+find_package(GTest REQUIRED)
 link_libraries(Eigen3::Eigen)
 include_directories(include src)
 
