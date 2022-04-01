@@ -51,7 +51,7 @@ TEST_F(SearchTest, UsingOctreeBase)
 
 
     
-    pcl::search::Octree<PointT>::Ptr octree_search = pcl::make_shared<pcl::search::Octree<PointT>>(0.1);
+    pcl::search::Octree<PointT>::Ptr octree_search(new pcl::search::Octree<PointT>(0.1));
     octree_search->tree_->setInputCloud(target);
     octree_search->tree_->addPointsFromInputCloud();
     octree_search->tree_->deleteTree();
@@ -89,7 +89,7 @@ TEST_F(SearchTest, UsingKdreeBase)
     reference_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1);    
     pcl::transformPointCloud(*target, *source, reference_transform);
     
-    pcl::search::KdTree<PointT>::Ptr kdtree_search = pcl::make_shared<pcl::search::KdTree<PointT>>();
+    pcl::search::KdTree<PointT>::Ptr kdtree_search(new pcl::search::KdTree<PointT>);
     kdtree_search->setInputCloud(target);
 
     pcl::search::Search<PointT>::Ptr search_method(kdtree_search);

@@ -86,8 +86,8 @@ public:
     SlamTest()
     {
         // Load Map dataset
-        m_scanmatch_map = pcl::make_shared<PointCloudT>();
-        m_reference_map = pcl::make_shared<PointCloudT>();
+        m_scanmatch_map.reset(new PointCloudT);
+        m_reference_map.reset(new PointCloudT);
         load_reference_map(m_reference_map);
         load_map(m_scanmatch_map);
         load_scans(scans);
@@ -109,8 +109,8 @@ TEST_F(SlamTest, SeriesOfScanMatches)
     pcl::search::Search<PointT>::Ptr registration_seach;
 
     // Select method
-    registration_seach = pcl::make_shared<pcl::search::KdTree<PointT>>();
-    // registration_seach = pcl::make_shared<pcl::search::Octree<PointT>>(0.1);
+    registration_seach.reset(new pcl::search::KdTree<PointT>);
+    // registration_seach.reset(new pcl::search::Octree<PointT>(0.1));
 
     duna::RegistrationCost<3, PointT, PointT>::dataset_t data;
     duna::RegistrationCost<3, PointT, PointT> cost(&data);
@@ -228,7 +228,7 @@ double SlamTest::compareClouds(const PointCloudT::ConstPtr &reference, const Poi
 
     kdtree.setInputCloud(reference);
 
-    pcl::Indices indices_(1);
+    std::vector<int> indices_(1);
     std::vector<float> sqr_dists(1);
 
     for (const auto &it : source->points)

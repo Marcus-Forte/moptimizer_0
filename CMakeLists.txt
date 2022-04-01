@@ -2,11 +2,16 @@ cmake_minimum_required(VERSION 3.10)
 
 project(duna_optimizator VERSION 0.1 LANGUAGES CXX)
 
-find_package(Eigen3 REQUIRED)
-find_package(PCL 1.10 REQUIRED COMPONENTS io common search registration)
+set(CMAKE_INSTALL_PREFIX install) # install locally
 
+find_package(Eigen3 REQUIRED)
+find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
+find_package(GTest REQUIRED)
 link_libraries(Eigen3::Eigen)
-include_directories(include src)
+include_directories(include src ${PCL_INCLUDE_DIRS})
+
+
+
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)

@@ -7,8 +7,8 @@ namespace duna
     template <int NPARAM, typename PointSource, typename PointTarget>
     Registration<NPARAM, PointSource, PointTarget>::Registration(CostFunction<NPARAM> *cost) : GenericOptimizator<NPARAM>(cost)
     {
-        m_source_transformed = pcl::make_shared<pcl::PointCloud<PointSource>>();
-        m_correspondences = pcl::make_shared<pcl::Correspondences>();
+        m_source_transformed.reset(new pcl::PointCloud<PointSource>);
+        m_correspondences.reset(new pcl::Correspondences);
 
         RegistrationCost<NPARAM, PointSource, PointTarget> *l_cost = reinterpret_cast<RegistrationCost<NPARAM, PointSource, PointTarget> *>(cost);
         l_cost->setCorrespondencesPtr(m_correspondences);
@@ -67,7 +67,7 @@ namespace duna
         m_correspondences->clear();
         m_correspondences->reserve(m_source_transformed->size());
 
-        pcl::Indices indices(m_k_neighboors);
+	std::vector<int> indices(m_k_neighboors);
         std::vector<float> k_distances(m_k_neighboors);
 
         // compute correspondences
