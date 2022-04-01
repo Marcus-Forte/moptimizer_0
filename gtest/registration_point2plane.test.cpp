@@ -98,6 +98,8 @@ TEST_F(RegistrationTestClassPoint2Plane, Translation6DOF)
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF6, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF6, PointXYZ, PointNormal>(&data);
     Registration<DOF6, PointXYZ, PointNormal> *registration = new Registration<DOF6, PointXYZ, PointNormal>(cost);
+    
+    cost->setErrorMethod(POINT2PLANE);
     registration->setMaxOptimizationIterations(2);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -166,6 +168,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation6DOF)
     RegistrationCost<DOF6, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF6, PointXYZ, PointNormal>(&data);
     Registration<DOF6, PointXYZ, PointNormal> *registration = new Registration<DOF6, PointXYZ, PointNormal>(cost);
 
+    cost->setErrorMethod(POINT2PLANE);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -227,6 +230,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
 
+    cost->setErrorMethod(POINT2PLANE);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -285,7 +289,8 @@ TEST_F(RegistrationTestClassPoint2Plane, RefEqualsGuess)
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
-
+    
+    cost->setErrorMethod(POINT2PLANE);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -328,6 +333,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Guess3DOF)
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
 
+    cost->setErrorMethod(POINT2PLANE);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);

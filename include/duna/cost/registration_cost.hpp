@@ -1,49 +1,27 @@
 #pragma once
 
-#include "duna/cost_function.hpp"
+#include "duna/cost/point_errors.hpp"
+#include "duna/cost_function.h"
 #include "duna/duna_log.h"
 #include "duna/so3.h"
 
 #include <limits>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
-
 #include <pcl/search/kdtree.h>
 #include <pcl/correspondence.h>
 namespace duna
 {
-    // Error function
-    template <typename Scalar, typename PointTarget>
-    inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const PointTarget &tgt_pt)
+    enum CostMetric
     {
-        Eigen::Matrix<Scalar, 4, 1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
-        Eigen::Matrix<Scalar, 4, 1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
-        return (src - tgt).norm(); // TODO norm vs norm² ?
-    }
-
-    // Error function
-    template <typename Scalar>
-    inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointNormal &tgt_pt)
-    {
-        Eigen::Matrix<Scalar, 4, 1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
-        Eigen::Matrix<Scalar, 4, 1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
-        Eigen::Matrix<Scalar, 4, 1> tgt_normal(tgt_pt.normal_x, tgt_pt.normal_y, tgt_pt.normal_z, 0);
-        return (src - tgt).dot(tgt_normal); // TODO norm vs norm² ?
-    }
-
-    // Error function
-    template <typename Scalar>
-    inline Scalar computeError(const Eigen::Matrix<Scalar, 4, 1> &warped_src_pt, const pcl::PointXYZINormal &tgt_pt)
-    {
-        Eigen::Matrix<Scalar, 4, 1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
-        Eigen::Matrix<Scalar, 4, 1> src(warped_src_pt[0], warped_src_pt[1], warped_src_pt[2], 0);
-        Eigen::Matrix<Scalar, 4, 1> tgt_normal(tgt_pt.normal_x, tgt_pt.normal_y, tgt_pt.normal_z, 0);
-        return (src - tgt).dot(tgt_normal); // TODO norm vs norm² ?
-    }
+        POINT2POINT,
+        POINT2PLANE
+    };
 
     template <int NPARAM, typename PointSource, typename PointTarget>
     class RegistrationCost : public CostFunction<NPARAM>
     {
+
     public:
         struct dataset_t
         {
@@ -55,24 +33,22 @@ namespace duna
         using VectorN = typename CostFunction<NPARAM>::VectorN;
         using VectorNd = Eigen::Matrix<double, NPARAM, 1>;
         using MatrixN = typename CostFunction<NPARAM>::MatrixN;
-
         using Matrix4 = Eigen::Matrix4f;
 
         using PointCloudSourceConstPtr = typename pcl::PointCloud<PointSource>::ConstPtr;
-
         using CostFunction<NPARAM>::m_dataset;
+
+        using ErrorFunctor = DistanceFunctor<PointSource, PointTarget>;
+        using ErrorFunctorPtr = typename DistanceFunctor<PointSource, PointTarget>::Ptr;
+
+        using Point2PointErr = Point2Point<PointSource, PointTarget>;
+        using Point2PlaneErr = Point2Plane<PointSource, PointTarget>;
 
         RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
         {
             l_dataset = reinterpret_cast<dataset_t *>(m_dataset);
+            m_computeError.reset(new Point2PointErr);
 
-            // if (l_dataset->source == nullptr || l_dataset->target == nullptr || l_dataset->tgt_search_method == nullptr)
-            // {
-            //     throw std::runtime_error("Invalid dataset. Check if dataset pointers are allocated.\n");
-            // }
-
-            // // Checkdataset
-            // DUNA_DEBUG("source pts : %ld, tgt pts: %ld\n", l_dataset->source->size(), l_dataset->target->size());
             // TODO check Search
         }
 
@@ -83,7 +59,23 @@ namespace duna
         {
         }
 
+        void setErrorMethod(CostMetric method)
+        {
+            switch(method)
+            {
+                case CostMetric::POINT2POINT:
+                m_computeError.reset(new Point2PointErr);
+
+                case CostMetric::POINT2PLANE:
+                m_computeError.reset(new Point2PlaneErr);
+                break;
+            }
+        }
+
         // TODO should not be public
+        public:
+
+        
         inline void setTransformedSourcePtr(PointCloudSourceConstPtr transformed_src)
         {
             m_transformed_source = transformed_src;
@@ -110,7 +102,7 @@ namespace duna
 
                 const Eigen::Vector4f src_pt_warped_vec = transform * src_pt_vec;
 
-                double xout = computeError(src_pt_warped_vec, tgt_pt);
+                double xout = (*m_computeError)(src_pt_warped_vec, tgt_pt);
 
                 sum += xout * xout;
             }
@@ -159,7 +151,7 @@ namespace duna
 
                 const Eigen::Vector4f src_pt_warped_vec = transform * src_pt_vec;
 
-                double xout = computeError(src_pt_warped_vec, tgt_pt);
+                double xout = (*m_computeError)(src_pt_warped_vec, tgt_pt);
 
                 for (int j = 0; j < NPARAM; ++j)
                 {
@@ -170,7 +162,7 @@ namespace duna
                     Eigen::Vector4f src_pt_warped_plus_vec = transform_plus[j] * src_pt_vec;
                     // Eigen::Vector4d src_pt_warped_minus_vec = transform_minus[j] * src_pt_vec.template cast<double>();
 
-                    double xout_plus = computeError(src_pt_warped_plus_vec, tgt_pt);
+                    double xout_plus = (*m_computeError)(src_pt_warped_plus_vec, tgt_pt);
                     // double xout_minus = computeError(src_pt_warped_minus_vec, tgt_pt);
 
                     // TODO this is numerically unstable
@@ -189,6 +181,9 @@ namespace duna
 
             return sum;
         }
+
+    protected:
+        ErrorFunctorPtr m_computeError;
 
     private:
         pcl::CorrespondencesConstPtr m_correspondences;

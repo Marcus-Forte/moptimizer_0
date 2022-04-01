@@ -1,6 +1,6 @@
 #pragma once
 
-#include "duna/cost_function.hpp"
+#include "duna/cost_function.h"
 #include <assert.h>
 /*
 

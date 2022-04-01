@@ -1,13 +1,12 @@
 #pragma once
 
-#include "duna/optimizator.h"
 #include <iostream>
-#include "duna/duna_log.h"
 
+#include "duna/optimizator.h"
+#include "duna/duna_log.h"
 
 namespace duna
 {
-
     template <int NPARAM>
     class GenericOptimizator : public Optimizator<NPARAM>
     {

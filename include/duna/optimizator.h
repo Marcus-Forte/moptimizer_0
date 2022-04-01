@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cost_function.hpp"
+#include "cost_function.h"
 
 namespace duna
 {
