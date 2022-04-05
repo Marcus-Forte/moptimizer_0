@@ -47,7 +47,12 @@ namespace duna
         RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
         {
             l_dataset = reinterpret_cast<dataset_t *>(m_dataset);
+            // FIXME
             m_computeError.reset(new Point2PointErr);
+            m_metric = POINT2POINT;
+
+            //FIXME should not yield compile failure
+            // setErrorMethod(POINT2POINT);
 
             // TODO check Search
         }
@@ -61,15 +66,22 @@ namespace duna
 
         void setErrorMethod(CostMetric method)
         {
+            m_metric = method;
             switch(method)
             {
                 case CostMetric::POINT2POINT:
-                m_computeError.reset(new Point2PointErr);
+                m_computeError.reset(new Point2PointErr);             
+                break;
 
                 case CostMetric::POINT2PLANE:
                 m_computeError.reset(new Point2PlaneErr);
                 break;
             }
+        }
+
+        CostMetric getErrorMethod() const 
+        {
+            return m_metric;
         }
 
         // TODO should not be public
@@ -184,6 +196,7 @@ namespace duna
 
     protected:
         ErrorFunctorPtr m_computeError;
+        CostMetric m_metric;
 
     private:
         pcl::CorrespondencesConstPtr m_correspondences;
