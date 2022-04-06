@@ -181,7 +181,8 @@ TEST_F(SlamTest, SeriesOfScanMatches)
 
         // Perform scan_matching
         start_time = std::chrono::high_resolution_clock::now();
-        cost.setErrorMethod(POINT2PLANE);
+        duna::Point2Plane<PointT,PointT>::Ptr point2plane_metric(new duna::Point2Plane<PointT,PointT>);
+        cost.setErrorMethod(point2plane_metric);
         registration.setMaxCorrespondenceDistance(0.15);
         registration.setMaxIcpIterations(15); // 15
         registration.minimize(guess);

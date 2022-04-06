@@ -1,6 +1,6 @@
 #pragma once
 
-#include "duna/cost/point_errors.hpp"
+#include "duna/cost/point_error.hpp"
 #include "duna/cost_function.h"
 #include "duna/duna_log.h"
 #include "duna/so3.h"
@@ -12,12 +12,6 @@
 #include <pcl/correspondence.h>
 namespace duna
 {
-    enum CostMetric
-    {
-        POINT2POINT,
-        POINT2PLANE
-    };
-
     template <int NPARAM, typename PointSource, typename PointTarget>
     class RegistrationCost : public CostFunction<NPARAM>
     {
@@ -39,20 +33,13 @@ namespace duna
         using CostFunction<NPARAM>::m_dataset;
 
         using ErrorFunctor = DistanceFunctor<PointSource, PointTarget>;
-        using ErrorFunctorPtr = typename DistanceFunctor<PointSource, PointTarget>::Ptr;
-
-        using Point2PointErr = Point2Point<PointSource, PointTarget>;
-        using Point2PlaneErr = Point2Plane<PointSource, PointTarget>;
+        using ErrorFunctorPtr = typename ErrorFunctor::Ptr;
 
         RegistrationCost(void *dataset) : CostFunction<NPARAM>(dataset)
         {
             l_dataset = reinterpret_cast<dataset_t *>(m_dataset);
-            // FIXME
-            m_computeError.reset(new Point2PointErr);
-            m_metric = POINT2POINT;
-
-            //FIXME should not yield compile failure
-            // setErrorMethod(POINT2POINT);
+            // Defaulting to Point2Point
+            m_computeError.reset(new Point2Point<PointSource,PointTarget>);
 
             // TODO check Search
         }
@@ -64,24 +51,9 @@ namespace duna
         {
         }
 
-        void setErrorMethod(CostMetric method)
+        void setErrorMethod(const ErrorFunctorPtr& method)
         {
-            m_metric = method;
-            switch(method)
-            {
-                case CostMetric::POINT2POINT:
-                m_computeError.reset(new Point2PointErr);             
-                break;
-
-                case CostMetric::POINT2PLANE:
-                m_computeError.reset(new Point2PlaneErr);
-                break;
-            }
-        }
-
-        CostMetric getErrorMethod() const 
-        {
-            return m_metric;
+           m_computeError = method;
         }
 
         // TODO should not be public
@@ -196,7 +168,6 @@ namespace duna
 
     protected:
         ErrorFunctorPtr m_computeError;
-        CostMetric m_metric;
 
     private:
         pcl::CorrespondencesConstPtr m_correspondences;

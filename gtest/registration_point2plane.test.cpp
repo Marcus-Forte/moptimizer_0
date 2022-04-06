@@ -99,7 +99,8 @@ TEST_F(RegistrationTestClassPoint2Plane, Translation6DOF)
     RegistrationCost<DOF6, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF6, PointXYZ, PointNormal>(&data);
     Registration<DOF6, PointXYZ, PointNormal> *registration = new Registration<DOF6, PointXYZ, PointNormal>(cost);
     
-    cost->setErrorMethod(POINT2PLANE);
+    duna::Point2Plane<PointXYZ,PointNormal>::Ptr point2plane_metric(new duna::Point2Plane<PointXYZ,PointNormal>);
+    cost->setErrorMethod(point2plane_metric);
     registration->setMaxOptimizationIterations(2);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -168,7 +169,8 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation6DOF)
     RegistrationCost<DOF6, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF6, PointXYZ, PointNormal>(&data);
     Registration<DOF6, PointXYZ, PointNormal> *registration = new Registration<DOF6, PointXYZ, PointNormal>(cost);
 
-    cost->setErrorMethod(POINT2PLANE);
+    duna::Point2Plane<PointXYZ,PointNormal>::Ptr point2plane_metric(new duna::Point2Plane<PointXYZ,PointNormal>);
+    cost->setErrorMethod(point2plane_metric);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
@@ -211,10 +213,11 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation6DOF)
 
 TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
 {
+    // Very tough case of rotation. Much more easily solved with 3DOF
     Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(-0.9, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitZ());
+    rot = Eigen::AngleAxisf(-1.7, Eigen::Vector3f::UnitX()) *
+          Eigen::AngleAxisf(-1.7, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(-1.7, Eigen::Vector3f::UnitZ());
 
     reference_transform.topLeftCorner(3, 3) = rot;
 
@@ -230,14 +233,13 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
 
-    cost->setErrorMethod(POINT2PLANE);
+    duna::Point2Plane<PointXYZ,PointNormal>::Ptr point2plane_metric(new duna::Point2Plane<PointXYZ,PointNormal>);
+    cost->setErrorMethod(point2plane_metric);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
-    Vector3N x0;
-    x0.setZero();
-    registration->minimize(x0);
+    registration->minimize();
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
     pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
@@ -269,15 +271,13 @@ TEST_F(RegistrationTestClassPoint2Plane, Rotation3DOF)
     }
 }
 
-TEST_F(RegistrationTestClassPoint2Plane, RefEqualsGuess)
+TEST_F(RegistrationTestClassPoint2Plane, InitialGuessEqualsSolution)
 {
     // The reference rotation is a very tough case. So we HAVE to provide an initial guess to the solution.
     Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitX()) *
+    rot = Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitX()) *
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitZ());
-
-    reference_transform.topLeftCorner(3, 3) = rot;
     pcl::transformPointCloud(*target, *source, reference_transform);
 
     // Prepare dataset
@@ -289,14 +289,12 @@ TEST_F(RegistrationTestClassPoint2Plane, RefEqualsGuess)
     // TODO ensure templated types are tightly coupled for dataset, cost and registration objects
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
-    
-    cost->setErrorMethod(POINT2PLANE);
+
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
-    // Our guess 
-    // Vector3N x0(0.7,0.7,0.7);
+    // Start with solution
     Eigen::Matrix4f reference_inverse = reference_transform.inverse();
     registration->minimize(reference_inverse);
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
@@ -316,7 +314,7 @@ TEST_F(RegistrationTestClassPoint2Plane, Guess3DOF)
 {
     // The reference rotation is a very tough case. So we HAVE to provide an initial guess to the solution.
     Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitX()) *
+    rot = Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitX()) *
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitY()) *
           Eigen::AngleAxisf(0.9, Eigen::Vector3f::UnitZ());
 
@@ -333,13 +331,15 @@ TEST_F(RegistrationTestClassPoint2Plane, Guess3DOF)
     RegistrationCost<DOF3, PointXYZ, PointNormal> *cost = new RegistrationCost<DOF3, PointXYZ, PointNormal>(&data);
     Registration<DOF3, PointXYZ, PointNormal> *registration = new Registration<DOF3, PointXYZ, PointNormal>(cost);
 
-    cost->setErrorMethod(POINT2PLANE);
+    // duna::Point2Point<PointXYZ,PointNormal>::Ptr point2plane_metric(new duna::Point2Point<PointXYZ,PointNormal>);
+    duna::Point2Plane<PointXYZ,PointNormal>::Ptr point2plane_metric(new duna::Point2Plane<PointXYZ,PointNormal>);
+    cost->setErrorMethod(point2plane_metric);
     registration->setMaxOptimizationIterations(1);
     registration->setMaxIcpIterations(MAXIT);
     registration->setMaxCorrespondenceDistance(MAXCORRDIST);
 
     // Our guess 
-    Vector3N x0(-0.5,-0.5,-0.5);
+    Vector3N x0(-0.2,-0.2,-0.2);
     registration->minimize(x0);
     Eigen::Matrix4f final_reg_duna = registration->getFinalTransformation();
 
