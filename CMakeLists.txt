@@ -8,7 +8,7 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
 find_package(GTest REQUIRED)
 link_libraries(Eigen3::Eigen)
-include_directories(include src ${PCL_INCLUDE_DIRS})
+include_directories(include src gtest ${PCL_INCLUDE_DIRS})
 
 
 

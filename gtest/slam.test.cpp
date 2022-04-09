@@ -7,8 +7,10 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/common/distances.h>
-
+#include <pcl/filters/uniform_sampling.h>
 #include <duna/registration.h>
+
+#include <timing.hpp>
 
 #include <chrono>
 
@@ -18,6 +20,7 @@ using PointCloudT = pcl::PointCloud<PointT>;
 
 #define N_SCANS_MAP 20
 #define N_SCANS_LASER 50
+
 
 // Accumulate map scans (scans made while sensor was steady)
 static inline void load_map(PointCloudT::Ptr &map)
@@ -100,6 +103,8 @@ protected:
     PointCloudT::Ptr m_reference_map;
     std::vector<PointCloudT::Ptr> scans;
 
+    
+
     double compareClouds(const PointCloudT::ConstPtr &reference, const PointCloudT::ConstPtr &source);
 };
 
@@ -134,61 +139,62 @@ TEST_F(SlamTest, SeriesOfScanMatches)
 
     *hd_map = *m_scanmatch_map;
 
+    Timing timer;
+    Timing global_timer;
+
+    timer.enable(true);
+    global_timer.enable(true);
+    // Define SLAM pipe
+    global_timer.tick();
     for (int i = 0; i < scans.size(); ++i)
     {
-
         std::cerr << "SCAN #" << i << " ## " << std::endl;
 
         // Downsample
-        auto start_time = std::chrono::high_resolution_clock::now();
+        timer.tick();
+        
         pcl::VoxelGrid<PointT> voxel_map;
         voxel_map.setInputCloud(m_scanmatch_map);
         voxel_map.setLeafSize(0.1, 0.1, 0.1);
         voxel_map.filter(*m_scanmatch_map);
-        auto delta_time = std::chrono::high_resolution_clock::now() - start_time;
-        std::cerr << "Voxel Grid Map : " << std::chrono::duration_cast<std::chrono::microseconds>(delta_time).count() << std::endl;
+        timer.tock("Voxel grid map");
+        
 
-        start_time = std::chrono::high_resolution_clock::now();
+        timer.tick();
         pcl::VoxelGrid<PointT> voxel_scan;
         voxel_scan.setInputCloud(scans[i]);
         voxel_scan.setLeafSize(0.1, 0.1, 0.1);
         PointCloudT::Ptr scan_processed(new PointCloudT);
         voxel_scan.filter(*scan_processed);
-        delta_time = std::chrono::high_resolution_clock::now() - start_time;
-        std::cerr << "Voxel Grid Scan : " << std::chrono::duration_cast<std::chrono::microseconds>(delta_time).count() << std::endl;
+        timer.tock("Voxel Grid Scan : ");
 
         // Compute normals
-        start_time = std::chrono::high_resolution_clock::now();
+        timer.tick();
         pcl::NormalEstimation<PointT, PointT> ne;
         // pcl::NormalEstimationOMP<PointT,PointT> ne;
         ne.setInputCloud(m_scanmatch_map);
         ne.setSearchMethod(registration_seach);
         ne.setKSearch(5);
         ne.compute(*m_scanmatch_map);
-        delta_time = std::chrono::high_resolution_clock::now() - start_time;
-        std::cerr << "Normal Estimation : " << std::chrono::duration_cast<std::chrono::microseconds>(delta_time).count() << std::endl;
+        timer.tock("Normal estimation");
 
         // Search tree rebuild/update
-        start_time = std::chrono::high_resolution_clock::now();
+        timer.tick();
         registration_seach->setInputCloud(m_scanmatch_map);
-        delta_time = std::chrono::high_resolution_clock::now() - start_time;
-        std::cerr << "Ocreee rebuild : " << std::chrono::duration_cast<std::chrono::microseconds>(delta_time).count() << std::endl;
-
+        timer.tock("Tree rebuild");
         // Setup data;
         data.target = m_scanmatch_map;
         data.source = scan_processed;
         data.tgt_search_method = registration_seach;
 
         // Perform scan_matching
-        start_time = std::chrono::high_resolution_clock::now();
+        timer.tick();
         duna::Point2Plane<PointT,PointT>::Ptr point2plane_metric(new duna::Point2Plane<PointT,PointT>);
         cost.setErrorMethod(point2plane_metric);
         registration.setMaxCorrespondenceDistance(0.15);
         registration.setMaxIcpIterations(15); // 15
         registration.minimize(guess);
-        delta_time = std::chrono::high_resolution_clock::now() - start_time;
-        std::cerr << "Registration : " << std::chrono::duration_cast<std::chrono::microseconds>(delta_time).count() << std::endl;
-
+        timer.tock("Registration");
         // Update guess
         guess = registration.getFinalTransformation();
 
@@ -200,6 +206,7 @@ TEST_F(SlamTest, SeriesOfScanMatches)
         *hd_map = *hd_map + aligned_scan;
     }
 
+    global_timer.tock("Total SLAM");
     try
     {
 

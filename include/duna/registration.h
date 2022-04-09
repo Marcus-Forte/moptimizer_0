@@ -34,7 +34,7 @@ namespace duna
         // Parameters
         unsigned int m_icp_iterations = 20;
         float m_max_corr_dist = 1.0;
-        unsigned int m_k_neighboors = 1;
+        unsigned int m_k_neighboors = 5;
 
         // Dists damping
         float m_damping_factor = 0.98;
