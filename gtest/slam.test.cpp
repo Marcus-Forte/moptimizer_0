@@ -144,22 +144,24 @@ TEST_F(SlamTest, SeriesOfScanMatches)
 
     timer.enable(true);
     global_timer.enable(true);
-    // Define SLAM pipe
+    
+
     global_timer.tick();
+
+    /* DEFINITION OF THE SLAM PIPE */
     for (int i = 0; i < scans.size(); ++i)
     {
         std::cerr << "SCAN #" << i << " ## " << std::endl;
 
-        // Downsample
+        // Downsample Map
         timer.tick();
-        
         pcl::VoxelGrid<PointT> voxel_map;
         voxel_map.setInputCloud(m_scanmatch_map);
         voxel_map.setLeafSize(0.1, 0.1, 0.1);
         voxel_map.filter(*m_scanmatch_map);
         timer.tock("Voxel grid map");
         
-
+        // Downsample Scan
         timer.tick();
         pcl::VoxelGrid<PointT> voxel_scan;
         voxel_scan.setInputCloud(scans[i]);
@@ -168,7 +170,7 @@ TEST_F(SlamTest, SeriesOfScanMatches)
         voxel_scan.filter(*scan_processed);
         timer.tock("Voxel Grid Scan : ");
 
-        // Compute normals
+        // Compute Map normals
         timer.tick();
         pcl::NormalEstimation<PointT, PointT> ne;
         // pcl::NormalEstimationOMP<PointT,PointT> ne;

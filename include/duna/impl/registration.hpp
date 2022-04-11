@@ -67,7 +67,7 @@ namespace duna
         m_correspondences->clear();
         m_correspondences->reserve(m_source_transformed->size());
 
-	std::vector<int> indices(m_k_neighboors);
+        std::vector<int> indices(m_k_neighboors);
         std::vector<float> k_distances(m_k_neighboors);
 
         // compute correspondences
@@ -92,6 +92,8 @@ namespace duna
 
         DUNA_DEBUG("source pts : %ld, target pts : %ld, corr pts: %ld\n", l_dataset->source->size(), l_dataset->target->size(), m_correspondences->size());
         DUNA_DEBUG("damping corrs: %f", m_damping_dists);
+
+        m_overlap = (float) m_correspondences->size() / (float) l_dataset->source->size();
 
         m_damping_dists = m_damping_factor * m_damping_dists;
 

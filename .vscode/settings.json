@@ -79,5 +79,6 @@
     "todohighlight.keywords": ["TODO","FIXME"],
 
     "todohighlight.isEnable": true,
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cmake.configureOnEdit": false
 }

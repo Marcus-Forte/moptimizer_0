@@ -72,3 +72,9 @@ install(DIRECTORY include/
         PATTERN "*.h"
         PATTERN "*.hpp"
 )
+
+set(CPACK_GENERATOR DEB)
+set(CPACK_DEBIAN_PACKAGE_NAME "libdunaoptimizator-dev")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libpcl-dev,libeigen3-dev")
+set(CPACK_PACKAGE_CONTACT "marcus.forte@dunasystem.com")
+include(CPack)

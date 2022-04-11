@@ -20,9 +20,10 @@ namespace duna
 
         virtual ~Registration();
 
-        inline void setMaxCorrespondenceDistance(float max_dist) { m_max_corr_dist = max_dist; }
-        inline void setMaxIcpIterations(unsigned int max_it) { m_icp_iterations = max_it; }
-        inline void setCorrespondenceDistanceDamping(float damp) { m_damping_factor = damp;}
+        inline void setMaxCorrespondenceDistance(float max_dist)  { m_max_corr_dist = max_dist; }
+        inline void setMaxIcpIterations(unsigned int max_it)  { m_icp_iterations = max_it; }
+        inline void setCorrespondenceDistanceDamping(float damp)  { m_damping_factor = damp;}
+        inline float getFinalOverlap() const { return m_overlap;}
 
         OptimizationStatus minimize(Eigen::Matrix4f &x0_matrix);
         OptimizationStatus minimize(VectorN &x0) override;
@@ -35,6 +36,9 @@ namespace duna
         unsigned int m_icp_iterations = 20;
         float m_max_corr_dist = 1.0;
         unsigned int m_k_neighboors = 5;
+
+        // Overlap
+        float m_overlap = 0;
 
         // Dists damping
         float m_damping_factor = 0.98;
