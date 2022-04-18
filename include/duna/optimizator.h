@@ -8,9 +8,9 @@ namespace duna
     {
         MAX_IT_REACHED,
         SMALL_DELTA,
-        ERROR
+        FATAL_ERROR
     };
-
+    
     template <int NPARAM>
     class Optimizator
     {

@@ -3,12 +3,14 @@
 #include <pcl/point_types.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/search/octree.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/features/normal_3d_omp.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/common/distances.h>
 #include <pcl/filters/uniform_sampling.h>
 #include <duna/registration.h>
+
+#define PCL_NO_PRECOMPILE
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
 
 #include <timing.hpp>
 

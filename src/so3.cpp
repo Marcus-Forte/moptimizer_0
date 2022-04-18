@@ -1,5 +1,7 @@
 #include "duna/so3.h"
 
+#include "duna_exports.h"
+
 namespace so3
 {
     // TODO check for errors in conversion. High angles are problematic
@@ -56,15 +58,15 @@ namespace so3
 
     // Instantiation
     
-    template void param2Matrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    template void param2Matrix<float>(const Eigen::Matrix<float, 6, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+    template void DUNA_OPTIMIZATOR_EXPORT param2Matrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void DUNA_OPTIMIZATOR_EXPORT param2Matrix<float>(const Eigen::Matrix<float, 6, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
     // 3DOF
-    template void param2Matrix<double>(const Eigen::Matrix<double, 3, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    template void param2Matrix<float>(const Eigen::Matrix<float, 3, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+    template void DUNA_OPTIMIZATOR_EXPORT param2Matrix<double>(const Eigen::Matrix<double, 3, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void DUNA_OPTIMIZATOR_EXPORT param2Matrix<float>(const Eigen::Matrix<float, 3, 1> &x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-    template void matrix2Param<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
-    template void matrix2Param<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 6, 1> &x);
+    template void DUNA_OPTIMIZATOR_EXPORT matrix2Param<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
+    template void DUNA_OPTIMIZATOR_EXPORT matrix2Param<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 6, 1> &x);
 
 }
 
