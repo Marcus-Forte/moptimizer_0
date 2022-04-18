@@ -10,8 +10,12 @@ find_package(GTest REQUIRED)
 link_libraries(Eigen3::Eigen)
 include_directories(include src gtest ${PCL_INCLUDE_DIRS})
 
+if(UNIX)
+# GTest required pthread in UNIX Os
+link_libraries(pthread)
+endif()
+
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
 #set (CMAKE_BUILD_TYPE RELEASE)
 #add_compile_options(-msse2 -msse3)
@@ -20,13 +24,10 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 file (GLOB duna_opt_src "src/*.cpp")
 add_library(${PROJECT_NAME} SHARED ${duna_opt_src})
 
-
-if(WIN32)
-        include (GenerateExportHeader) 
-        generate_export_header(${PROJECT_NAME}
-        EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/duna_exports.h)
-        include_directories(${CMAKE_BINARY_DIR}/exports)
-endif()
+include (GenerateExportHeader) 
+generate_export_header(${PROJECT_NAME}
+EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/duna_exports.h)
+include_directories(${CMAKE_BINARY_DIR}/exports)
 
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
@@ -49,21 +50,12 @@ foreach(test_case ${test_src})
         gtest_discover_tests(${test_src_name})
 endforeach()
 
-# gtest_discover_tests(model_test)
-# gtest_discover_tests(camera_calibration_test)
-# gtest_discover_tests(registration_test)
-
-# TODO auotmate tests execution after build
-file(GLOB header_files "include/*" LIST_DIRECTORIES false)
-
-message(STATUS ${header_files})
 #set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${header_files}")
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
 )
 
-
-# TODO how to make sure client code will access header correctly?
+# TODO how to make sure client code will access header correctly? How to link with library ?
 install(DIRECTORY include/
         DESTINATION include
         FILES_MATCHING
@@ -71,8 +63,15 @@ install(DIRECTORY include/
         PATTERN "*.hpp"
 )
 
-# set(CPACK_GENERATOR DEB)
-# set(CPACK_DEBIAN_PACKAGE_NAME "libdunaoptimizator-dev")
-# set(CPACK_DEBIAN_PACKAGE_DEPENDS "libpcl-dev,libeigen3-dev")
-# set(CPACK_PACKAGE_CONTACT "marcus.forte@dunasystem.com")
-# include(CPack)
+# Packaging
+if(UNIX)
+        set(CPACK_GENERATOR DEB)
+        set(CPACK_DEBIAN_PACKAGE_NAME "libdunaoptimizator-dev")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libpcl-dev,libeigen3-dev")
+        set(CPACK_PACKAGE_CONTACT "marcus.forte@dunasystem.com")
+        include(CPack)
+elseif(WIN32)
+        set(CPACK_GENERATOR NSIS)
+        include(CPack)
+endif()
+
