@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
-
 project(duna_optimizator VERSION 0.1 LANGUAGES CXX)
+
+
+option(BUILD_TESTS "Build test programs" ON)
 
 set(CMAKE_INSTALL_PREFIX install) # install locally
 
@@ -35,32 +37,31 @@ get_filename_component(DATASET_PATH gtest/data/ REALPATH)
 add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
 
 #gtest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-enable_testing()
-include(GoogleTest)
+if(BUILD_TESTS)
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        enable_testing()
+        include(GoogleTest)
 
+        # Make test cases
+        file(GLOB test_src "gtest/*.cpp")
+        foreach(test_case ${test_src})
+                get_filename_component(test_src_name ${test_case} NAME_WE)
+                message(STATUS ${filename})    
+                add_executable(${test_src_name} ${test_case})
+                target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
+                gtest_discover_tests(${test_src_name})
+        endforeach()
+endif()
 
-# Make test cases
-file(GLOB test_src "gtest/*.cpp")
-foreach(test_case ${test_src})
-        get_filename_component(test_src_name ${test_case} NAME_WE)
-        message(STATUS ${filename})    
-        add_executable(${test_src_name} ${test_case})
-        target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
-        gtest_discover_tests(${test_src_name})
-endforeach()
-
-#set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${header_files}")
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
 )
 
-# TODO how to make sure client code will access header correctly? How to link with library ?
 install(DIRECTORY include/
         DESTINATION include
         FILES_MATCHING
         PATTERN "*.h"
-        PATTERN "*.hpp"
+        PATTERN "*.hpp"        
 )
 
 # Packaging
