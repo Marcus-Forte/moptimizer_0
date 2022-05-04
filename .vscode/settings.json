@@ -68,7 +68,11 @@
         "*.ipp": "cpp",
         "polynomials": "cpp",
         "*.txx": "cpp",
-        "nonlinearoptimization": "cpp"
+        "nonlinearoptimization": "cpp",
+        "dense": "cpp",
+        "csignal": "cpp",
+        "unordered_set": "cpp",
+        "shared_mutex": "cpp"
     },
 
     "todohighlight.include": [

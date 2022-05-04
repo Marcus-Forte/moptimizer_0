@@ -89,7 +89,7 @@ namespace duna
             }
 
             hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
-
+            
             return sum;
         }
 

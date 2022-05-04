@@ -19,8 +19,14 @@ endif()
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-#set (CMAKE_BUILD_TYPE RELEASE)
-#add_compile_options(-msse2 -msse3)
+# experimental
+add_library(duna_optimizer SHARED experimental/levenberg_marquadt.cpp experimental/cost_function.cpp)
+target_include_directories(duna_optimizer PUBLIC experimental)
+
+add_executable(duna_optimizer_test experimental/use.cpp)
+target_link_libraries(duna_optimizer_test duna_optimizer)
+target_include_directories(duna_optimizer_test PUBLIC experimental)
+#
 
 # duna libraries
 file (GLOB duna_opt_src "src/*.cpp")
