@@ -1,8 +1,7 @@
-#ifndef OPTIMIZATOR_H
-#define OPTIMIZATOR_H
+#ifndef OPTIMIZER_H
+#define OPTIMIZER_H
 
-#include <cost_function.h>
-#include <memory>
+#include <duna/cost_function.h>
 #include <Eigen/Dense>
 
 namespace duna

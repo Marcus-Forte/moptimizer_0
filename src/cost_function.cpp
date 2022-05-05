@@ -1,4 +1,4 @@
-#include <cost_function.h>
+#include <duna/cost_function.h>
 
 namespace duna 
 {   

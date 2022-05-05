@@ -6,7 +6,7 @@ namespace duna
 {
     enum OptimizationStatus
     {
-        MAX_IT_REACHED,
+        MAXIMUM_ITERATIONS_REACHED,
         SMALL_DELTA,
         FATAL_ERROR
     };

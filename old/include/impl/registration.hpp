@@ -133,7 +133,7 @@ namespace duna
                 return status;
         }
 
-        return OptimizationStatus::MAX_IT_REACHED;
+        return OptimizationStatus::MAXIMUM_ITERATIONS_REACHED;
     }
 
 }

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(duna_optimizator VERSION 0.1 LANGUAGES CXX)
+project(duna_optimizer VERSION 0.1 LANGUAGES CXX)
 
 
 option(BUILD_TESTS "Build test programs" ON)
@@ -10,34 +10,29 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
 find_package(GTest REQUIRED)
 link_libraries(Eigen3::Eigen)
-include_directories(include src gtest ${PCL_INCLUDE_DIRS})
+include_directories(include gtest ${PCL_INCLUDE_DIRS})
 
 if(UNIX)
 # GTest required pthread in UNIX Os
-link_libraries(pthread)
+        link_libraries(pthread)
 endif()
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# experimental
-add_library(duna_optimizer SHARED experimental/levenberg_marquadt.cpp experimental/cost_function.cpp)
-target_include_directories(duna_optimizer PUBLIC experimental)
+# Library
+add_library(${PROJECT_NAME} SHARED
+src/levenberg_marquadt.cpp
+src/cost_function.cpp
+src/so3.cpp
+)
 
-add_executable(duna_optimizer_test experimental/use.cpp)
-target_link_libraries(duna_optimizer_test duna_optimizer)
-target_include_directories(duna_optimizer_test PUBLIC experimental)
-#
-
-# duna libraries
-file (GLOB duna_opt_src "src/*.cpp")
-add_library(${PROJECT_NAME} SHARED ${duna_opt_src})
 
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
 EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/duna_exports.h)
 include_directories(${CMAKE_BINARY_DIR}/exports)
 
-target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
+# target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
 get_filename_component(DATASET_PATH gtest/data/ REALPATH)
 add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
@@ -49,12 +44,17 @@ if(BUILD_TESTS)
         include(GoogleTest)
 
         # Make test cases
-        file(GLOB test_src "gtest/*.cpp")
+        set(test_src 
+        test/simple_model.cpp    
+        test/camera_calibration.cpp        
+        )
+
         foreach(test_case ${test_src})
                 get_filename_component(test_src_name ${test_case} NAME_WE)
                 message(STATUS ${filename})    
                 add_executable(${test_src_name} ${test_case})
                 target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
+                target_include_directories(${test_src_name} PUBLIC experimental)
                 gtest_discover_tests(${test_src_name})
         endforeach()
 endif()

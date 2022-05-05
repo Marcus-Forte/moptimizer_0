@@ -1,6 +1,7 @@
-#include <levenberg_marquadt.h>
+#include <duna/levenberg_marquadt.h>
+#include <duna/logging.h>
 
-#include <duna_log.h>
+#include <iostream>
 
 namespace duna
 {
@@ -14,7 +15,7 @@ namespace duna
     template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
     OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::minimize(ParameterVector &x0)
     {
-        std::cout << " Minimizing...\n";
+        // std::cout << " Minimizing...\n";
 
         if (m_cost == 0)
         {
@@ -37,7 +38,6 @@ namespace duna
 
             Scalar y0 = m_cost->linearize(x0, hessian, b);
             
-
             hessian_diagonal = hessian.diagonal().asDiagonal();
 
             if( m_lm_lambda < 0.0)
@@ -84,5 +84,6 @@ namespace duna
     // template class LevenbergMarquadt<double>;
 
     template class LevenbergMarquadt<double, 2, 1>;
+    template class LevenbergMarquadt<double, 6, 2>;
 
 } // namespace duna

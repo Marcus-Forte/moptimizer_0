@@ -1,7 +1,7 @@
 #ifndef LEVENBERG_MARQUADT_H
 #define LEVENBERG_MARQUADT_H
 
-#include "optimizer.h"
+#include "duna/optimizer.h"
 
 namespace duna
 {
@@ -51,7 +51,7 @@ namespace duna
         {
             Scalar epsilon = delta.array().abs().maxCoeff();
 
-            if (epsilon < 5e-6)
+            if (epsilon < 1e-6)
                 return true;
             return false;
         }
