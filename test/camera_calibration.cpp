@@ -6,7 +6,7 @@
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 0.0025
 
-struct Model
+struct Model : public duna::Model<>
 {
     Model(const std::vector<Eigen::Vector4d> &point_list, const std::vector<Eigen::Vector2i> &pixel_list)
         : point_vector(point_list), pixel_vector(pixel_list)
@@ -38,12 +38,12 @@ struct Model
     }
 
     // Prepare data
-    void setup(const double *x)
+    inline void setup(const double *x) override
     {
         so3::convert6DOFParameterToMatrix(x,transform);
     }
 
-    void operator()(const double *x, double *residual, unsigned int index)
+    inline void computeAtIndex(const double *x, double *residual, unsigned int index) override
     {
         Eigen::Vector3d out_pixel;
         out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];
@@ -92,14 +92,14 @@ public:
         pixel_list.push_back(Eigen::Vector2i(559, 282));
         pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-        cost = new duna::CostFunction<Model, double, 6, 2>(
+        cost = new duna::CostFunction<double, 6, 2>(
             new Model(point_list, pixel_list),
             5);
         optimizer.setCost(cost);
     }
 
 protected:
-    duna::CostFunction<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+    duna::CostFunction<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
     duna::LevenbergMarquadt<double, MODEL_PARAMETERS, MODEL_OUTPUTS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;

@@ -37,42 +37,40 @@ namespace duna
             DUNA_DEBUG_STREAM("## GenericOptimizator Iteration: " << j + 1 << "/" << m_maximum_iterations << " ##\n");
 
             Scalar y0 = m_cost->linearize(x0, hessian, b);
-            
+
             hessian_diagonal = hessian.diagonal().asDiagonal();
 
-            if( m_lm_lambda < 0.0)
-                m_lm_lambda = m_lm_init_lambda_factor_ *  hessian.diagonal().array().abs().maxCoeff();
+            if (m_lm_lambda < 0.0)
+                m_lm_lambda = m_lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
 
             Scalar nu = 2.0;
 
-            for(int k = 0; k < m_lm_max_iterations; ++k)
+            for (int k = 0; k < m_lm_max_iterations; ++k)
             {
-                Eigen::LDLT<HessianMatrix> solver (hessian + m_lm_lambda * HessianMatrix::Identity());
+                Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * HessianMatrix::Identity());
                 ParameterVector delta = solver.solve(b);
 
-                if(isDeltaSmall(delta))
+                if (isDeltaSmall(delta))
                     return OptimizationStatus::SMALL_DELTA;
 
-                
                 xi = x0 - delta;
 
                 Scalar yi = m_cost->computeCost(xi.data());
                 Scalar rho = (yi - y0) / delta.dot(m_lm_lambda * delta - b);
                 DUNA_DEBUG("--- Internal LM Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
-                if( rho < 0)
+                if (rho < 0)
                 {
-                    if (isDeltaSmall(delta) )
+                    if (isDeltaSmall(delta))
                         return OptimizationStatus::SMALL_DELTA;
 
                     m_lm_lambda = nu * m_lm_lambda;
-                    nu = 2* nu;
+                    nu = 2 * nu;
                     continue;
                 }
 
                 x0 = xi;
                 m_lm_lambda = m_lm_lambda * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
                 break;
-
             }
         }
 
@@ -80,8 +78,7 @@ namespace duna
     }
 
     // Instantiations
-    // template class LevenbergMarquadt<float>;
-    // template class LevenbergMarquadt<double>;
+    template class LevenbergMarquadt<float, 2, 1>;
 
     template class LevenbergMarquadt<double, 2, 1>;
     template class LevenbergMarquadt<double, 6, 2>;

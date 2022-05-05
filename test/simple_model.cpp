@@ -1,23 +1,25 @@
 #include <gtest/gtest.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/model.h>
 
 // Function to be minimized
-struct Model
+
+struct Model : public duna::Model<float>
 {
-    Model(double *x, double *y) : data_x(x), data_y(y) {}
+    Model(float *x, float *y) : data_x(x), data_y(y) {}
     // API simply has to override this method
-    void setup(const double* x)
+    void setup(const float* x) override
     {
 
     }
-    void operator()(const double *x, double *residual, unsigned int index)
+    void computeAtIndex(const float *x, float *residual, unsigned int index) override
     {
         residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
     }
 
 private:
-    const double *const data_x;
-    const double *const data_y;
+    const float *const data_x;
+    const float *const data_y;
 };
 
 int main(int argc, char **argv)
@@ -32,7 +34,7 @@ class SimpleModel : public testing::Test
 public:
     SimpleModel()
     {
-        cost = new duna::CostFunction<Model, double, 2, 1>(
+        cost = new duna::CostFunction<float, 2, 1>(
             new Model(x_data, y_data),
             7);
 
@@ -40,11 +42,11 @@ public:
     }
 
 protected:
-    Eigen::Vector2d x0;
-    duna::LevenbergMarquadt<double, 2, 1> optimizer;
-    duna::CostFunction<Model, double, 2, 1> *cost;
-    double x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
-    double y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
+    Eigen::Matrix<float,2,1> x0;
+    duna::LevenbergMarquadt<float, 2, 1> optimizer;
+    duna::CostFunction<float, 2, 1> *cost;
+    float x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
+    float y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 };
 
 TEST_F(SimpleModel, InitialCondition0)

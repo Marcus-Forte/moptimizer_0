@@ -1,9 +1,10 @@
 #ifndef COST_FUNCTION_H
 #define COST_FUNCTION_H
 
-#include "duna/types.h"
 #include <exception>
 #include <Eigen/Dense>
+#include "duna/types.h"
+#include "duna/model.h"
 #include <duna/logging.h>
 
 
@@ -34,7 +35,7 @@ namespace duna
 
     };
 
-    template <typename CostFunctor, class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
+    template <class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
     class CostFunction : public CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>
     {
     public:
@@ -44,7 +45,7 @@ namespace duna
         using JacobianMatrix = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::JacobianMatrix;
 
         // TODO change pointer to smartpointer
-        CostFunction(CostFunctor *functor, int num_residuals) : m_functor(functor), m_num_residuals(num_residuals), m_num_outputs(N_MODEL_OUTPUTS)
+        CostFunction(Model<Scalar> * model, int num_residuals) : m_model(model), m_num_residuals(num_residuals), m_num_outputs(N_MODEL_OUTPUTS)
         {
             // m_num_outputs = N_MODEL_OUTPUTS;
             residuals_data = new Scalar[m_num_outputs];
@@ -66,7 +67,7 @@ namespace duna
 
         inline void computeAt(const Scalar *x, Scalar *residuals, int index) override
         {
-            (*m_functor)(x, residuals, index);
+            m_model->computeAtIndex(x, residuals, index);
         }
 
         Scalar computeCost(const Scalar *x) override
@@ -76,7 +77,7 @@ namespace duna
             Eigen::Map<const Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>> residuals(residuals_data);
             
             // TODO convert to class?
-            m_functor->setup(x);
+            m_model->setup(x);
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 computeAt(x, residuals_data, i);                
@@ -103,7 +104,7 @@ namespace duna
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                m_functor->setup(x0.data());
+                m_model->setup(x0.data());
                 computeAt(x0.data(), residuals_data, i);
                 sum += residuals.squaredNorm() ;
 
@@ -114,7 +115,7 @@ namespace duna
                     x_plus[j] += epsilon;
 
                      // TODO convert to class?
-                    m_functor->setup(x_plus.data());
+                    m_model->setup(x_plus.data());
                     computeAt(x_plus.data(), residuals_plus_data, i);    
                     jacobian_row.col(j) = (residuals_plus - residuals ) / epsilon;;
                 }
@@ -130,7 +131,7 @@ namespace duna
         }
 
     protected:
-        CostFunctor *m_functor;
+        Model<Scalar> *m_model;
          // Holds results for cost computations
         Scalar *residuals_data;
         Scalar *residuals_plus_data;
