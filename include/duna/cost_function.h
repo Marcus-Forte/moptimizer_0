@@ -76,7 +76,6 @@ namespace duna
             
             Eigen::Map<const Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>> residuals(residuals_data);
             
-            // TODO convert to class?
             m_model->setup(x);
             for (int i = 0; i < m_num_residuals; ++i)
             {

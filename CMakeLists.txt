@@ -34,11 +34,14 @@ include_directories(${CMAKE_BINARY_DIR}/exports)
 
 # target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 
-get_filename_component(DATASET_PATH gtest/data/ REALPATH)
-add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
+
 
 #gtest
 if(BUILD_TESTS)
+        # Copy point cloud
+        get_filename_component(DATASET_PATH test/data/ REALPATH)
+        add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
+        
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         enable_testing()
         include(GoogleTest)
@@ -46,7 +49,8 @@ if(BUILD_TESTS)
         # Make test cases
         set(test_src 
         test/simple_model.cpp    
-        test/camera_calibration.cpp        
+        test/camera_calibration.cpp  
+        test/registration_point2point.cpp 
         )
 
         foreach(test_case ${test_src})
@@ -54,7 +58,6 @@ if(BUILD_TESTS)
                 message(STATUS ${filename})    
                 add_executable(${test_src_name} ${test_case})
                 target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
-                target_include_directories(${test_src_name} PUBLIC experimental)
                 gtest_discover_tests(${test_src_name})
         endforeach()
 endif()
