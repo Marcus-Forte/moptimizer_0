@@ -32,6 +32,7 @@ namespace duna
         }
         virtual ~RegistrationBase() = default;
 
+        void setMaximumOptimizationIterations(const unsigned int max_it ) { m_optimizer->setMaximumIterations (max_it); }
         void setMaximumICPIterations(const unsigned int max_it) { m_maximum_icp_iterations = max_it; }
         void setMaximumCorrespondenceDistance(const float max_corr_dist) { m_maximum_correspondences_distance = max_corr_dist; }
         void setSourceCloud(PointCloudSourceConstPtr source) { m_source = source; }

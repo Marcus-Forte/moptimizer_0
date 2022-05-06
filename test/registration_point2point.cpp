@@ -38,6 +38,29 @@ public:
         reference_transform = Eigen::Matrix4f::Identity();
         // Compute KDTree
         kdtree->setInputCloud(target);
+
+        // Apply registration
+
+        registration.setSourceCloud(source);
+        registration.setTargetCloud(target);
+        registration.setMaximumICPIterations(50);
+        registration.setMaximumCorrespondenceDistance(2);
+        registration.setTargetSearchMethod(kdtree);
+    }
+
+    ~TestRegistration()
+    {
+
+        // Assert results
+        for (int i = 0; i < 16; i++)
+        {
+            EXPECT_NEAR(result_transform(i), reference_transform.inverse()(i), TOLERANCE);
+        }
+
+        std::cerr << "Reference (inverse):\n"
+                  << reference_transform.inverse() << std::endl;
+        std::cerr << "duna opt:\n"
+                  << result_transform << std::endl;
     }
 
 protected:
@@ -45,33 +68,77 @@ protected:
     PointCloudT::Ptr target;
     pcl::search::KdTree<PointT>::Ptr kdtree;
     Eigen::Matrix4f reference_transform;
+    Eigen::Matrix4f result_transform;
+
+    // Main API
+    duna::Registration<PointT, PointT> registration;
 };
 
-TEST_F(TestRegistration, SimpleCase)
+TEST_F(TestRegistration, Translation6DOF)
 {
 
     reference_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1);
     pcl::transformPointCloud(*target, *source, reference_transform);
 
-    EXPECT_EQ(source->size(), 397);
-
-    // Apply registration
-    duna::Registration<PointT, PointT> registration;
-    registration.setSourceCloud(source);
-    registration.setTargetCloud(target);
-    registration.setMaximumICPIterations(50);
-    registration.setMaximumCorrespondenceDistance(2);
-    registration.setTargetSearchMethod(kdtree);
-
     registration.align();
 
-    Eigen::Matrix4f final_transform = registration.getFinalTransformation();
+    result_transform = registration.getFinalTransformation();
+}
 
-    for (int i = 0; i < reference_transform.size(); ++i)
-    {
-        EXPECT_NEAR(final_transform(i), reference_transform.inverse()(i), TOLERANCE);
-    }
+TEST_F(TestRegistration, Rotation6DOF)
+{
+    // Rotation
+    Eigen::Matrix3f rot;
+    rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
+          Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.6, Eigen::Vector3f::UnitZ());
 
-    std::cerr << final_transform << std::endl;
-    std::cerr << reference_transform.inverse() << std::endl;
+    reference_transform.topLeftCorner(3, 3) = rot;
+
+    pcl::transformPointCloud(*target, *source, reference_transform);
+
+    // Prepare dataset
+    registration.setMaximumOptimizationIterations(3);
+    registration.align();
+
+    result_transform = registration.getFinalTransformation();
+}
+
+TEST_F(TestRegistration, RotationPlusTranslation6DOF)
+{
+    // Rotation
+    Eigen::Matrix3f rot;
+    rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
+          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitZ());
+
+    reference_transform.topLeftCorner(3, 3) = rot;
+    reference_transform.col(3) = Eigen::Vector4f(-0.5, -0.2, 0.1, 1);
+
+    pcl::transformPointCloud(*target, *source, reference_transform);
+
+    registration.setMaximumOptimizationIterations(3);
+    registration.align();
+
+    result_transform = registration.getFinalTransformation();
+}
+
+TEST_F(TestRegistration, Tough6DOF)
+{
+
+    Eigen::Matrix3f rot;
+    rot = Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitX()) *
+          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitY()) *
+          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitZ());
+
+    reference_transform.topLeftCorner(3, 3) = rot;
+    reference_transform.col(3) = Eigen::Vector4f(-0.9, -0.5, 0.5, 1);
+
+    pcl::transformPointCloud(*target, *source, reference_transform);
+
+    registration.setMaximumOptimizationIterations(3);
+    registration.align();
+
+    result_transform = registration.getFinalTransformation();
+
 }
