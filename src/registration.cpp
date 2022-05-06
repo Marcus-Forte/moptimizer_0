@@ -11,6 +11,7 @@ namespace duna
     {
         // 6DOF
         m_optimizer = new LevenbergMarquadt<Scalar, 6, 1>;
+        m_optimizer->setMaximumIterations(1);
     }
 
     template <typename PointSource, typename PointTarget, typename Scalar>
@@ -47,10 +48,12 @@ namespace duna
             x0.setZero();
             m_optimizer->minimize(x0);
 
-            std::cout << x0;
+            Eigen::Matrix4f delta_transform;
+            so3::convert6DOFParameterToMatrix(x0.data(),delta_transform);
 
-            // Minimize
-            // Call optimizator
+            pcl::transformPointCloud(*m_transformed_source, *m_transformed_source, delta_transform);
+
+            m_final_transformation = delta_transform * m_final_transformation;
         }
     }
 

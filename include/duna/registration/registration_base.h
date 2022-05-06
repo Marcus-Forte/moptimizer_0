@@ -28,6 +28,7 @@ namespace duna
         RegistrationBase()
         {
             m_transformed_source.reset(new pcl::PointCloud<PointSource>);
+            
         }
         virtual ~RegistrationBase() = default;
 

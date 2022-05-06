@@ -50,7 +50,7 @@ protected:
 TEST_F(TestRegistration, SimpleCase)
 {
 
-    reference_transform.col(3) = Eigen::Vector4f(1, 2, 3, 1);
+    reference_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1);
     pcl::transformPointCloud(*target, *source, reference_transform);
 
     EXPECT_EQ(source->size(), 397);
@@ -60,7 +60,7 @@ TEST_F(TestRegistration, SimpleCase)
     registration.setSourceCloud(source);
     registration.setTargetCloud(target);
     registration.setMaximumICPIterations(10);
-    registration.setMaximumCorrespondenceDistance(20);
+    registration.setMaximumCorrespondenceDistance(2);
     registration.setTargetSearchMethod(kdtree);
 
     registration.align();
@@ -69,6 +69,9 @@ TEST_F(TestRegistration, SimpleCase)
 
     for (int i = 0; i < reference_transform.size(); ++i)
     {
-        EXPECT_NEAR(final_transform(i), reference_transform(i), TOLERANCE);
+        EXPECT_NEAR(final_transform(i), reference_transform.inverse()(i), TOLERANCE);
     }
+
+    std::cerr << final_transform << std::endl;
+    std::cerr << reference_transform.inverse() << std::endl;
 }

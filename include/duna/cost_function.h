@@ -93,7 +93,7 @@ namespace duna
             Scalar sum = 0.0;
 
             const Scalar epsilon = 24 * (std::numeric_limits<Scalar>::epsilon());
-            // const Scalar epsilon = 0.001;
+            // const Scalar epsilon = 0.1;
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
@@ -102,24 +102,16 @@ namespace duna
                 sum += residuals.squaredNorm();
 
                 // TODO preallocate functors for each parameter
-                for (int j = 0; j < N_PARAMETERS; ++j)
+                for (int j = 0; j < x0.size(); ++j)
                 {
                     ParameterVector x_plus(x0);
                     x_plus[j] += epsilon;
 
-                    // TODO convert to class?
                     m_model->setup(x_plus.data());
                     (*m_model)(x_plus.data(), residuals_plus_data, i);
                     jacobian_row.col(j) = (residuals_plus - residuals) / epsilon;
                     
                 }
-
-                DUNA_DEBUG_STREAM("RES:\n"
-                                  << residuals << "\n");
-                DUNA_DEBUG_STREAM("RES PLUS:\n"
-                                  << residuals_plus << "\n");
-                DUNA_DEBUG_STREAM("JAC:\n"
-                                  << jacobian_row << "\n");
 
                 if (residuals.hasNaN())
                     throw std::runtime_error("Residual with NaN");

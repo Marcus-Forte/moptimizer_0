@@ -38,8 +38,8 @@ namespace duna
 
             Scalar y0 = m_cost->linearize(x0, hessian, b);
 
-            DUNA_DEBUG_STREAM("[LM] Hessian: " << hessian);
-            DUNA_DEBUG_STREAM("[LM] b: " << b);
+            DUNA_DEBUG_STREAM("[LM] Hessian: " << hessian << std::endl);
+            DUNA_DEBUG_STREAM("[LM] b: " << b  << std::endl) ;
 
             hessian_diagonal = hessian.diagonal().asDiagonal();
 
