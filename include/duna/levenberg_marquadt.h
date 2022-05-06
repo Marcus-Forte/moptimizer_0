@@ -16,9 +16,13 @@ namespace duna
 
         LevenbergMarquadt()
         {
+            reset();
+        }
+
+        void reset()
+        {
             m_lm_init_lambda_factor_ = 1e-9;
             m_lm_lambda = -1.0;
-            m_lm_max_iterations = 10;
         }
 
         virtual ~LevenbergMarquadt() = default;
@@ -32,7 +36,7 @@ namespace duna
         OptimizationStatus minimize(ParameterVector &x0) override;
 
     protected:
-        // TODO 
+        // TODO
         bool hasConverged()
         {
             return false;
@@ -55,7 +59,6 @@ namespace duna
                 return true;
             return false;
         }
-
     };
 }
 

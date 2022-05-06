@@ -92,7 +92,7 @@ namespace duna
 
             Scalar sum = 0.0;
 
-            const Scalar epsilon = 24 * (std::numeric_limits<Scalar>::epsilon());
+            const Scalar epsilon = 12 * (std::numeric_limits<Scalar>::epsilon());
             // const Scalar epsilon = 0.1;
 
             for (int i = 0; i < m_num_residuals; ++i)

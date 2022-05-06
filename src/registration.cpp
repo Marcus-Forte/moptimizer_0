@@ -46,10 +46,13 @@ namespace duna
                 new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences), m_correspondences.size()));
 
             x0.setZero();
-            m_optimizer->minimize(x0);
+            m_optimization_status = m_optimizer->minimize(x0);
+
+            if (m_optimization_status == OptimizationStatus::SMALL_DELTA)
+                return;
 
             Eigen::Matrix4f delta_transform;
-            so3::convert6DOFParameterToMatrix(x0.data(),delta_transform);
+            so3::convert6DOFParameterToMatrix(x0.data(), delta_transform);
 
             pcl::transformPointCloud(*m_transformed_source, *m_transformed_source, delta_transform);
 

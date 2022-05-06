@@ -59,7 +59,7 @@ TEST_F(TestRegistration, SimpleCase)
     duna::Registration<PointT, PointT> registration;
     registration.setSourceCloud(source);
     registration.setTargetCloud(target);
-    registration.setMaximumICPIterations(10);
+    registration.setMaximumICPIterations(50);
     registration.setMaximumCorrespondenceDistance(2);
     registration.setTargetSearchMethod(kdtree);
 

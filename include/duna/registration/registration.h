@@ -32,8 +32,10 @@ namespace duna
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_target;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_source;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_optimizer;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_optimization_status;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_nearest_k;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_target_kdtree;
+        
 
         void update_correspondences();
         void registration_loop();

@@ -23,6 +23,8 @@ namespace duna
             throw std::runtime_error("no cost object.");
         }
 
+        reset();
+
         HessianMatrix hessian;
         HessianMatrix hessian_diagonal;
         ParameterVector b;
@@ -38,10 +40,10 @@ namespace duna
 
             Scalar y0 = m_cost->linearize(x0, hessian, b);
 
-            DUNA_DEBUG_STREAM("[LM] Hessian: " << hessian << std::endl);
-            DUNA_DEBUG_STREAM("[LM] b: " << b  << std::endl) ;
+            // DUNA_DEBUG_STREAM("[LM!] Hessian: " << hessian << std::endl);
+            // DUNA_DEBUG_STREAM("[LM] b: " << b << std::endl);
 
-            hessian_diagonal = hessian.diagonal().asDiagonal();
+            // hessian_diagonal = hessian.diagonal().asDiagonal();
 
             if (m_lm_lambda < 0.0)
                 m_lm_lambda = m_lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
@@ -52,6 +54,9 @@ namespace duna
             {
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * HessianMatrix::Identity());
                 ParameterVector delta = solver.solve(b);
+
+                // DUNA_DEBUG_STREAM("[LM] --- Solver delta: ");
+                // DUNA_DEBUG_STREAM(delta << std::endl);
 
                 if (isDeltaSmall(delta))
                 {
