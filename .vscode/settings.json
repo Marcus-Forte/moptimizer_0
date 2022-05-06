@@ -84,5 +84,6 @@
 
     "todohighlight.isEnable": true,
     "cmake.configureOnOpen": false,
-    "cmake.configureOnEdit": false
+    "cmake.configureOnEdit": false,
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json"
 }

@@ -3,7 +3,7 @@
 
 namespace duna 
 {
-    template <class Scalar = double>
+    template <class Scalar>
     class Model
     {
         public:
@@ -14,7 +14,7 @@ namespace duna
         inline virtual void setup(const Scalar* x) = 0;
 
         /*  Evaluate cost function at index */
-        inline virtual void computeAtIndex(const Scalar* x, Scalar* f_x, const unsigned int index) = 0;
+        inline virtual void operator()(const Scalar* x, Scalar* f_x, const unsigned int index) = 0;
 
     };
 }

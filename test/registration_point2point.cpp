@@ -6,6 +6,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
 
+#define TOLERANCE 0.01f
+
 using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;
 
@@ -36,7 +38,6 @@ public:
         reference_transform = Eigen::Matrix4f::Identity();
         // Compute KDTree
         kdtree->setInputCloud(target);
-
     }
 
 protected:
@@ -47,25 +48,27 @@ protected:
 };
 
 TEST_F(TestRegistration, SimpleCase)
-{   
+{
 
-    reference_transform.col(3) = Eigen::Vector4f(1,2,3,1);
-    pcl::transformPointCloud(*target,*source,reference_transform);
+    reference_transform.col(3) = Eigen::Vector4f(1, 2, 3, 1);
+    pcl::transformPointCloud(*target, *source, reference_transform);
 
     EXPECT_EQ(source->size(), 397);
 
     // Apply registration
-    duna::Registration<PointT,PointT> registration;
+    duna::Registration<PointT, PointT> registration;
     registration.setSourceCloud(source);
     registration.setTargetCloud(target);
     registration.setMaximumICPIterations(10);
     registration.setMaximumCorrespondenceDistance(20);
+    registration.setTargetSearchMethod(kdtree);
 
     registration.align();
 
-    std::cerr << registration.getFinalTransformation();
-    
-    
+    Eigen::Matrix4f final_transform = registration.getFinalTransformation();
 
-    
+    for (int i = 0; i < reference_transform.size(); ++i)
+    {
+        EXPECT_NEAR(final_transform(i), reference_transform(i), TOLERANCE);
+    }
 }

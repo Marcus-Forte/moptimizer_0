@@ -24,6 +24,7 @@ add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
 src/cost_function.cpp
 src/so3.cpp
+src/registration.cpp
 )
 
 

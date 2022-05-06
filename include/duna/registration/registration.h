@@ -3,9 +3,11 @@
 
 #include <duna/registration/registration_base.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/registration/registration_model.h>
+
 namespace duna
 {
-    template <typename PointSource, typename PointTarget, typename Scalar = double>
+    template <typename PointSource, typename PointTarget, typename Scalar = float>
     class Registration : public RegistrationBase<PointSource,PointTarget,Scalar>
     {
         public:
@@ -13,23 +15,28 @@ namespace duna
         using PointCloudTargetPtr = typename RegistrationBase<PointSource,PointTarget,Scalar>::PointCloudTargetPtr;
         using PointCloudSourceConstPtr = typename RegistrationBase<PointSource,PointTarget,Scalar>::PointCloudSourceConstPtr;
         using PointCloudTargetConstPtr = typename RegistrationBase<PointSource,PointTarget,Scalar>::PointCloudTargetConstPtr;
-        Registration()
-        {
-            optimizer = new LevenbergMarquadt<Scalar,6,1>;
-        }
+        using Matrix4f = typename RegistrationBase<PointSource,PointTarget,Scalar>::Matrix4f;
 
-        // Implement ICP
-        void align() override
-        {
+        Registration();
+        virtual ~Registration() = default;
 
-        }
+        void align() override;       
+        void align(const Matrix4f& guess);
 
         protected:
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_maximum_icp_iterations;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_maximum_correspondences_distance;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_final_transformation;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_transformed_source;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_correspondences;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_target;
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_source;
-        using RegistrationBase<PointSource,PointTarget,Scalar>::optimizer;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_optimizer;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_nearest_k;
+        using RegistrationBase<PointSource,PointTarget,Scalar>::m_target_kdtree;
+
+        void update_correspondences();
+        void registration_loop();
 
     };
 }

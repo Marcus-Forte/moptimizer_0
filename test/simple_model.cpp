@@ -12,7 +12,7 @@ struct Model : public duna::Model<float>
     {
 
     }
-    void computeAtIndex(const float *x, float *residual, unsigned int index) override
+    void operator()(const float *x, float *residual, unsigned int index) override
     {
         residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
     }

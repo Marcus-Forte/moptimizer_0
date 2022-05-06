@@ -38,6 +38,9 @@ namespace duna
 
             Scalar y0 = m_cost->linearize(x0, hessian, b);
 
+            DUNA_DEBUG_STREAM("[LM] Hessian: " << hessian);
+            DUNA_DEBUG_STREAM("[LM] b: " << b);
+
             hessian_diagonal = hessian.diagonal().asDiagonal();
 
             if (m_lm_lambda < 0.0)
@@ -51,7 +54,10 @@ namespace duna
                 ParameterVector delta = solver.solve(b);
 
                 if (isDeltaSmall(delta))
+                {
+                    DUNA_DEBUG("--- Small Delta reached --- : %f", delta.norm());
                     return OptimizationStatus::SMALL_DELTA;
+                }
 
                 xi = x0 - delta;
 
@@ -85,5 +91,8 @@ namespace duna
     // Registration
     template class LevenbergMarquadt<double, 6, 1>;
     template class LevenbergMarquadt<double, 3, 1>; // 3DOF
+
+    template class LevenbergMarquadt<float, 6, 1>;
+    template class LevenbergMarquadt<float, 3, 1>; // 3DOF
 
 } // namespace duna

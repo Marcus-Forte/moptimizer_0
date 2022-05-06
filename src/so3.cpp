@@ -51,6 +51,7 @@ namespace so3
 
     // template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double* x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float* x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(const double* x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convertMatrixTo6DOFParameter<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
 
