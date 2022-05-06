@@ -36,7 +36,7 @@ namespace duna
 
         for (int j = 0; j < m_maximum_iterations; ++j)
         {
-            DUNA_DEBUG_STREAM("## GenericOptimizator Iteration: " << j + 1 << "/" << m_maximum_iterations << " ##\n");
+            DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << j + 1 << "/" << m_maximum_iterations << " ##\n");
 
             Scalar y0 = m_cost->linearize(x0, hessian, b);
 
@@ -60,7 +60,7 @@ namespace duna
 
                 if (isDeltaSmall(delta))
                 {
-                    DUNA_DEBUG("--- Small Delta reached --- : %f", delta.norm());
+                    DUNA_DEBUG("--- Small Delta reached --- : %f\n", delta.norm());
                     return OptimizationStatus::SMALL_DELTA;
                 }
 

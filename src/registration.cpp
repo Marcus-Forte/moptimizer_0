@@ -2,6 +2,7 @@
 #include <duna/registration/registration_model.h>
 
 #include <pcl/common/transforms.h>
+#include <duna/stopwatch.hpp>
 
 namespace duna
 {
@@ -37,19 +38,35 @@ namespace duna
         pcl::transformPointCloud(*m_source, *m_transformed_source, m_final_transformation);
         Eigen::Matrix<Scalar, 6, 1> x0;
 
+        // TODO This looks HORRIBLE
+        utilities::Stopwatch stopwatch(true);
+
+        auto *cost = new duna::CostFunction<float, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
+
+        utilities::Stopwatch stopwatch_total(true);
+
+        m_optimizer->setCost(cost);
+        stopwatch_total.tick();
+
         for (int it = 0; it < m_maximum_icp_iterations; ++it)
         {
             DUNA_DEBUG_STREAM("## ICP Iteration: " << it + 1 << "/" << m_maximum_icp_iterations << " ##\n");
             update_correspondences();
-            // TODO This looks HORRIBLE
-            m_optimizer->setCost(new duna::CostFunction<float, 6, 1>(
-                new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences), m_correspondences.size()));
+            cost->setNumResiduals(m_correspondences.size());
 
             x0.setZero();
+
+            stopwatch.tick();
             m_optimization_status = m_optimizer->minimize(x0);
+            stopwatch.tock("Minimize");
 
             if (m_optimization_status == OptimizationStatus::SMALL_DELTA)
+            {
+                delete cost;
+                stopwatch_total.tock("registration loop");
+
                 return;
+            }
 
             Eigen::Matrix4f delta_transform;
             so3::convert6DOFParameterToMatrix(x0.data(), delta_transform);
@@ -58,6 +75,8 @@ namespace duna
 
             m_final_transformation = delta_transform * m_final_transformation;
         }
+
+        delete cost;
     }
 
     template <typename PointSource, typename PointTarget, typename Scalar>
