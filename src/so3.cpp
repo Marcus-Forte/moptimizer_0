@@ -5,7 +5,7 @@ namespace so3
 {
     // TODO check for errors in conversion. High angles are problematic
     template <typename Scalar>
-    void convert6DOFParameterToMatrix(const Scalar* x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
+    inline void convert6DOFParameterToMatrix(const Scalar* x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {
         transform_matrix_.setZero();
         transform_matrix_(0, 3) = x[0];
@@ -21,7 +21,7 @@ namespace so3
     }
 
     template <typename Scalar>
-    void convert3DOFParameterToMatrix(const Scalar* x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
+    inline void convert3DOFParameterToMatrix(const Scalar* x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {
         transform_matrix_.setZero();
         transform_matrix_(3, 3) = 1;
@@ -34,7 +34,7 @@ namespace so3
     }
 
     template <typename Scalar>
-    void convertMatrixTo6DOFParameter(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 6, 1> &x)
+    inline void convertMatrixTo6DOFParameter(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 6, 1> &x)
     {
         x[0] = transform_matrix_(0, 3);
         x[1] = transform_matrix_(1, 3);
@@ -51,8 +51,9 @@ namespace so3
 
     // template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double* x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float* x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(const double* x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convertMatrixTo6DOFParameter<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
+
+    template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float* x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
 }

@@ -29,6 +29,7 @@ namespace duna
         CostFunctionBase(int num_residuals) : m_num_residuals(num_residuals), m_num_outputs(N_MODEL_OUTPUTS)
         {
         }
+
         CostFunctionBase(const CostFunctionBase &) = delete;
         CostFunctionBase &operator=(const CostFunctionBase &) = delete;
         virtual ~CostFunctionBase() = default;
@@ -117,9 +118,6 @@ namespace duna
                     (*m_model)(x_plus.data(), residuals_plus_data, i);
                     jacobian_row.col(j) = (residuals_plus - residuals) / epsilon;
                 }
-
-                if (residuals.hasNaN())
-                    throw std::runtime_error("Residual with NaN");
 
                 hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
                 b += jacobian_row.transpose() * residuals;

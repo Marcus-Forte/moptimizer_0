@@ -21,6 +21,7 @@ namespace duna
 
         void reset()
         {
+            m_lm_max_iterations = 10;
             m_lm_init_lambda_factor_ = 1e-9;
             m_lm_lambda = -1.0;
         }
@@ -45,7 +46,7 @@ namespace duna
     private:
         Scalar m_lm_init_lambda_factor_;
         Scalar m_lm_lambda;
-        int m_lm_max_iterations = 10;
+        int m_lm_max_iterations;
 
         using Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::m_cost;
         using Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::m_maximum_iterations;
@@ -55,7 +56,7 @@ namespace duna
         {
             Scalar epsilon = delta.array().abs().maxCoeff();
 
-            if (epsilon < 1e-6)
+            if (epsilon < 5e-6)
                 return true;
             return false;
         }

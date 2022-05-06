@@ -26,7 +26,6 @@ namespace duna
 
             const Eigen::Vector4f warped_src_pt = transform * src_pt.getVector4fMap();
 
-
             const Eigen::Vector4f tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
             const Eigen::Vector4f src(warped_src_pt[0],warped_src_pt[1],warped_src_pt[2],0);
             

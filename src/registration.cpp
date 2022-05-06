@@ -39,14 +39,15 @@ namespace duna
         Eigen::Matrix<Scalar, 6, 1> x0;
 
         // TODO This looks HORRIBLE
-        utilities::Stopwatch stopwatch(true);
+        // utilities::Stopwatch stopwatch(true);
+        // utilities::Stopwatch stopwatch_total(true);
 
         auto *cost = new duna::CostFunction<float, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
 
-        utilities::Stopwatch stopwatch_total(true);
+        
 
         m_optimizer->setCost(cost);
-        stopwatch_total.tick();
+        // stopwatch_total.tick();
 
         for (int it = 0; it < m_maximum_icp_iterations; ++it)
         {
@@ -56,14 +57,14 @@ namespace duna
 
             x0.setZero();
 
-            stopwatch.tick();
+            // stopwatch.tick();
             m_optimization_status = m_optimizer->minimize(x0);
-            stopwatch.tock("Minimize");
+            // stopwatch.tock("Minimize");
 
             if (m_optimization_status == OptimizationStatus::SMALL_DELTA)
             {
                 delete cost;
-                stopwatch_total.tock("registration loop");
+                // stopwatch_total.tock("registration loop");
 
                 return;
             }

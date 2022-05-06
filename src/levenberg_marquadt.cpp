@@ -60,15 +60,21 @@ namespace duna
 
                 if (isDeltaSmall(delta))
                 {
-                    DUNA_DEBUG("--- Small Delta reached --- : %f\n", delta.norm());
+                    DUNA_DEBUG("[LM] --- Small Delta reached --- : %f\n", delta.norm());
                     return OptimizationStatus::SMALL_DELTA;
+                }
+
+                if(delta.hasNaN())
+                {
+                    DUNA_DEBUG("[LM] --- Numeric Error --- \n");
+                    return OptimizationStatus::NUMERIC_ERROR;
                 }
 
                 xi = x0 - delta;
 
                 Scalar yi = m_cost->computeCost(xi.data());
                 Scalar rho = (yi - y0) / delta.dot(m_lm_lambda * delta - b);
-                DUNA_DEBUG("--- Internal LM Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
                 if (rho < 0)
                 {
                     if (isDeltaSmall(delta))
