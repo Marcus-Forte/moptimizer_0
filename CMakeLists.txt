@@ -12,6 +12,8 @@ find_package(GTest REQUIRED)
 link_libraries(Eigen3::Eigen)
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
 
+# add_compile_options(-msse2 -msse3)
+
 if(UNIX)
 # GTest required pthread in UNIX Os
         link_libraries(pthread)

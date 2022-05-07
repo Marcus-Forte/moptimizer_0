@@ -9,7 +9,7 @@
 
 #define TOLERANCE 0.01f
 
-using TESTTYPE = float;
+using TESTTYPE = double;
 using Matrix3 = Eigen::Matrix<TESTTYPE,3,3>;
 using Matrix4 = Eigen::Matrix<TESTTYPE,4,4>;
 using Vector4 = Eigen::Matrix<TESTTYPE,4,1>;
@@ -75,7 +75,7 @@ protected:
     Matrix4 result_transform;
 
     // Main API
-    duna::Registration<PointT, PointT,float> registration;
+    duna::Registration<PointT, PointT,TESTTYPE> registration;
 };
 
 TEST_F(TestRegistration, Translation6DOF)

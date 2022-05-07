@@ -109,6 +109,6 @@ namespace duna
     }
 
     // Instantiations
-    template class Registration<pcl::PointXYZ, pcl::PointXYZ, float>;
-    // template class Registration<pcl::PointXYZ, pcl::PointXYZ, double>;
+    // template class Registration<pcl::PointXYZ, pcl::PointXYZ, float>;
+    template class Registration<pcl::PointXYZ, pcl::PointXYZ, double>;
 }

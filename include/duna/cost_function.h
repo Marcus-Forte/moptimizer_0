@@ -104,7 +104,7 @@ namespace duna
             Scalar sum = 0.0;
 
             // const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
-            const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
+            const Scalar min_step_size = 32 * std::numeric_limits<Scalar>::epsilon();
             // const Scalar epsilon = 0.0001;
 
             // Create a new model for each numerical increment
@@ -115,20 +115,20 @@ namespace duna
             Scalar *h = new Scalar[x0.size()];
             const Scalar relDiff = 1e-6;
 
-             std::cerr << "epsilon: ";
+            //  std::cerr << "epsilon: ";
             for (int j = 0; j < x0.size(); ++j)
             {                
-                const Scalar step_size = relDiff * abs(x0[j]);
-                h[j] = std::max(step_size,min_step_size);
+                // const Scalar step_size = relDiff * abs(x0[j]);
+                // h[j] = std::max(step_size,min_step_size);
 
                 h[j] = min_step_size; // OVERRIDE
-                std::cerr << h[j] << " ";
+                // std::cerr << h[j] << " ";
 
                 x_plus[j][j] += h[j];
                 diff_models[j].setup((x_plus[j]).data());
             }
 
-            std::cerr << "\n";
+            // std::cerr << "\n";
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
