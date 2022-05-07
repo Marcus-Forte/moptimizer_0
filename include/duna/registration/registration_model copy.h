@@ -25,12 +25,12 @@ namespace duna
             const PointSource &tgt_pt = target.points[correspondences[index].index_match];
 
             const Eigen::Matrix<Scalar, 4, 1> src(src_pt.x, src_pt.y, src_pt.z, 1);
+
+            const Eigen::Matrix<Scalar, 4, 1> warped_src_pt = transform * src;
+
             const Eigen::Matrix<Scalar, 4, 1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
 
-            Eigen::Matrix<Scalar, 4, 1> warped_src = transform * src;
-                    
-            warped_src[3] = 0;
-            f_x[0] = (warped_src - tgt).norm();
+            f_x[0] = (warped_src_pt - tgt).norm();
         }
 
         const pcl::PointCloud<PointSource> &source;

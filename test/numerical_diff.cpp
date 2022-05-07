@@ -15,7 +15,7 @@ template <typename Scalar = double>
 struct SimpleModel
 {
     SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
-    // API simply has to override this method
+
     void setup(const Scalar *x)
     {
     }
@@ -47,12 +47,13 @@ protected:
 TEST_F(TestNumericalDifferentiation, SimpleModel)
 {
     using SCALAR = double;
-    SCALAR x_data[] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
-    SCALAR y_data[] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
+    SCALAR x_data[] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70, 5, 0};
+    SCALAR y_data[] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317, 0.2, 0};
+    int m_residuals = sizeof(x_data) / sizeof(SCALAR);
 
     SimpleModel<SCALAR> model(x_data, y_data);
 
-    duna::CostFunction<SimpleModel<SCALAR>, SCALAR, 2, 1> cost(&model, 7);
+    duna::CostFunction<SimpleModel<SCALAR>, SCALAR, 2, 1> cost(&model, m_residuals);
 
     Eigen::Matrix<SCALAR,2,1> x0(0.9, 0.2);
     Eigen::Matrix<SCALAR,2,2> hessian;
@@ -62,21 +63,20 @@ TEST_F(TestNumericalDifferentiation, SimpleModel)
     cost.linearize(x0, hessian, b, &jacobian);
 
     Eigen::Matrix<SCALAR,-1,-1> analitic_jacobian;
-    analitic_jacobian.resize(7,2);
+    analitic_jacobian.resize(m_residuals,2);
     SCALAR jac_row[2];
-    for(int i=0; i < 7; ++i)
+    for(int i=0; i < m_residuals; ++i)
     {
         model.df(x0.data(),jac_row,i);
         analitic_jacobian(i,0) = jac_row[0];
         analitic_jacobian(i,1) = jac_row[1];
+    }  
+
+    std::cout << analitic_jacobian << std::endl << std::endl;
+    std::cout << jacobian << std::endl << std::endl;
+
+    for(int i=0; i < analitic_jacobian.size(); i++)
+    {
+        EXPECT_NEAR(analitic_jacobian(i),jacobian(i), 1e-4);
     }
-
-
-    std::cout << jacobian << std::endl
-              << std::endl;
-
-    std::cout << analitic_jacobian << std::endl
-              << std::endl;
-
-    std::cout << hessian << std::endl;
 }

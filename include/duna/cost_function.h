@@ -103,26 +103,32 @@ namespace duna
             JacobianMatrix jacobian_row;
             Scalar sum = 0.0;
 
-            // const Scalar epsilon = std::sqrt(std::numeric_limits<Scalar>::epsilon());
-            const Scalar epsilon = 24 * std::numeric_limits<Scalar>::epsilon();
+            // const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
+            const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
             // const Scalar epsilon = 0.0001;
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_models(x0.size(), *m_model);
             std::vector<ParameterVector> x_plus(x0.size(), x0);
-            Scalar *h = new Scalar[x0.size()];
 
+            // Step size
+            Scalar *h = new Scalar[x0.size()];
+            const Scalar relDiff = 1e-6;
+
+             std::cerr << "epsilon: ";
             for (int j = 0; j < x0.size(); ++j)
-            {
-                // h[j] = epsilon * abs(x0[j]);
-                // if (h[j] == 0.)
-                //     h[j] = epsilon;
-                
-                h[j] = epsilon; // OVERRIDE
+            {                
+                const Scalar step_size = relDiff * abs(x0[j]);
+                h[j] = std::max(step_size,min_step_size);
+
+                h[j] = min_step_size; // OVERRIDE
+                std::cerr << h[j] << " ";
 
                 x_plus[j][j] += h[j];
                 diff_models[j].setup((x_plus[j]).data());
             }
+
+            std::cerr << "\n";
 
             for (int i = 0; i < m_num_residuals; ++i)
             {

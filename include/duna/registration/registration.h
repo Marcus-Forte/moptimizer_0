@@ -7,7 +7,7 @@
 
 namespace duna
 {
-    template <typename PointSource, typename PointTarget, typename Scalar = float>
+    template <typename PointSource, typename PointTarget, typename Scalar = double>
     class Registration : public RegistrationBase<PointSource,PointTarget,Scalar>
     {
         public:
@@ -15,13 +15,13 @@ namespace duna
         using PointCloudTargetPtr = typename RegistrationBase<PointSource,PointTarget,Scalar>::PointCloudTargetPtr;
         using PointCloudSourceConstPtr = typename RegistrationBase<PointSource,PointTarget,Scalar>::PointCloudSourceConstPtr;
         using PointCloudTargetConstPtr = typename RegistrationBase<PointSource,PointTarget,Scalar>::PointCloudTargetConstPtr;
-        using Matrix4f = typename RegistrationBase<PointSource,PointTarget,Scalar>::Matrix4f;
+        using Matrix4 = typename RegistrationBase<PointSource,PointTarget,Scalar>::Matrix4;
 
         Registration();
         virtual ~Registration() = default;
 
         void align() override;       
-        void align(const Matrix4f& guess);
+        void align(const Matrix4& guess);
 
         protected:
         using RegistrationBase<PointSource,PointTarget,Scalar>::m_maximum_icp_iterations;

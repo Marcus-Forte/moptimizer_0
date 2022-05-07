@@ -5,8 +5,14 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
+#include <pcl/registration/icp.h>
 
 #define TOLERANCE 0.01f
+
+using TESTTYPE = float;
+using Matrix3 = Eigen::Matrix<TESTTYPE,3,3>;
+using Matrix4 = Eigen::Matrix<TESTTYPE,4,4>;
+using Vector4 = Eigen::Matrix<TESTTYPE,4,1>;
 
 using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;
@@ -35,13 +41,13 @@ public:
 
         EXPECT_EQ(target->size(), 397);
 
-        reference_transform = Eigen::Matrix4f::Identity();
+        reference_transform = Matrix4::Identity();
         // Compute KDTree
         kdtree->setInputCloud(target);
 
         registration.setSourceCloud(source);
         registration.setTargetCloud(target);
-        registration.setMaximumICPIterations(50);
+        registration.setMaximumICPIterations(150);
         registration.setMaximumCorrespondenceDistance(2);
         registration.setTargetSearchMethod(kdtree);
     }
@@ -65,17 +71,17 @@ protected:
     PointCloudT::Ptr source;
     PointCloudT::Ptr target;
     pcl::search::KdTree<PointT>::Ptr kdtree;
-    Eigen::Matrix4f reference_transform;
-    Eigen::Matrix4f result_transform;
+    Matrix4 reference_transform;
+    Matrix4 result_transform;
 
     // Main API
-    duna::Registration<PointT, PointT> registration;
+    duna::Registration<PointT, PointT,float> registration;
 };
 
 TEST_F(TestRegistration, Translation6DOF)
 {
 
-    reference_transform.col(3) = Eigen::Vector4f(-0.5, 0.3, 0.2, 1);
+    reference_transform.col(3) = Vector4(-0.5, 0.3, 0.2, 1);
     pcl::transformPointCloud(*target, *source, reference_transform);
 
     registration.align();
@@ -86,10 +92,10 @@ TEST_F(TestRegistration, Translation6DOF)
 TEST_F(TestRegistration, Rotation6DOF)
 {
     // Rotation
-    Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(0.8, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.6, Eigen::Vector3f::UnitZ());
+    Matrix3 rot;
+    rot = Eigen::AngleAxis<TESTTYPE>(0.2, Eigen::Matrix<TESTTYPE,3,1>::UnitX()) *
+          Eigen::AngleAxis<TESTTYPE>(0.8, Eigen::Matrix<TESTTYPE,3,1>::UnitY()) *
+          Eigen::AngleAxis<TESTTYPE>(0.6, Eigen::Matrix<TESTTYPE,3,1>::UnitZ());
 
     reference_transform.topLeftCorner(3, 3) = rot;
 
@@ -105,13 +111,13 @@ TEST_F(TestRegistration, Rotation6DOF)
 TEST_F(TestRegistration, RotationPlusTranslation6DOF)
 {
     // Rotation
-    Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(0.0, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitZ());
+    Matrix3 rot;
+    rot = Eigen::AngleAxis<TESTTYPE>(0.2, Eigen::Matrix<TESTTYPE,3,1>::UnitX()) *
+          Eigen::AngleAxis<TESTTYPE>(0., Eigen::Matrix<TESTTYPE,3,1>::UnitY()) *
+          Eigen::AngleAxis<TESTTYPE>(0.2, Eigen::Matrix<TESTTYPE,3,1>::UnitZ());
 
     reference_transform.topLeftCorner(3, 3) = rot;
-    reference_transform.col(3) = Eigen::Vector4f(-0.5, -0.2, 0.1, 1);
+    reference_transform.col(3) = Vector4(-0.5, -0.2, 0.1, 1);
 
     pcl::transformPointCloud(*target, *source, reference_transform);
 
@@ -124,13 +130,13 @@ TEST_F(TestRegistration, RotationPlusTranslation6DOF)
 TEST_F(TestRegistration, Tough6DOF)
 {
 
-    Eigen::Matrix3f rot;
-    rot = Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitX()) *
-          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitY()) *
-          Eigen::AngleAxisf(0.7, Eigen::Vector3f::UnitZ());
+    Matrix3 rot;
+    rot = Eigen::AngleAxis<TESTTYPE>(0.7, Eigen::Matrix<TESTTYPE,3,1>::UnitX()) *
+          Eigen::AngleAxis<TESTTYPE>(0.7, Eigen::Matrix<TESTTYPE,3,1>::UnitY()) *
+          Eigen::AngleAxis<TESTTYPE>(0.7, Eigen::Matrix<TESTTYPE,3,1>::UnitZ());
 
     reference_transform.topLeftCorner(3, 3) = rot;
-    reference_transform.col(3) = Eigen::Vector4f(-0.9, -0.5, 0.5, 1);
+    reference_transform.col(3) = Vector4(-0.9, -0.5, 0.5, 1);
 
     pcl::transformPointCloud(*target, *source, reference_transform);
 

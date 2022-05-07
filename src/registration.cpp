@@ -24,7 +24,7 @@ namespace duna
     }
 
     template <typename PointSource, typename PointTarget, typename Scalar>
-    void Registration<PointSource, PointTarget, Scalar>::align(const Matrix4f &guess)
+    void Registration<PointSource, PointTarget, Scalar>::align(const Matrix4 &guess)
     {
         m_final_transformation = guess;
 
@@ -42,7 +42,7 @@ namespace duna
         // utilities::Stopwatch stopwatch(true);
         // utilities::Stopwatch stopwatch_total(true);
 
-        auto *cost = new duna::CostFunction<RegistrationModel<PointSource, PointTarget>, float, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
+        auto *cost = new duna::CostFunction<RegistrationModel<PointSource, PointTarget>, Scalar, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
         
         m_optimizer->setCost(cost);
         // stopwatch_total.tick();
@@ -67,7 +67,7 @@ namespace duna
                 return;
             }
 
-            Eigen::Matrix4f delta_transform;
+            Matrix4 delta_transform;
             so3::convert6DOFParameterToMatrix(x0.data(), delta_transform);
 
             pcl::transformPointCloud(*m_transformed_source, *m_transformed_source, delta_transform);
@@ -110,4 +110,5 @@ namespace duna
 
     // Instantiations
     template class Registration<pcl::PointXYZ, pcl::PointXYZ, float>;
+    // template class Registration<pcl::PointXYZ, pcl::PointXYZ, double>;
 }

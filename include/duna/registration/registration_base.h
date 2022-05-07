@@ -10,7 +10,7 @@
 
 namespace duna
 {
-    template <typename PointSource, typename PointTarget, typename Scalar = float>
+    template <typename PointSource, typename PointTarget, typename Scalar = double>
     class RegistrationBase
     {
     public:
@@ -23,7 +23,7 @@ namespace duna
         using TargetPointCloudSearchPtr = typename pcl::search::Search<PointTarget>::Ptr;
         using TargetPointCloudSearchConstPtr = typename pcl::search::Search<PointTarget>::ConstPtr;
 
-        using Matrix4f = Eigen::Matrix4f;
+        using Matrix4 = Eigen::Matrix<Scalar,4,4>;
 
         RegistrationBase()
         {
@@ -39,7 +39,7 @@ namespace duna
         void setTargetCloud(PointCloudTargetConstPtr target) { m_target = target; }
         void setTargetSearchMethod(TargetPointCloudSearchConstPtr target_kdtree) {m_target_kdtree =  target_kdtree; }
 
-        Eigen::Matrix4f getFinalTransformation()
+        Matrix4 getFinalTransformation()
         {
             return m_final_transformation;
         }
@@ -49,7 +49,7 @@ namespace duna
             return m_optimization_status;
         }
         virtual void align() = 0;
-        virtual void align(const Matrix4f& guess) = 0;
+        virtual void align(const Matrix4& guess) = 0;
 
     protected:
         // TODO make it more generic
@@ -66,7 +66,7 @@ namespace duna
         unsigned int m_nearest_k = 5;
 
         // Alignment transformation
-        Eigen::Matrix4f m_final_transformation;
+        Matrix4 m_final_transformation;
 
         OptimizationStatus m_optimization_status;
 
