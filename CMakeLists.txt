@@ -52,6 +52,7 @@ if(BUILD_TESTS)
         test/simple_model.cpp    
         test/camera_calibration.cpp  
         test/registration_point2point.cpp 
+        test/numerical_diff.cpp
         )
 
         foreach(test_case ${test_src})

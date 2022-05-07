@@ -14,6 +14,9 @@ namespace duna
         RegistrationModel(const pcl::PointCloud<PointSource> &source_, const pcl::PointCloud<PointSource> &target_, const pcl::Correspondences &correspondences_) : source(source_), target(target_), correspondences(correspondences_)
         {
         }
+
+
+
         inline virtual void setup(const float *x) override
         {
             so3::convert6DOFParameterToMatrix(x, transform);

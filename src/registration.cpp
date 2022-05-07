@@ -42,10 +42,8 @@ namespace duna
         // utilities::Stopwatch stopwatch(true);
         // utilities::Stopwatch stopwatch_total(true);
 
-        auto *cost = new duna::CostFunction<float, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
-
+        auto *cost = new duna::CostFunction<RegistrationModel<PointSource, PointTarget>, float, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
         
-
         m_optimizer->setCost(cost);
         // stopwatch_total.tick();
 

@@ -39,8 +39,6 @@ public:
         // Compute KDTree
         kdtree->setInputCloud(target);
 
-        // Apply registration
-
         registration.setSourceCloud(source);
         registration.setTargetCloud(target);
         registration.setMaximumICPIterations(50);

@@ -6,6 +6,7 @@
 #include "duna/types.h"
 #include "duna/model.h"
 #include <duna/logging.h>
+#include <vector>
 
 namespace duna
 {
@@ -35,7 +36,7 @@ namespace duna
         virtual ~CostFunctionBase() = default;
 
         virtual Scalar computeCost(const Scalar *x) = 0;
-        virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b) = 0;
+        virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b, void *dump = nullptr) = 0;
         void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
 
     protected:
@@ -43,7 +44,8 @@ namespace duna
         int m_num_outputs;
     };
 
-    template <class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
+    // NOTE. We are using Model as a template to be able to call its copy constructors and enable numercial diff.
+    template <typename Model, class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
     class CostFunction : public CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>
     {
     public:
@@ -53,19 +55,21 @@ namespace duna
         using JacobianMatrix = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::JacobianMatrix;
 
         // TODO change pointer to smartpointer
-        CostFunction(Model<Scalar> *model, int num_residuals) : m_model(model),
-                                                                residuals(nullptr),
-                                                                residuals_plus(nullptr),
-                                                                CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>(num_residuals)
+        CostFunction(Model *model, int num_residuals) : m_model(model),
+                                                        residuals(nullptr),
+                                                        residuals_plus(nullptr),
+                                                        CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>(num_residuals)
         {
             init();
         }
 
-        CostFunction(Model<Scalar> *model) : m_model(model),
-                                            residuals(nullptr),
-                                            residuals_plus(nullptr)
+        CostFunction(Model *model) : m_model(model),
+                                     residuals(nullptr),
+                                     residuals_plus(nullptr)
         {
             init();
+            // TODO remove warning
+            std::cout << "Warning, num_residuals not set\n";
         }
 
         CostFunction(const CostFunction &) = delete;
@@ -91,7 +95,7 @@ namespace duna
             return sum;
         }
 
-        Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b)
+        Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b, void *dump) override
         {
             hessian.setZero();
             b.setZero();
@@ -99,28 +103,59 @@ namespace duna
             JacobianMatrix jacobian_row;
             Scalar sum = 0.0;
 
-            const Scalar epsilon = 12 * (std::numeric_limits<Scalar>::epsilon());
-            // const Scalar epsilon = 0.1;
+            // const Scalar epsilon = std::sqrt(std::numeric_limits<Scalar>::epsilon());
+            const Scalar epsilon = 24 * std::numeric_limits<Scalar>::epsilon();
+            // const Scalar epsilon = 0.0001;
+
+            // Create a new model for each numerical increment
+            std::vector<Model> diff_models(x0.size(), *m_model);
+            std::vector<ParameterVector> x_plus(x0.size(), x0);
+            Scalar *h = new Scalar[x0.size()];
+
+            for (int j = 0; j < x0.size(); ++j)
+            {
+                // h[j] = epsilon * abs(x0[j]);
+                // if (h[j] == 0.)
+                //     h[j] = epsilon;
+                
+                h[j] = epsilon; // OVERRIDE
+
+                x_plus[j][j] += h[j];
+                diff_models[j].setup((x_plus[j]).data());
+            }
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                m_model->setup(x0.data());
-                (*m_model)(x0.data(), residuals_data, i);
+                m_model[0].setup(x0.data());
+                m_model[0](x0.data(), residuals_data, i);
                 sum += residuals.squaredNorm();
 
-                // TODO preallocate functors for each parameter
                 for (int j = 0; j < x0.size(); ++j)
                 {
-                    ParameterVector x_plus(x0);
-                    x_plus[j] += epsilon;
-
-                    m_model->setup(x_plus.data());
-                    (*m_model)(x_plus.data(), residuals_plus_data, i);
-                    jacobian_row.col(j) = (residuals_plus - residuals) / epsilon;
+                    diff_models[j](x_plus[j].data(), residuals_plus_data, i);
+                    jacobian_row.col(j) = (residuals_plus - residuals) / h[j];
                 }
 
                 hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
                 b += jacobian_row.transpose() * residuals;
+
+                if (dump != nullptr)
+                {
+                    Eigen::Matrix<Scalar, -1, -1> *jacobian_dump = reinterpret_cast<Eigen::Matrix<Scalar, -1, -1> *>(dump);
+                    jacobian_dump->resize(N_MODEL_OUTPUTS * m_num_residuals, x0.size());
+
+                    /// Jacobian block
+                    for (int block_col = 0; block_col < jacobian_row.cols(); ++block_col)
+                    {
+                        for (int block_row = 0; block_row < jacobian_row.rows(); ++block_row)
+                        {
+                            (*jacobian_dump)(block_row + i * jacobian_row.rows(), block_col) = jacobian_row(block_row, block_col);
+                        }
+                    }
+
+                    // for (int row = 0; row < jacobian_row.rows(); ++)
+                    // jacobian_dump->row(i) = jacobian_row;
+                }
             }
 
             hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
@@ -129,7 +164,7 @@ namespace duna
         }
 
     protected:
-        Model<Scalar> *m_model;
+        Model *m_model;
         // Holds results for cost computations
         Scalar *residuals_data;
         Scalar *residuals_plus_data;
