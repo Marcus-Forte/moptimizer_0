@@ -6,7 +6,7 @@
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 0.0025
 
-struct Model : public duna::Model<double>
+struct Model 
 {
     Model(const std::vector<Eigen::Vector4d> &point_list, const std::vector<Eigen::Vector2i> &pixel_list)
         : point_vector(point_list), pixel_vector(pixel_list)
@@ -38,12 +38,12 @@ struct Model : public duna::Model<double>
     }
 
     // Prepare data
-    inline void setup(const double *x) override
+    inline void setup(const double *x) 
     {
         so3::convert6DOFParameterToMatrix(x,transform);
     }
 
-    inline void operator()(const double *x, double *residual, unsigned int index) override
+    inline void operator()(const double *x, double *residual, unsigned int index) 
     {
         Eigen::Vector3d out_pixel;
         out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];

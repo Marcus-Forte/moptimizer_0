@@ -9,11 +9,6 @@
 
 #define TOLERANCE 0.01f
 
-using TESTTYPE = double;
-using Matrix3 = Eigen::Matrix<TESTTYPE,3,3>;
-using Matrix4 = Eigen::Matrix<TESTTYPE,4,4>;
-using Vector4 = Eigen::Matrix<TESTTYPE,4,1>;
-
 using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;
 
@@ -24,9 +19,15 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
+template <typename Scalar>
 class TestRegistration : public ::testing::Test
 {
+
 public:
+    using Matrix3 = Eigen::Matrix<Scalar, 3, 3>;
+    using Matrix4 = Eigen::Matrix<Scalar, 4, 4>;
+    using Vector4 = Eigen::Matrix<Scalar, 4, 1>;
+
     TestRegistration()
     {
         source.reset(new PointCloudT);
@@ -75,74 +76,76 @@ protected:
     Matrix4 result_transform;
 
     // Main API
-    duna::Registration<PointT, PointT,TESTTYPE> registration;
+    duna::Registration<PointT, PointT, Scalar> registration;
 };
 
-TEST_F(TestRegistration, Translation6DOF)
+using ScalarTypes = ::testing::Types<double, float>;
+
+TYPED_TEST_SUITE(TestRegistration, ScalarTypes);
+
+TYPED_TEST(TestRegistration, Translation6DOF)
 {
+    this->reference_transform.col(3) = typename TestFixture::Vector4(-0.5, 0.3, 0.2, 1);
+    pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    reference_transform.col(3) = Vector4(-0.5, 0.3, 0.2, 1);
-    pcl::transformPointCloud(*target, *source, reference_transform);
+    this->registration.align();
 
-    registration.align();
-
-    result_transform = registration.getFinalTransformation();
+    this->result_transform = this->registration.getFinalTransformation();
 }
 
-TEST_F(TestRegistration, Rotation6DOF)
+TYPED_TEST(TestRegistration, Rotation6DOF)
 {
     // Rotation
-    Matrix3 rot;
-    rot = Eigen::AngleAxis<TESTTYPE>(0.2, Eigen::Matrix<TESTTYPE,3,1>::UnitX()) *
-          Eigen::AngleAxis<TESTTYPE>(0.8, Eigen::Matrix<TESTTYPE,3,1>::UnitY()) *
-          Eigen::AngleAxis<TESTTYPE>(0.6, Eigen::Matrix<TESTTYPE,3,1>::UnitZ());
+    typename TestFixture::Matrix3 rot;
+    rot = Eigen::AngleAxis<TypeParam>(0.2, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
+          Eigen::AngleAxis<TypeParam>(0.8, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
+          Eigen::AngleAxis<TypeParam>(0.6, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
 
-    reference_transform.topLeftCorner(3, 3) = rot;
+    this->reference_transform.topLeftCorner(3, 3) = rot;
 
-    pcl::transformPointCloud(*target, *source, reference_transform);
+    pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    // Prepare dataset
-    registration.setMaximumOptimizationIterations(3);
-    registration.align();
+    // // Prepare dataset
+    this->registration.setMaximumOptimizationIterations(3);
+    this->registration.align();
 
-    result_transform = registration.getFinalTransformation();
+    this->result_transform = this->registration.getFinalTransformation();
 }
 
-TEST_F(TestRegistration, RotationPlusTranslation6DOF)
+TYPED_TEST(TestRegistration, RotationPlusTranslation6DOF)
 {
-    // Rotation
-    Matrix3 rot;
-    rot = Eigen::AngleAxis<TESTTYPE>(0.2, Eigen::Matrix<TESTTYPE,3,1>::UnitX()) *
-          Eigen::AngleAxis<TESTTYPE>(0., Eigen::Matrix<TESTTYPE,3,1>::UnitY()) *
-          Eigen::AngleAxis<TESTTYPE>(0.2, Eigen::Matrix<TESTTYPE,3,1>::UnitZ());
+      // Rotation
+    typename TestFixture::Matrix3 rot;
+    rot = Eigen::AngleAxis<TypeParam>(0.2, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
+          Eigen::AngleAxis<TypeParam>(0.3, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
+          Eigen::AngleAxis<TypeParam>(0.4, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
 
-    reference_transform.topLeftCorner(3, 3) = rot;
-    reference_transform.col(3) = Vector4(-0.5, -0.2, 0.1, 1);
+    this->reference_transform.topLeftCorner(3, 3) = rot;
+    this->reference_transform.col(3) = typename TestFixture::Vector4(-0.5, -0.2, 0.1, 1);
 
-    pcl::transformPointCloud(*target, *source, reference_transform);
+    pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    registration.setMaximumOptimizationIterations(3);
-    registration.align();
+    this->registration.setMaximumOptimizationIterations(3);
+    this->registration.align();
 
-    result_transform = registration.getFinalTransformation();
+    this->result_transform = this->registration.getFinalTransformation();
 }
 
-TEST_F(TestRegistration, Tough6DOF)
+TYPED_TEST(TestRegistration, Tough6DOF)
 {
+ // Rotation
+    typename TestFixture::Matrix3 rot;
+    rot = Eigen::AngleAxis<TypeParam>(0.7, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
+          Eigen::AngleAxis<TypeParam>(0.7, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
+          Eigen::AngleAxis<TypeParam>(0.7, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
 
-    Matrix3 rot;
-    rot = Eigen::AngleAxis<TESTTYPE>(0.7, Eigen::Matrix<TESTTYPE,3,1>::UnitX()) *
-          Eigen::AngleAxis<TESTTYPE>(0.7, Eigen::Matrix<TESTTYPE,3,1>::UnitY()) *
-          Eigen::AngleAxis<TESTTYPE>(0.7, Eigen::Matrix<TESTTYPE,3,1>::UnitZ());
+    this->reference_transform.topLeftCorner(3, 3) = rot;
+    this->reference_transform.col(3) = typename TestFixture::Vector4(-0.9, -0.5, 0.5, 1);
 
-    reference_transform.topLeftCorner(3, 3) = rot;
-    reference_transform.col(3) = Vector4(-0.9, -0.5, 0.5, 1);
+    pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    pcl::transformPointCloud(*target, *source, reference_transform);
+    this->registration.setMaximumOptimizationIterations(3);
+    this->registration.align();
 
-    registration.setMaximumOptimizationIterations(3);
-    registration.align();
-
-    result_transform = registration.getFinalTransformation();
-
+    this->result_transform = this->registration.getFinalTransformation();
 }

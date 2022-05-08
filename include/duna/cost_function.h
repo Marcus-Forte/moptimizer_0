@@ -4,7 +4,7 @@
 #include <exception>
 #include <Eigen/Dense>
 #include "duna/types.h"
-#include "duna/model.h"
+// #include "duna/model.h"
 #include <duna/logging.h>
 #include <vector>
 
@@ -104,8 +104,8 @@ namespace duna
             Scalar sum = 0.0;
 
             // const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
-            const Scalar min_step_size = 32 * std::numeric_limits<Scalar>::epsilon();
-            // const Scalar epsilon = 0.0001;
+            const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
+            // const Scalar min_step_size = 0.0001;
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_models(x0.size(), *m_model);
@@ -113,18 +113,19 @@ namespace duna
 
             // Step size
             Scalar *h = new Scalar[x0.size()];
-            const Scalar relDiff = 1e-6;
 
             //  std::cerr << "epsilon: ";
             for (int j = 0; j < x0.size(); ++j)
             {                
-                // const Scalar step_size = relDiff * abs(x0[j]);
-                // h[j] = std::max(step_size,min_step_size);
+                h[j] = min_step_size; // min_step_size * abs(x0[j]);
 
-                h[j] = min_step_size; // OVERRIDE
-                // std::cerr << h[j] << " ";
+                // if(h[j] == 0.0)
+                //     h[j] = min_step_size;
+
 
                 x_plus[j][j] += h[j];
+                // h[j] = x_plus[j][j] - x0[j];
+
                 diff_models[j].setup((x_plus[j]).data());
             }
 
@@ -163,6 +164,8 @@ namespace duna
                     // jacobian_dump->row(i) = jacobian_row;
                 }
             }
+
+            delete h;
 
             hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
 

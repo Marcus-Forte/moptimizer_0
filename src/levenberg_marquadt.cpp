@@ -55,15 +55,7 @@ namespace duna
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * HessianMatrix::Identity());
                 ParameterVector delta = solver.solve(b);
 
-                if (delta.hasNaN())
-                {
-                    DUNA_DEBUG("[LM] --- Numeric Error --- \n");
-                    DUNA_DEBUG_STREAM("Hessian: \n"
-                                      << hessian << std::endl);
-                    DUNA_DEBUG_STREAM("b(residuals): \n"
-                                      << b << std::endl);
-                    return OptimizationStatus::NUMERIC_ERROR;
-                }
+                
 
                 // DUNA_DEBUG_STREAM("[LM] --- Solver delta: ");
                 // DUNA_DEBUG_STREAM(delta << std::endl);
@@ -75,6 +67,16 @@ namespace duna
                 }
 
                 xi = x0 - delta;
+
+                if (xi.hasNaN())
+                {
+                    DUNA_DEBUG("[LM] --- Numeric Error --- \n");
+                    DUNA_DEBUG_STREAM("Hessian: \n"
+                                      << hessian << std::endl);
+                    DUNA_DEBUG_STREAM("b(residuals): \n"
+                                      << b << std::endl);
+                    return OptimizationStatus::NUMERIC_ERROR;
+                }
 
                 Scalar yi = m_cost->computeCost(xi.data());
                 Scalar rho = (yi - y0) / delta.dot(m_lm_lambda * delta - b);

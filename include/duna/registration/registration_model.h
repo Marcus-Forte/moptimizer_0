@@ -1,17 +1,16 @@
 #ifndef REGISTRATION_MODEL_H
 #define REGISTRATION_MODEL_H
 
-#include <duna/model.h>
+// #include <duna/model.h>
 #include <pcl/point_cloud.h>
 #include <duna/so3.h>
 
 namespace duna
 {
 
-    template <typename PointSource, typename PointTarget>
+    template <typename PointSource, typename PointTarget, typename Scalar>
     struct RegistrationModel
     {
-        using Scalar = double;
         RegistrationModel(const pcl::PointCloud<PointSource> &source_, const pcl::PointCloud<PointSource> &target_, const pcl::Correspondences &correspondences_) : source(source_), target(target_), correspondences(correspondences_) {}
 
         inline virtual void setup(const Scalar *x)

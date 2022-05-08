@@ -42,7 +42,7 @@ namespace duna
         // utilities::Stopwatch stopwatch(true);
         // utilities::Stopwatch stopwatch_total(true);
 
-        auto *cost = new duna::CostFunction<RegistrationModel<PointSource, PointTarget>, Scalar, 6, 1>(new RegistrationModel<PointSource, PointTarget>(*m_transformed_source, *m_target, m_correspondences));
+        auto *cost = new duna::CostFunction<RegistrationModel<PointSource, PointTarget,Scalar>, Scalar, 6, 1>(new RegistrationModel<PointSource, PointTarget,Scalar>(*m_transformed_source, *m_target, m_correspondences));
         
         m_optimizer->setCost(cost);
         // stopwatch_total.tick();
@@ -109,6 +109,6 @@ namespace duna
     }
 
     // Instantiations
-    // template class Registration<pcl::PointXYZ, pcl::PointXYZ, float>;
+    template class Registration<pcl::PointXYZ, pcl::PointXYZ, float>;
     template class Registration<pcl::PointXYZ, pcl::PointXYZ, double>;
 }

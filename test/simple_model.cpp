@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <duna/levenberg_marquadt.h>
-#include <duna/model.h>
+// #include <duna/model.h>
 
 // Function to be minimized 
 struct Model 
