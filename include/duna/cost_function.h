@@ -35,7 +35,7 @@ namespace duna
         CostFunctionBase &operator=(const CostFunctionBase &) = delete;
         virtual ~CostFunctionBase() = default;
 
-        virtual Scalar computeCost(const Scalar *x) = 0;
+        virtual Scalar computeCost(const Scalar *x, bool setup_data = true) = 0;
         virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b, void *dump = nullptr) = 0;
         void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
 
@@ -58,6 +58,7 @@ namespace duna
         CostFunction(Model *model, int num_residuals) : m_model(model),
                                                         residuals(nullptr),
                                                         residuals_plus(nullptr),
+                                                        residuals_minus(nullptr),
                                                         CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>(num_residuals)
         {
             init();
@@ -65,7 +66,8 @@ namespace duna
 
         CostFunction(Model *model) : m_model(model),
                                      residuals(nullptr),
-                                     residuals_plus(nullptr)
+                                     residuals_plus(nullptr),
+                                     residuals_minus(nullptr)
         {
             init();
             // TODO remove warning
@@ -79,13 +81,17 @@ namespace duna
         {
             delete[] residuals_data;
             delete[] residuals_plus_data;
+            delete[] residuals_minus_data;
         }
 
-        Scalar computeCost(const Scalar *x) override
+        Scalar computeCost(const Scalar *x, bool setup_data) override
         {
             Scalar sum = 0;
 
-            m_model->setup(x);
+            // TODO make dirty variables?
+            if (setup_data)
+                m_model->setup(x);
+
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 (*m_model)(x, residuals_data, i);
@@ -103,44 +109,51 @@ namespace duna
             JacobianMatrix jacobian_row;
             Scalar sum = 0.0;
 
-            // const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
-            const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
+            // const Scalar min_step_size = (std::sqrt(std::numeric_limits<Scalar>::epsilon())) * static_cast<Scalar>(0.5);
+            const Scalar min_step_size = 15 * std::numeric_limits<Scalar>::epsilon();
             // const Scalar min_step_size = 0.0001;
 
             // Create a new model for each numerical increment
-            std::vector<Model> diff_models(x0.size(), *m_model);
+            std::vector<Model> diff_plus(x0.size(), *m_model);
+            std::vector<Model> diff_minus(x0.size(), *m_model);
+
+
             std::vector<ParameterVector> x_plus(x0.size(), x0);
+            std::vector<ParameterVector> x_minus(x0.size(), x0);
 
             // Step size
             Scalar *h = new Scalar[x0.size()];
 
             //  std::cerr << "epsilon: ";
             for (int j = 0; j < x0.size(); ++j)
-            {                
+            {
                 h[j] = min_step_size; // min_step_size * abs(x0[j]);
 
                 // if(h[j] == 0.0)
                 //     h[j] = min_step_size;
 
-
                 x_plus[j][j] += h[j];
+                x_minus[j][j] -= h[j];
                 // h[j] = x_plus[j][j] - x0[j];
 
-                diff_models[j].setup((x_plus[j]).data());
+                diff_plus[j].setup((x_plus[j]).data());
+                diff_minus[j].setup((x_minus[j]).data());
             }
 
-            // std::cerr << "\n";
+            m_model[0].setup(x0.data()); // this was inside the loop below.. Very bad.
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                m_model[0].setup(x0.data());
+
                 m_model[0](x0.data(), residuals_data, i);
                 sum += residuals.squaredNorm();
 
                 for (int j = 0; j < x0.size(); ++j)
                 {
-                    diff_models[j](x_plus[j].data(), residuals_plus_data, i);
-                    jacobian_row.col(j) = (residuals_plus - residuals) / h[j];
+                    diff_plus[j](x_plus[j].data(), residuals_plus_data, i);
+                    diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
+
+                    jacobian_row.col(j) = (residuals_plus - residuals_minus) / (2*h[j]) ;
                 }
 
                 hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
@@ -159,9 +172,6 @@ namespace duna
                             (*jacobian_dump)(block_row + i * jacobian_row.rows(), block_col) = jacobian_row(block_row, block_col);
                         }
                     }
-
-                    // for (int row = 0; row < jacobian_row.rows(); ++)
-                    // jacobian_dump->row(i) = jacobian_row;
                 }
             }
 
@@ -177,8 +187,10 @@ namespace duna
         // Holds results for cost computations
         Scalar *residuals_data;
         Scalar *residuals_plus_data;
+        Scalar *residuals_minus_data;
         Eigen::Map<const ResidualVector> residuals;
         Eigen::Map<const ResidualVector> residuals_plus;
+        Eigen::Map<const ResidualVector> residuals_minus;
 
         using CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::m_num_outputs;
         using CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::m_num_residuals;
@@ -188,10 +200,12 @@ namespace duna
             // m_num_outputs = N_MODEL_OUTPUTS;
             residuals_data = new Scalar[m_num_outputs];
             residuals_plus_data = new Scalar[m_num_outputs];
+            residuals_minus_data = new Scalar[m_num_outputs];
 
             // Map allocated arrays to eigen types using placement new syntax.
             new (&residuals) Eigen::Map<const ResidualVector>(residuals_data);
             new (&residuals_plus) Eigen::Map<const ResidualVector>(residuals_plus_data);
+            new (&residuals_minus) Eigen::Map<const ResidualVector>(residuals_minus_data);
 
             if (N_PARAMETERS == -1)
             {

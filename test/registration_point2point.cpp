@@ -7,7 +7,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/registration/icp.h>
 
-#define TOLERANCE 0.01f
+#define TOLERANCE 0.025f
 
 using PointT = pcl::PointXYZ;
 using PointCloudT = pcl::PointCloud<PointT>;

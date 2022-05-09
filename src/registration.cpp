@@ -65,6 +65,9 @@ namespace duna
                 // stopwatch_total.tock("registration loop");
 
                 return;
+            } else if (m_optimization_status == OptimizationStatus::NUMERIC_ERROR)
+            {
+                throw std::runtime_error("Optimization numeric error");
             }
 
             Matrix4 delta_transform;

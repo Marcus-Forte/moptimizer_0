@@ -55,7 +55,14 @@ namespace duna
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * HessianMatrix::Identity());
                 ParameterVector delta = solver.solve(b);
 
-                
+#ifndef NDEBUG
+                fprintf(stderr, "delta: ");
+                for (int n = 0; n < x0.size(); ++n)
+                {
+                    fprintf(stderr, "%f ", delta[n]);
+                }
+                fprintf(stderr, "\n");
+#endif
 
                 // DUNA_DEBUG_STREAM("[LM] --- Solver delta: ");
                 // DUNA_DEBUG_STREAM(delta << std::endl);
@@ -68,7 +75,9 @@ namespace duna
 
                 xi = x0 - delta;
 
-                if (xi.hasNaN())
+                Scalar yi = m_cost->computeCost(xi.data());
+
+                if (std::isnan(yi))
                 {
                     DUNA_DEBUG("[LM] --- Numeric Error --- \n");
                     DUNA_DEBUG_STREAM("Hessian: \n"
@@ -77,19 +86,8 @@ namespace duna
                                       << b << std::endl);
                     return OptimizationStatus::NUMERIC_ERROR;
                 }
-
-                Scalar yi = m_cost->computeCost(xi.data());
                 Scalar rho = (yi - y0) / delta.dot(m_lm_lambda * delta - b);
                 DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
-
-#ifndef NDEBUG
-                fprintf(stderr, "delta: ");
-                for (int n = 0; n < x0.size(); ++n)
-                {
-                    fprintf(stderr, "%f ", delta[n]);
-                }
-                fprintf(stderr, "\n");
-#endif
 
                 if (rho < 0)
                 {

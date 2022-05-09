@@ -16,6 +16,7 @@ namespace duna
         inline virtual void setup(const Scalar *x)
         {
             so3::convert6DOFParameterToMatrix(x, transform);
+            // std::cerr << transform << std::endl;
         }
 
         inline void operator()(const Scalar *x, Scalar *f_x, const unsigned int index)
@@ -27,8 +28,8 @@ namespace duna
             const Eigen::Matrix<Scalar, 4, 1> tgt(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
 
             Eigen::Matrix<Scalar, 4, 1> warped_src = transform * src;
-                    
-            warped_src[3] = 0;
+            warped_src[3]=0;
+
             f_x[0] = (warped_src - tgt).norm();
         }
 

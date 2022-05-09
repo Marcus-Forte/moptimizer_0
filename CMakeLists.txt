@@ -36,6 +36,7 @@ EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/duna_exports.h)
 include_directories(${CMAKE_BINARY_DIR}/exports)
 
 # target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
+add_subdirectory(experimental EXCLUDE_FROM_ALL)
 
 
 
@@ -55,6 +56,8 @@ if(BUILD_TESTS)
         test/camera_calibration.cpp  
         test/registration_point2point.cpp 
         test/numerical_differentiation.cpp
+
+        test/draft.cpp
         )
 
         foreach(test_case ${test_src})
