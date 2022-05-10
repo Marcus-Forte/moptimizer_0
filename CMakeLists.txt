@@ -3,6 +3,7 @@ project(duna_optimizer VERSION 0.1 LANGUAGES CXX)
 
 
 option(BUILD_TESTS "Build test programs" ON)
+option(BUILD_EXPERIMENTAL "Build experimental programs" OFF)
 
 set(CMAKE_INSTALL_PREFIX install) # install locally
 
@@ -36,8 +37,9 @@ EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/duna_exports.h)
 include_directories(${CMAKE_BINARY_DIR}/exports)
 
 # target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
-add_subdirectory(experimental EXCLUDE_FROM_ALL)
-
+if(BUILD_EXPERIMENTAL)
+        add_subdirectory(experimental EXCLUDE_FROM_ALL)
+endif()
 
 
 #gtest
@@ -56,6 +58,7 @@ if(BUILD_TESTS)
         test/camera_calibration.cpp  
         test/registration_point2point.cpp 
         test/numerical_differentiation.cpp
+        test/manifold.cpp
 
         test/draft.cpp
         )

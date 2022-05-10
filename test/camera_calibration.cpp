@@ -6,7 +6,7 @@
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 0.0025
 
-struct Model 
+struct Model
 {
     Model(const std::vector<Eigen::Vector4d> &point_list, const std::vector<Eigen::Vector2i> &pixel_list)
         : point_vector(point_list), pixel_vector(pixel_list)
@@ -38,12 +38,12 @@ struct Model
     }
 
     // Prepare data
-    inline void setup(const double *x) 
+    inline void setup(const double *x)
     {
-        so3::convert6DOFParameterToMatrix(x,transform);
+        so3::convert6DOFParameterToMatrix(x, transform);
     }
 
-    inline void operator()(const double *x, double *residual, unsigned int index) 
+    inline void operator()(const double *x, double *residual, unsigned int index)
     {
         Eigen::Vector3d out_pixel;
         out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];
@@ -92,14 +92,14 @@ public:
         pixel_list.push_back(Eigen::Vector2i(559, 282));
         pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-        cost = new duna::CostFunction<Model,double, 6, 2>(
+        cost = new duna::CostFunction<Model, double, 6, 2>(
             new Model(point_list, pixel_list),
             5);
         optimizer.setCost(cost);
     }
 
 protected:
-    duna::CostFunction<Model,double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+    duna::CostFunction<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
     duna::LevenbergMarquadt<double, MODEL_PARAMETERS, MODEL_OUTPUTS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;
@@ -113,6 +113,16 @@ protected:
         -0.000659168270130,
         0.013700587828461,
     };
+
+    const double ceres_solution[MODEL_PARAMETERS] =
+    {
+        -0.0101065,
+        0.0206767,
+        -0.0582803,
+        0.00917777,
+        -0.000653687,
+        0.0137064
+    };
 };
 
 TEST_F(CameraCalibration, GoodWeather)
@@ -122,7 +132,7 @@ TEST_F(CameraCalibration, GoodWeather)
 
     optimizer.minimize(x0);
 
-    for( int i = 0 ; i < MODEL_PARAMETERS; ++ i)
+    for (int i = 0; i < MODEL_PARAMETERS; ++i)
     {
         EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
     }

@@ -59,11 +59,51 @@ namespace so3
         x[5] = ea[2]; // ea[2];
     }
 
-    // template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const Eigen::Matrix<double, 6, 1> &x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template <typename Scalar>
+    void Exp(const Eigen::Matrix<Scalar, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
+    {
+        Scalar delta_norm = delta.norm();
+        Eigen::Matrix<Scalar, 3, 3> Eye3 = Eigen::Matrix<Scalar, 3, 3>::Identity();
+
+        // TODO paranetrize
+        if (delta_norm > 0.0000001)
+        {
+            Eigen::Matrix<Scalar, 3, 1> r_axis = delta / delta_norm;
+            Eigen::Matrix<Scalar, 3, 3> K;
+
+            K << SKEW_SYM_MATRX(r_axis);
+
+            // Add!
+            R = (Eye3 + std::sin(delta_norm) * K + (1.0 - std::cos(delta_norm)) * K * K);
+        }
+
+        else
+        {
+            R = Eye3;
+        }
+    }
+
+    template <typename Scalar>
+    void Log(const Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> &R, Eigen::Matrix<Scalar, 3, 1> &delta)
+    {
+        Scalar theta = (R.trace() > 3.0 - 1e-6) ? 0.0 : std::acos(0.5 * (R.trace() - 1));
+        Eigen::Matrix<Scalar, 3, 1> K(R(2, 1) - R(1, 2), R(0, 2) - R(2, 0), R(1, 0) - R(0, 1));
+        if (std::abs(theta) < 0.001)
+        {
+            delta = (0.5 * K);
+        }
+        else
+        {
+            delta = (0.5 * theta / std::sin(theta) * K);
+        }
+    }
+
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-    // template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-    // template void DUNA_OPTIMIZER_EXPORT convertMatrixTo6DOFParameter<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 6, 1> &x);
+    template void DUNA_OPTIMIZER_EXPORT Exp<double>(const Eigen::Matrix<double, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<double, 3, 3>> R);
+    template void DUNA_OPTIMIZER_EXPORT Exp<float>(const Eigen::Matrix<float, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<float, 3, 3>> R);
 
+    template void DUNA_OPTIMIZER_EXPORT Log<double>(const Eigen::Ref<Eigen::Matrix<double, 3, 3>> &R, Eigen::Matrix<double, 3, 1> &delta);
+    template void DUNA_OPTIMIZER_EXPORT Log<float>(const Eigen::Ref<Eigen::Matrix<float, 3, 3>> &R, Eigen::Matrix<float, 3, 1> &delta);
 }

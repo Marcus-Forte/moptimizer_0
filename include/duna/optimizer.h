@@ -2,7 +2,9 @@
 #define OPTIMIZER_H
 
 #include <duna/cost_function.h>
+// #include <duna/manifold.h>
 #include <Eigen/Dense>
+
 
 namespace duna
 {

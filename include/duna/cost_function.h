@@ -110,7 +110,7 @@ namespace duna
             Scalar sum = 0.0;
 
             // const Scalar min_step_size = (std::sqrt(std::numeric_limits<Scalar>::epsilon())) * static_cast<Scalar>(0.5);
-            const Scalar min_step_size = 15 * std::numeric_limits<Scalar>::epsilon();
+            const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
             // const Scalar min_step_size = 0.0001;
 
             // Create a new model for each numerical increment
