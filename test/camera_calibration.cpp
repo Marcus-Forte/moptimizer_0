@@ -127,8 +127,7 @@ protected:
 
 TEST_F(CameraCalibration, GoodWeather)
 {
-    Eigen::Matrix<double, MODEL_PARAMETERS, 1> x0;
-    x0.setZero();
+    double x0[6] = {0};
 
     optimizer.minimize(x0);
 
@@ -137,5 +136,20 @@ TEST_F(CameraCalibration, GoodWeather)
         EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
     }
 
-    std::cerr << x0;
+    std::cerr << Eigen::Map<Eigen::Matrix<double,6,1>>(x0);
+}
+
+TEST_F(CameraCalibration, BadWeather)
+{
+    double x0[6] = {0.5,0.5,0.5,0.2,0.5,0.5};
+
+    optimizer.minimize(x0);
+    optimizer.setMaximumIterations(50);
+
+    for (int i = 0; i < MODEL_PARAMETERS; ++i)
+    {
+        EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
+    }
+
+    std::cerr << Eigen::Map<Eigen::Matrix<double,6,1>>(x0);
 }

@@ -95,7 +95,7 @@ namespace duna
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 (*m_model)(x, residuals_data, i);
-                sum += residuals.squaredNorm();
+                sum += 2*residuals.squaredNorm();
             }
 
             return sum;
@@ -145,7 +145,7 @@ namespace duna
             {
 
                 m_model[0](x0.data(), residuals_data, i);
-                sum += residuals.squaredNorm();
+                sum += 2*residuals.squaredNorm();
 
                 for (int j = 0; j < x0.size(); ++j)
                 {

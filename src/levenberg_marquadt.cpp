@@ -7,13 +7,13 @@ namespace duna
 {
 
     template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::step(ParameterVector &x0)
+    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::step(Scalar * x0)
     {
         return OptimizationStatus::NUMERIC_ERROR;
     }
 
     template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::minimize(ParameterVector &x0)
+    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::minimize(Scalar * x0)
     {
         // std::cout << " Minimizing...\n";
 
@@ -25,10 +25,10 @@ namespace duna
 
         reset();
 
+        Eigen::Map<ParameterVector> x0_map (x0);
         HessianMatrix hessian;
         HessianMatrix hessian_diagonal;
         ParameterVector b;
-
         ParameterVector xi;
 
         hessian.setZero();
@@ -38,7 +38,7 @@ namespace duna
         {
             DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << j + 1 << "/" << m_maximum_iterations << " ##\n");
 
-            Scalar y0 = m_cost->linearize(x0, hessian, b);
+            Scalar y0 = m_cost->linearize(x0_map, hessian, b);
 
             // DUNA_DEBUG_STREAM("[LM!] Hessian: " << hessian << std::endl);
             // DUNA_DEBUG_STREAM("[LM] b: " << b << std::endl);
@@ -57,7 +57,7 @@ namespace duna
 
 #ifndef NDEBUG
                 fprintf(stderr, "delta: ");
-                for (int n = 0; n < x0.size(); ++n)
+                for (int n = 0; n < x0_map.size(); ++n)
                 {
                     fprintf(stderr, "%f ", delta[n]);
                 }
@@ -74,7 +74,7 @@ namespace duna
                 }
 
                 // TODO Manifold operation
-                xi = x0 - delta;
+                xi = x0_map - delta;
 
                 Scalar yi = m_cost->computeCost(xi.data());
 
@@ -100,7 +100,7 @@ namespace duna
                     continue;
                 }
 
-                x0 = xi;
+                x0_map = xi;
                 m_lm_lambda = m_lm_lambda * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
                 break;
             }
@@ -114,6 +114,7 @@ namespace duna
     template class LevenbergMarquadt<float, 2, 1>;
     // Camera calibration
     template class LevenbergMarquadt<double, 6, 2>;
+    template class LevenbergMarquadt<double, 4, 4>; //powell
     // Registration
     template class LevenbergMarquadt<double, 6, 1>;
     template class LevenbergMarquadt<double, 3, 1>; // 3DOF

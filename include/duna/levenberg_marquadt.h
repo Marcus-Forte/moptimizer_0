@@ -33,8 +33,8 @@ namespace duna
             m_lm_max_iterations = max_iterations;
         }
 
-        OptimizationStatus step(ParameterVector &x0) override;
-        OptimizationStatus minimize(ParameterVector &x0) override;
+        OptimizationStatus step(Scalar* x0) override;
+        OptimizationStatus minimize(Scalar* x0) override;
 
     protected:
         // TODO
@@ -56,7 +56,7 @@ namespace duna
         {
             Scalar epsilon = delta.array().abs().maxCoeff();
 
-            if (epsilon < 5e-6)
+            if (epsilon < 1e-6)
                 return true;
             return false;
         }

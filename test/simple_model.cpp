@@ -42,7 +42,7 @@ public:
     }
 
 protected:
-    Eigen::Matrix<float,2,1> x0;
+    
     duna::LevenbergMarquadt<float, 2, 1> optimizer;
     duna::CostFunctionNumDiff<Model,float, 2, 1> *cost;
     float x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
@@ -51,8 +51,7 @@ protected:
 
 TEST_F(SimpleModel, InitialCondition0)
 {
-    x0[0] = 0.9;
-    x0[1] = 0.2;
+    float x0[] = {0.9, 0.2};
 
     optimizer.minimize(x0);
 
@@ -62,11 +61,7 @@ TEST_F(SimpleModel, InitialCondition0)
 
 TEST_F(SimpleModel, InitialCondition1)
 {
-    x0[0] = 1.9;
-    x0[1] = 4.2;
-
-
-
+    float x0[] = {1.9, 4.2};
     optimizer.minimize(x0);
 
     EXPECT_NEAR(x0[0], 0.362, 0.01);

@@ -57,6 +57,8 @@ if(BUILD_TESTS)
         test/camera_calibration.cpp  
         test/numerical_differentiation.cpp
         test/manifold.cpp
+        test/powell.cpp
+        test/curve_fitting.cpp
 
         test/draft.cpp
         )

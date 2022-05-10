@@ -49,7 +49,7 @@ TYPED_TEST_SUITE(TestNumericalDifferentiation, ScalarTypes);
 
 
 
-TYPED_TEST(TestNumericalDifferentiation, SimpleModel)
+TYPED_TEST(TestNumericalDifferentiation, DISABLED_SimpleModel)
 {
     TypeParam x_data[] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70, 5, 0};
     TypeParam y_data[] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317, 0.2, 0};
