@@ -57,32 +57,7 @@ TYPED_TEST(TestNumericalDifferentiation, SimpleModel)
 
     SimpleModel<TypeParam> model(x_data, y_data);
 
-    duna::CostFunction<SimpleModel<TypeParam>, TypeParam, 2, 1> cost(&model, m_residuals);
+    duna::CostFunctionNumDiff<SimpleModel<TypeParam>, TypeParam, 2, 1> cost(&model, m_residuals);
 
-    Eigen::Matrix<TypeParam, 2, 1> x0(0.9, 0.2);
-    Eigen::Matrix<TypeParam, 2, 2> hessian;
-    Eigen::Matrix<TypeParam, 2, 1> b;
 
-    Eigen::Matrix<TypeParam, -1, -1> jacobian;
-    cost.linearize(x0, hessian, b, &jacobian);
-
-    Eigen::Matrix<TypeParam, -1, -1> analitic_jacobian;
-    analitic_jacobian.resize(m_residuals, 2);
-    TypeParam jac_row[2];
-    for (int i = 0; i < m_residuals; ++i)
-    {
-        model.df(x0.data(), jac_row, i);
-        analitic_jacobian(i, 0) = jac_row[0];
-        analitic_jacobian(i, 1) = jac_row[1];
-    }
-
-    std::cout << analitic_jacobian << std::endl
-              << std::endl;
-    std::cout << jacobian << std::endl
-              << std::endl;
-
-    for (int i = 0; i < analitic_jacobian.size(); i++)
-    {
-        EXPECT_NEAR(analitic_jacobian(i), jacobian(i), 1e-3);
-    }
 }

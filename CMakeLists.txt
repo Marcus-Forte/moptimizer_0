@@ -27,7 +27,6 @@ add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
 src/cost_function.cpp
 src/so3.cpp
-src/registration.cpp
 )
 
 
@@ -56,7 +55,6 @@ if(BUILD_TESTS)
         set(test_src 
         test/simple_model.cpp    
         test/camera_calibration.cpp  
-        test/registration_point2point.cpp 
         test/numerical_differentiation.cpp
         test/manifold.cpp
 

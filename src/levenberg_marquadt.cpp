@@ -73,6 +73,7 @@ namespace duna
                     return OptimizationStatus::SMALL_DELTA;
                 }
 
+                // TODO Manifold operation
                 xi = x0 - delta;
 
                 Scalar yi = m_cost->computeCost(xi.data());

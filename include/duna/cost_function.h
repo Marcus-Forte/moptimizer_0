@@ -36,7 +36,7 @@ namespace duna
         virtual ~CostFunctionBase() = default;
 
         virtual Scalar computeCost(const Scalar *x, bool setup_data = true) = 0;
-        virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b, void *dump = nullptr) = 0;
+        virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b) = 0;
         void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
 
     protected:
@@ -46,7 +46,7 @@ namespace duna
 
     // NOTE. We are using Model as a template to be able to call its copy constructors and enable numercial diff.
     template <typename Model, class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
-    class CostFunction : public CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>
+    class CostFunctionNumDiff : public CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>
     {
     public:
         using ParameterVector = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::ParameterVector;
@@ -55,29 +55,29 @@ namespace duna
         using JacobianMatrix = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::JacobianMatrix;
 
         // TODO change pointer to smartpointer
-        CostFunction(Model *model, int num_residuals) : m_model(model),
-                                                        residuals(nullptr),
-                                                        residuals_plus(nullptr),
-                                                        residuals_minus(nullptr),
-                                                        CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>(num_residuals)
+        CostFunctionNumDiff(Model *model, int num_residuals) : m_model(model),
+                                                               residuals(nullptr),
+                                                               residuals_plus(nullptr),
+                                                               residuals_minus(nullptr),
+                                                               CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>(num_residuals)
         {
             init();
         }
 
-        CostFunction(Model *model) : m_model(model),
-                                     residuals(nullptr),
-                                     residuals_plus(nullptr),
-                                     residuals_minus(nullptr)
+        CostFunctionNumDiff(Model *model) : m_model(model),
+                                            residuals(nullptr),
+                                            residuals_plus(nullptr),
+                                            residuals_minus(nullptr)
         {
             init();
             // TODO remove warning
             std::cout << "Warning, num_residuals not set\n";
         }
 
-        CostFunction(const CostFunction &) = delete;
-        CostFunction &operator=(const CostFunction &) = delete;
+        CostFunctionNumDiff(const CostFunctionNumDiff &) = delete;
+        CostFunctionNumDiff &operator=(const CostFunctionNumDiff &) = delete;
 
-        ~CostFunction()
+        ~CostFunctionNumDiff()
         {
             delete[] residuals_data;
             delete[] residuals_plus_data;
@@ -101,7 +101,7 @@ namespace duna
             return sum;
         }
 
-        Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b, void *dump) override
+        Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b) override
         {
             hessian.setZero();
             b.setZero();
@@ -109,14 +109,11 @@ namespace duna
             JacobianMatrix jacobian_row;
             Scalar sum = 0.0;
 
-            const Scalar min_step_size = (std::sqrt(std::numeric_limits<Scalar>::epsilon())) * static_cast<Scalar>(1.0);
-            // const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
-            // const Scalar min_step_size = 0.0001;
+            const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon()) ;
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_plus(x0.size(), *m_model);
             std::vector<Model> diff_minus(x0.size(), *m_model);
-
 
             std::vector<ParameterVector> x_plus(x0.size(), x0);
             std::vector<ParameterVector> x_minus(x0.size(), x0);
@@ -124,14 +121,16 @@ namespace duna
             // Step size
             Scalar *h = new Scalar[x0.size()];
 
-            //  std::cerr << "epsilon: ";
+           
             for (int j = 0; j < x0.size(); ++j)
             {
                 h[j] = min_step_size * abs(x0[j]);
 
-                if(h[j] == 0.0)
+                if (h[j] == 0.0)
                     h[j] = min_step_size;
 
+                // TODO Manifold operation
+                
                 x_plus[j][j] += h[j];
                 x_minus[j][j] -= h[j];
                 // h[j] = x_plus[j][j] - x0[j];
@@ -153,26 +152,12 @@ namespace duna
                     diff_plus[j](x_plus[j].data(), residuals_plus_data, i);
                     diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
 
-                    jacobian_row.col(j) = (residuals_plus - residuals_minus) / (2*h[j]) ;
+                    jacobian_row.col(j) = (residuals_plus - residuals) / (h[j]);
                 }
 
-                hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
+                // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
+                hessian = hessian + (jacobian_row.transpose() * jacobian_row);
                 b += jacobian_row.transpose() * residuals;
-
-                if (dump != nullptr)
-                {
-                    Eigen::Matrix<Scalar, -1, -1> *jacobian_dump = reinterpret_cast<Eigen::Matrix<Scalar, -1, -1> *>(dump);
-                    jacobian_dump->resize(N_MODEL_OUTPUTS * m_num_residuals, x0.size());
-
-                    /// Jacobian block
-                    for (int block_col = 0; block_col < jacobian_row.cols(); ++block_col)
-                    {
-                        for (int block_row = 0; block_row < jacobian_row.rows(); ++block_row)
-                        {
-                            (*jacobian_dump)(block_row + i * jacobian_row.rows(), block_col) = jacobian_row(block_row, block_col);
-                        }
-                    }
-                }
             }
 
             delete h;
@@ -207,10 +192,7 @@ namespace duna
             new (&residuals_plus) Eigen::Map<const ResidualVector>(residuals_plus_data);
             new (&residuals_minus) Eigen::Map<const ResidualVector>(residuals_minus_data);
 
-            if (N_PARAMETERS == -1)
-            {
-                throw std::runtime_error("Dynamic parameters no yet implemented");
-            }
+            static_assert(N_PARAMETERS != -1, "Dynamic Cost Function not yet implemented");
         }
     };
 }

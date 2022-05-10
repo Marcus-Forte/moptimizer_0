@@ -4,7 +4,7 @@
 
 #define MODEL_PARAMETERS 6
 #define MODEL_OUTPUTS 2
-#define TOLERANCE 1e-6
+#define TOLERANCE 1e-5
 
 struct Model
 {
@@ -92,14 +92,14 @@ public:
         pixel_list.push_back(Eigen::Vector2i(559, 282));
         pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-        cost = new duna::CostFunction<Model, double, 6, 2>(
+        cost = new duna::CostFunctionNumDiff<Model, double, 6, 2>(
             new Model(point_list, pixel_list),
             5);
         optimizer.setCost(cost);
     }
 
 protected:
-    duna::CostFunction<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+    duna::CostFunctionNumDiff<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
     duna::LevenbergMarquadt<double, MODEL_PARAMETERS, MODEL_OUTPUTS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;

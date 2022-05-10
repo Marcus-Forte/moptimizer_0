@@ -16,8 +16,7 @@ namespace so3
 
     /* Performs R = exp(delta). This means R ⊞ delta*/
     template <typename Scalar>
-    void Exp(const Eigen::Matrix<Scalar, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R);
-
+    void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R);
 
     /* Performs delta = LOG(R). This means R ⊟ delta*/
     template <typename Scalar>

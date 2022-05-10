@@ -17,14 +17,7 @@ namespace so3
         Eigen::Quaternion<Scalar> q(0, x[3], x[4], x[5]);
 
         Scalar &&q_dot_q = q.dot(q);
-
-        // if (q_dot_q > 1)
-        // {
-        //     q = q.normalized().coeffs() * 0.1;
-        //     q_dot_q = q.dot(q);
-        //     // std::cerr << "adjusting...\n";
-        // }
-
+        
         q.w() = static_cast<Scalar>(std::sqrt(1 - q_dot_q));
         q.normalize();
         transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
@@ -60,7 +53,7 @@ namespace so3
     }
 
     template <typename Scalar>
-    void Exp(const Eigen::Matrix<Scalar, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
+    void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>>& delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
     {
         Scalar delta_norm = delta.norm();
         Eigen::Matrix<Scalar, 3, 3> Eye3 = Eigen::Matrix<Scalar, 3, 3>::Identity();
@@ -101,8 +94,8 @@ namespace so3
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-    template void DUNA_OPTIMIZER_EXPORT Exp<double>(const Eigen::Matrix<double, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<double, 3, 3>> R);
-    template void DUNA_OPTIMIZER_EXPORT Exp<float>(const Eigen::Matrix<float, 3, 1> &delta, Eigen::Ref<Eigen::Matrix<float, 3, 3>> R);
+    template void DUNA_OPTIMIZER_EXPORT Exp<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<double, 3, 3>> R);
+    template void DUNA_OPTIMIZER_EXPORT Exp<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<float, 3, 3>> R);
 
     template void DUNA_OPTIMIZER_EXPORT Log<double>(const Eigen::Ref<Eigen::Matrix<double, 3, 3>> &R, Eigen::Matrix<double, 3, 1> &delta);
     template void DUNA_OPTIMIZER_EXPORT Log<float>(const Eigen::Ref<Eigen::Matrix<float, 3, 3>> &R, Eigen::Matrix<float, 3, 1> &delta);
