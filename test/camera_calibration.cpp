@@ -4,7 +4,7 @@
 
 #define MODEL_PARAMETERS 6
 #define MODEL_OUTPUTS 2
-#define TOLERANCE 0.0025
+#define TOLERANCE 1e-6
 
 struct Model
 {
@@ -136,4 +136,6 @@ TEST_F(CameraCalibration, GoodWeather)
     {
         EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
     }
+
+    std::cerr << x0;
 }

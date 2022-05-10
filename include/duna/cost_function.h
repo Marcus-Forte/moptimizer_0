@@ -109,8 +109,8 @@ namespace duna
             JacobianMatrix jacobian_row;
             Scalar sum = 0.0;
 
-            // const Scalar min_step_size = (std::sqrt(std::numeric_limits<Scalar>::epsilon())) * static_cast<Scalar>(0.5);
-            const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
+            const Scalar min_step_size = (std::sqrt(std::numeric_limits<Scalar>::epsilon())) * static_cast<Scalar>(1.0);
+            // const Scalar min_step_size = 24 * std::numeric_limits<Scalar>::epsilon();
             // const Scalar min_step_size = 0.0001;
 
             // Create a new model for each numerical increment
@@ -127,10 +127,10 @@ namespace duna
             //  std::cerr << "epsilon: ";
             for (int j = 0; j < x0.size(); ++j)
             {
-                h[j] = min_step_size; // min_step_size * abs(x0[j]);
+                h[j] = min_step_size * abs(x0[j]);
 
-                // if(h[j] == 0.0)
-                //     h[j] = min_step_size;
+                if(h[j] == 0.0)
+                    h[j] = min_step_size;
 
                 x_plus[j][j] += h[j];
                 x_minus[j][j] -= h[j];
