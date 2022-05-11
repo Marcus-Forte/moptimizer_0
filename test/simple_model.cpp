@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <duna/levenberg_marquadt.h>
-// #include <duna/model.h>
+#include <duna/cost_function_numerical.h>
 
 // Function to be minimized 
 struct Model 
@@ -33,7 +33,7 @@ class SimpleModel : public testing::Test
 public:
     SimpleModel()
     {
-        cost = new duna::CostFunctionNumDiff<Model,float, 2, 1>(
+        cost = new duna::CostFunctionNumericalDiff<Model,float, 2, 1>(
             new Model(x_data, y_data),
             7);
 
@@ -44,7 +44,7 @@ public:
 protected:
     
     duna::LevenbergMarquadt<float, 2, 1> optimizer;
-    duna::CostFunctionNumDiff<Model,float, 2, 1> *cost;
+    duna::CostFunctionNumericalDiff<Model,float, 2, 1> *cost;
     float x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
     float y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 };

@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
+#include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
+
 #include <duna/so3.h>
 
 #define MODEL_PARAMETERS 6
@@ -92,14 +94,14 @@ public:
         pixel_list.push_back(Eigen::Vector2i(559, 282));
         pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-        cost = new duna::CostFunctionNumDiff<Model, double, 6, 2>(
+        cost = new duna::CostFunctionNumericalDiff<Model, double, 6, 2>(
             new Model(point_list, pixel_list),
             5);
         optimizer.setCost(cost);
     }
 
 protected:
-    duna::CostFunctionNumDiff<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+    duna::CostFunctionNumericalDiff<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
     duna::LevenbergMarquadt<double, MODEL_PARAMETERS, MODEL_OUTPUTS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;

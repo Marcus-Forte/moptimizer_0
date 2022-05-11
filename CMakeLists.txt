@@ -55,6 +55,7 @@ if(BUILD_TESTS)
         set(test_src 
         test/simple_model.cpp    
         test/camera_calibration.cpp  
+        test/analytical_differentiation.cpp
         test/numerical_differentiation.cpp
         test/manifold.cpp
         test/powell.cpp

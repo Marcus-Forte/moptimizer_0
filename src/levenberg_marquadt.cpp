@@ -112,9 +112,11 @@ namespace duna
     // Instantiations
     template class LevenbergMarquadt<double, 2, 1>;
     template class LevenbergMarquadt<float, 2, 1>;
-    // Camera calibration
-    template class LevenbergMarquadt<double, 6, 2>;
+
+   
+    template class LevenbergMarquadt<double, 6, 2>;  // Camera calibration
     template class LevenbergMarquadt<double, 4, 4>; //powell
+    
     // Registration
     template class LevenbergMarquadt<double, 6, 1>;
     template class LevenbergMarquadt<double, 3, 1>; // 3DOF

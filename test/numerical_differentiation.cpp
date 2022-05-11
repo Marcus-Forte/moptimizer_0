@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <duna/cost_function.h>
-#include <unsupported/Eigen/NumericalDiff>
+#include <duna/cost_function_numerical.h>
+
 
 int main(int argc, char **argv)
 {
@@ -47,8 +48,6 @@ using ScalarTypes = ::testing::Types<float, double>;
 
 TYPED_TEST_SUITE(TestNumericalDifferentiation, ScalarTypes);
 
-
-
 TYPED_TEST(TestNumericalDifferentiation, DISABLED_SimpleModel)
 {
     TypeParam x_data[] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70, 5, 0};
@@ -57,7 +56,5 @@ TYPED_TEST(TestNumericalDifferentiation, DISABLED_SimpleModel)
 
     SimpleModel<TypeParam> model(x_data, y_data);
 
-    duna::CostFunctionNumDiff<SimpleModel<TypeParam>, TypeParam, 2, 1> cost(&model, m_residuals);
-
-
+    duna::CostFunctionNumericalDiff<SimpleModel<TypeParam>, TypeParam, 2, 1> cost(&model, m_residuals);
 }

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/cost_function_numerical.h>
 #include <cmath>
 #include <duna/stopwatch.hpp>
 // From Ceres
@@ -116,7 +117,7 @@ TEST(CurveFitting, InitialCondition0)
     timer.tick();
     duna::LevenbergMarquadt<double,2,1> optimizer;
 
-    optimizer.setCost(new duna::CostFunctionNumDiff<Model,double,2,1>(new Model(data),kNumObservations));
+    optimizer.setCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations));
 
     double x0[]= {0.0 , 0.0};
 
@@ -136,7 +137,7 @@ TEST(CurveFitting, InitialCondition2)
     timer.tick();
     duna::LevenbergMarquadt<double,2,1> optimizer;
     optimizer.setMaximumIterations(50);
-    optimizer.setCost(new duna::CostFunctionNumDiff<Model,double,2,1>(new Model(data),kNumObservations));
+    optimizer.setCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations));
 
     double x0[]= {3.70 , 2.0};
 

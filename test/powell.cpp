@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/cost_function_numerical.h>
 #include <duna/stopwatch.hpp>
 
 //  Powell's singular function.
@@ -47,7 +48,7 @@ TEST(PowellFunction, InitialCondition0)
     duna::LevenbergMarquadt<double, 4, 4> optimizer;
     optimizer.setMaximumIterations(50);
 
-    optimizer.setCost(new duna::CostFunctionNumDiff<Model, double, 4, 4>(
+    optimizer.setCost(new duna::CostFunctionNumericalDiff<Model, double, 4, 4>(
         new Model, 4));
 
     optimizer.minimize(x0);
