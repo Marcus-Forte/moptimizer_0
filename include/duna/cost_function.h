@@ -21,7 +21,7 @@ namespace duna
 
         CostFunctionBase() : m_num_outputs(N_MODEL_OUTPUTS)
         {
-            m_num_residuals = 0;
+            m_num_residuals = 1;
         }
 
         CostFunctionBase(int num_residuals) : m_num_residuals(num_residuals), m_num_outputs(N_MODEL_OUTPUTS)
@@ -34,12 +34,12 @@ namespace duna
 
         virtual Scalar computeCost(const Scalar *x, bool setup_data = true) = 0;
         virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b) = 0;
-        void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
 
     protected:
+        void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
         int m_num_residuals;
         int m_num_outputs;
     };
 }
-  
+
 #endif

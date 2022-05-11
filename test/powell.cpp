@@ -49,7 +49,7 @@ TEST(PowellFunction, InitialCondition0)
     optimizer.setMaximumIterations(50);
 
     optimizer.setCost(new duna::CostFunctionNumericalDiff<Model, double, 4, 4>(
-        new Model, 4));
+        new Model,1));
 
     optimizer.minimize(x0);
 

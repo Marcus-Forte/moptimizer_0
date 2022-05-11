@@ -70,7 +70,9 @@ namespace duna
             JacobianMatrix jacobian_row;
             Scalar sum = 0.0;
 
-            const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
+            const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon() * 2);
+            // const Scalar min_step_size = 100 * std::numeric_limits<Scalar>::epsilon();
+            // const Scalar min_step_size = 0.0001;
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_plus(x0.size(), *m_model);
@@ -90,10 +92,8 @@ namespace duna
                     h[j] = min_step_size;
 
                 // TODO Manifold operation
-
                 x_plus[j][j] += h[j];
                 x_minus[j][j] -= h[j];
-                // h[j] = x_plus[j][j] - x0[j];
 
                 diff_plus[j].setup((x_plus[j]).data());
                 diff_minus[j].setup((x_minus[j]).data());
@@ -112,7 +112,7 @@ namespace duna
                     diff_plus[j](x_plus[j].data(), residuals_plus_data, i);
                     diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
 
-                    jacobian_row.col(j) = (residuals_plus - residuals_minus) / (2 *h[j]);
+                    jacobian_row.col(j) = (residuals_plus - residuals_minus) / ( 2 * h[j]);
                 }
 
                 // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes

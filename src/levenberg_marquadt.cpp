@@ -40,6 +40,12 @@ namespace duna
 
             Scalar y0 = m_cost->linearize(x0_map, hessian, b);
 
+            if( abs(y0) < 1e-20)
+            {
+                DUNA_DEBUG("[LM] --- Small Cost reached --- : %f\n", y0);
+                return OptimizationStatus::CONVERGED;
+            }
+
             // DUNA_DEBUG_STREAM("[LM!] Hessian: " << hessian << std::endl);
             // DUNA_DEBUG_STREAM("[LM] b: " << b << std::endl);
 

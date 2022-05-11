@@ -14,6 +14,7 @@ namespace duna
         SMALL_DELTA,
         NUMERIC_ERROR,
         FATAL_ERROR,
+        CONVERGED
     };
 } // namespace duna
 
