@@ -32,11 +32,13 @@ namespace duna
         CostFunctionBase &operator=(const CostFunctionBase &) = delete;
         virtual ~CostFunctionBase() = default;
 
+        void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
+        
         virtual Scalar computeCost(const Scalar *x, bool setup_data = true) = 0;
         virtual Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b) = 0;
 
     protected:
-        void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
+        
         int m_num_residuals;
         int m_num_outputs;
     };

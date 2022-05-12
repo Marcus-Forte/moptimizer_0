@@ -60,6 +60,7 @@ if(BUILD_TESTS)
         test/manifold.cpp
         test/powell.cpp
         test/curve_fitting.cpp
+        test/registration.cpp
 
         test/draft.cpp
         )

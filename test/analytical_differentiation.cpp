@@ -4,6 +4,10 @@
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
 #include <duna/so3.h>
+#include <pcl/point_types.h>
+#include <duna/registration/registration_model.h>
+
+/* We compare with numerical diff for resonable results. It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
 
 int main(int argc, char **argv)
 {
@@ -161,74 +165,28 @@ TEST(TestAnalyticalDifferentiation, PowellModel)
     // std::cerr << HessianNum << std::endl;
 }
 
-template <typename Scalar>
-struct Point2PointModel
-{
-    Point2PointModel(const Eigen::Matrix<Scalar,3,1>& source_, const Eigen::Matrix<Scalar,3,1>& target_ ) :
-    source(source_),
-    target(target_) {}
-
-    void setup(const Scalar* x)
-    {
-        so3::convert6DOFParameterToMatrix(x,transform);
-        // std::cerr << transform << std::endl;
-    }
-    void operator()(const Scalar *x, Scalar *f_x, unsigned int index)
-    {
-
-        Eigen::Matrix<Scalar,4,1> src(source[0],source[1],source[2],1);
-        Eigen::Matrix<Scalar,4,1> tgt(target[0],target[1],target[2],0);
-
-
-        Eigen::Matrix<Scalar,4,1> warped_source = transform * src;
-        warped_source[3] = 0;
-           
-        f_x[0] = (warped_source - tgt).norm();
-
-        
-    }
-    void df(const Scalar *x, Scalar *jacobian, unsigned int index)
-    {
-        Eigen::Matrix<Scalar,4,1> src(source[0],source[1],source[2],1);
-        Eigen::Matrix<Scalar,4,1> tgt(target[0],target[1],target[2],0);
-
-        Eigen::Matrix<Scalar,4,1> warped_source = transform * src;
-
-        Eigen::Matrix<Scalar,4,1> error = warped_source - tgt;
-
-        Scalar dx = error[0];
-        Scalar dy = error[1];
-        Scalar dz = error[2];
-
-        Scalar sqrErr = dx*dx + dy*dy + dz*dz;
-
-        Scalar rho = (1 / sqrt(sqrErr));
-
-        jacobian[0] = rho*dx;
-        jacobian[1] = rho*dy;
-        jacobian[2] = rho*dz;
-        jacobian[3] = rho*(src[1]*dz - src[2]*dy);
-        jacobian[4] = rho*(src[2]*dx - src[0]*dz);
-        jacobian[5] = rho*(src[0]*dy - src[1]*dx);
-
-    }
-
-    private:
-    const Eigen::Matrix<Scalar,3,1>& source;
-    const Eigen::Matrix<Scalar,3,1>& target;
-    Eigen::Matrix<Scalar,4,4> transform;
-
-};
 
 TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
 {
-    Eigen::Matrix<TypeParam,3,1> source(0,0,0);
-    Eigen::Matrix<TypeParam,3,1> target(14,26,3);
 
-    Point2PointModel<TypeParam> model(source,target);
+    pcl::PointCloud<pcl::PointXYZ> source;    
+    pcl::PointCloud<pcl::PointXYZ> target;
 
-    duna::CostFunctionNumericalDiff<Point2PointModel<TypeParam>,TypeParam,6,1> cost_num (&model);
-    duna::CostFunctionAnalytical<Point2PointModel<TypeParam>,TypeParam,6,1> cost_ana(&model);
+    pcl::PointXYZ src_pt(0,0,0);
+    pcl::PointXYZ tgt_pt(14,26,3);
+
+    source.push_back(src_pt);
+    target.push_back(tgt_pt);
+    pcl::Correspondences corrs;
+    pcl::Correspondence corr;
+    corr.index_query = 0;
+    corr.index_match = 0;
+    corrs.push_back(corr);
+
+    duna::Point2Point<pcl::PointXYZ,pcl::PointXYZ,TypeParam> model(source,target,corrs); 
+
+    duna::CostFunctionNumericalDiff<duna::Point2Point<pcl::PointXYZ,pcl::PointXYZ,TypeParam> ,TypeParam,6,1> cost_num (&model);
+    duna::CostFunctionAnalytical<duna::Point2Point<pcl::PointXYZ,pcl::PointXYZ,TypeParam> ,TypeParam,6,1> cost_ana(&model);
 
     Eigen::Matrix<TypeParam,6,6> HessianNum;
     Eigen::Matrix<TypeParam,6,6> Hessian;
@@ -252,6 +210,9 @@ TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
     {
         EXPECT_NEAR(Hessian(i), HessianNum(i), 2e-3);
     }
+
+    std::cerr << "Hessian:\n" << Hessian << std::endl;
+    std::cerr << "Hessian Numerical:\n" << HessianNum << std::endl;
 
 
     
