@@ -35,22 +35,19 @@ namespace duna
 
         void align(const Matrix4 &guess) override
         {
-            if(!m_target_search_method)
+            if (!m_target_search_method)
                 throw std::runtime_error("No KD found");
-            
-            if(!m_target)
+
+            if (!m_target)
                 throw std::runtime_error("No Target Point Cloud found");
 
-            if(!m_source)
+            if (!m_source)
                 throw std::runtime_error("No Source Point Cloud found");
-
-
 
             DUNA_DEBUG("Target pts: %ld \n", m_target->size());
             DUNA_DEBUG("Source pts: %ld \n", m_source->size());
             registrationLoop();
         }
-
 
     protected:
         void updateCorrespondences() override
@@ -84,21 +81,21 @@ namespace duna
         void registrationLoop()
         {
 
-            pcl::transformPointCloud(*m_source,*m_transformed_source, m_final_transformation);
+            pcl::transformPointCloud(*m_source, *m_transformed_source, m_final_transformation);
 
             Point2Point<PointSource, PointTarget, Scalar> model(*m_transformed_source, *m_target, m_correspondences);
-            duna::CostFunctionNumericalDiff<Point2Point<PointSource, PointTarget, Scalar>,Scalar,6,1> cost(&model);
+            duna::CostFunctionNumericalDiff<Point2Point<PointSource, PointTarget, Scalar>, Scalar, 6, 1> cost(&model);
             // duna::CostFunctionAnalytical<Point2Point<PointSource, PointTarget, Scalar>,Scalar,6,1> cost(&model);
 
             m_optimizer->setCost(&cost);
 
-            Eigen::Matrix<Scalar,6,1> x0;
+            Eigen::Matrix<Scalar, 6, 1> x0;
 
             Matrix4 delta_transform;
 
             for (int i = 0; i < m_max_icp_iterations; ++i)
             {
-                DUNA_DEBUG("ICP ITERATION #%d / %d \n", i+1 , m_max_icp_iterations);
+                DUNA_DEBUG("ICP ITERATION #%d / %d \n", i + 1, m_max_icp_iterations);
                 updateCorrespondences();
 
                 cost.setNumResiduals(m_correspondences.size());
@@ -106,19 +103,18 @@ namespace duna
                 x0.setZero();
                 OptimizationStatus status = m_optimizer->minimize(x0.data());
 
-                    if(status == OptimizationStatus::NUMERIC_ERROR)
-                        throw std::runtime_error("Numeric error");
+                if (status == OptimizationStatus::NUMERIC_ERROR)
+                    throw std::runtime_error("Numeric error");
 
-                
                 so3::convert6DOFParameterToMatrix(x0.data(), delta_transform);
 
-                pcl::transformPointCloud(*m_transformed_source,*m_transformed_source, delta_transform);
+                pcl::transformPointCloud(*m_transformed_source, *m_transformed_source, delta_transform);
 
                 m_final_transformation = delta_transform * m_final_transformation;
-            
+
+                if (status == OptimizationStatus::SMALL_DELTA)
+                    return;
             }
-
-
         }
     };
 }

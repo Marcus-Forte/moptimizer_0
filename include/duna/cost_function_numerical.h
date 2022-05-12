@@ -112,7 +112,7 @@ namespace duna
                     diff_plus[j](x_plus[j].data(), residuals_plus_data, i);
                     diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
 
-                    jacobian_row.col(j) = (residuals_plus - residuals_minus) / ( 2 * h[j]);
+                    jacobian_row.col(j) = (residuals_plus - residuals) / ( 1 * h[j]);
                 }
 
                 // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes

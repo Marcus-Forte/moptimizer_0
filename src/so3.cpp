@@ -15,12 +15,20 @@ namespace so3
 
         // Compute w from the unit quaternion
         Eigen::Quaternion<Scalar> q(0, x[3], x[4], x[5]);
-
         Scalar &&q_dot_q = q.dot(q);
-        
         q.w() = static_cast<Scalar>(std::sqrt(1 - q_dot_q));
         q.normalize();
         transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
+
+
+        // EXP
+        // Eigen::Matrix<Scalar,3,1> delta (x[3], x[4], x[5]);
+        // // TODO why ?
+        // delta = 2* delta;
+        // Eigen::Matrix<Scalar,3,3> rot;
+        // Exp<Scalar>(delta,rot);
+        // transform_matrix_.topLeftCorner(3, 3) = rot ;
+        
     }
 
     template <typename Scalar>
@@ -59,7 +67,7 @@ namespace so3
         Eigen::Matrix<Scalar, 3, 3> Eye3 = Eigen::Matrix<Scalar, 3, 3>::Identity();
 
         // TODO paranetrize
-        if (delta_norm > 0.0000001)
+        if (delta_norm > std::numeric_limits<Scalar>::epsilon() )
         {
             Eigen::Matrix<Scalar, 3, 1> r_axis = delta / delta_norm;
             Eigen::Matrix<Scalar, 3, 3> K;
