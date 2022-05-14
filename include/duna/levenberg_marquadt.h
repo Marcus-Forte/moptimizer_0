@@ -56,7 +56,7 @@ namespace duna
         {
             Scalar epsilon = delta.array().abs().maxCoeff();
 
-            if (epsilon < 1e-6)
+            if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
                 return true;
             return false;
         }

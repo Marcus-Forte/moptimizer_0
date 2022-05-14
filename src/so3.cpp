@@ -14,21 +14,18 @@ namespace so3
         transform_matrix_(3, 3) = 1;
 
         // Compute w from the unit quaternion
-        Eigen::Quaternion<Scalar> q(0, x[3], x[4], x[5]);
-        Scalar &&q_dot_q = q.dot(q);
-        q.w() = static_cast<Scalar>(std::sqrt(1 - q_dot_q));
-        q.normalize();
-        transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
-
+        // Eigen::Quaternion<Scalar> q(0, x[3], x[4], x[5]);
+        // Scalar &&q_dot_q = q.dot(q);
+        // q.w() = static_cast<Scalar>(std::sqrt(1 - q_dot_q));
+        // q.normalize();
+        // transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
 
         // EXP
-        // Eigen::Matrix<Scalar,3,1> delta (x[3], x[4], x[5]);
-        // // TODO why ?
-        // delta = 2* delta;
-        // Eigen::Matrix<Scalar,3,3> rot;
-        // Exp<Scalar>(delta,rot);
-        // transform_matrix_.topLeftCorner(3, 3) = rot ;
-        
+        Eigen::Matrix<Scalar, 3, 1> delta(x[3], x[4], x[5]);
+        delta = 2 * delta; // TODO why ?
+        Eigen::Matrix<Scalar, 3, 3> rot;
+        Exp<Scalar>(delta, rot);
+        transform_matrix_.topLeftCorner(3, 3) = rot;
     }
 
     template <typename Scalar>
@@ -61,27 +58,49 @@ namespace so3
     }
 
     template <typename Scalar>
-    void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>>& delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
+    void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
     {
-        Scalar delta_norm = delta.norm();
-        Eigen::Matrix<Scalar, 3, 3> Eye3 = Eigen::Matrix<Scalar, 3, 3>::Identity();
+        Eigen::Vector3d delta_conv(delta[0],delta[1],delta[2]);
+        double theta_sq = delta_conv.dot(delta_conv);
 
-        // TODO paranetrize
-        if (delta_norm > std::numeric_limits<Scalar>::epsilon() )
+        double theta;
+        double imag_factor;
+        double real_factor;
+        if (theta_sq < 1e-10)
         {
-            Eigen::Matrix<Scalar, 3, 1> r_axis = delta / delta_norm;
-            Eigen::Matrix<Scalar, 3, 3> K;
-
-            K << SKEW_SYM_MATRX(r_axis);
-
-            // Add!
-            R = (Eye3 + std::sin(delta_norm) * K + (1.0 - std::cos(delta_norm)) * K * K);
+            theta = 0;
+            double theta_quad = theta_sq * theta_sq;
+            imag_factor = 0.5 - 1.0 / 48.0 * theta_sq + 1.0 / 3840.0 * theta_quad;
+            real_factor = 1.0 - 1.0 / 8.0 * theta_sq + 1.0 / 384.0 * theta_quad;
         }
-
         else
         {
-            R = Eye3;
+            theta = std::sqrt(theta_sq);
+            double half_theta = 0.5 * theta;
+            imag_factor = std::sin(half_theta) / theta;
+            real_factor = std::cos(half_theta);
         }
+        
+        Eigen::Quaterniond q(real_factor, imag_factor * delta_conv[0], imag_factor * delta_conv[1], imag_factor * delta_conv[2]);
+        R = q.toRotationMatrix().template cast<Scalar>();
+
+        // Eigen::Vector3d delta_conv(delta[0], delta[1], delta[2]);
+        // double delta_norm = delta_conv.norm();
+        // Eigen::Matrix3d Eye = Eigen::Matrix3d::Identity();
+
+        // if (delta_norm > 1e-10)
+        // {
+        //     Eigen::Vector3d r_axis = delta_conv / delta_norm;
+        //     Eigen::Matrix3d K;
+
+        //     K << SKEW_SYM_MATRX(r_axis);
+
+        //     R = (Eye + std::sin(delta_norm) * K + (1.0 - std::cos(delta_norm)) * K * K).template cast<Scalar>();
+        // }
+        // else
+        // {
+        //     R.setIdentity();
+        // }
     }
 
     template <typename Scalar>

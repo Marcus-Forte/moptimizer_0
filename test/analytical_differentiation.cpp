@@ -77,7 +77,7 @@ TYPED_TEST(TestAnalyticalDifferentiation, SimpleModel)
     for (int i = 0; i < Hessian.size(); ++i)
     {
         // May be close enough
-        EXPECT_NEAR(Hessian(i), HessianNum(i), 2e-3);
+        EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
 }
 
@@ -208,7 +208,7 @@ TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
 
     for (int i = 0; i < Hessian.size(); ++i)
     {
-        EXPECT_NEAR(Hessian(i), HessianNum(i), 2e-3);
+        EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
 
     std::cerr << "Hessian:\n" << Hessian << std::endl;

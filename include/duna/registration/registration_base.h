@@ -35,7 +35,7 @@ namespace duna
             m_optimizer = new duna::LevenbergMarquadt<Scalar,6,1>;
 
             // Run only one optimization loop, then transform source closer to target.
-            m_optimizer->setMaximumIterations(1);
+            m_optimizer->setMaximumIterations(3);
             
         }
 

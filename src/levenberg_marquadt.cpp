@@ -46,20 +46,23 @@ namespace duna
                 return OptimizationStatus::CONVERGED;
             }
 
-            // DUNA_DEBUG_STREAM("[LM!] Hessian: " << hessian << std::endl);
+            // DUNA_DEBUG_STREAM("[LM] Hessian: " << hessian << std::endl);
             // DUNA_DEBUG_STREAM("[LM] b: " << b << std::endl);
 
-            // hessian_diagonal = hessian.diagonal().asDiagonal();
+            hessian_diagonal = hessian.diagonal().asDiagonal();
+            // hessian_diagonal = HessianMatrix::Identity();
 
             if (m_lm_lambda < 0.0)
                 m_lm_lambda = m_lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
+            
+
 
             Scalar nu = 2.0;
 
             for (int k = 0; k < m_lm_max_iterations; ++k)
             {
-                Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * HessianMatrix::Identity());
-                ParameterVector delta = solver.solve(b);
+                Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
+                ParameterVector delta = solver.solve(-b);
 
 #ifndef NDEBUG
                 fprintf(stderr, "delta: ");
@@ -80,7 +83,7 @@ namespace duna
                 }
 
                 // TODO Manifold operation
-                xi = x0_map - delta;
+                xi = x0_map + delta;
 
                 Scalar yi = m_cost->computeCost(xi.data());
 
@@ -93,7 +96,7 @@ namespace duna
                                       << b << std::endl);
                     return OptimizationStatus::NUMERIC_ERROR;
                 }
-                Scalar rho = (yi - y0) / delta.dot(m_lm_lambda * delta - b);
+                Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
                 DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)

@@ -139,7 +139,7 @@ TEST(CurveFitting, InitialCondition2)
     optimizer.setMaximumIterations(50);
     optimizer.setCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations));
 
-    double x0[]= {3.70 , 2.0};
+    double x0[]= {2.70 , 2.0};
 
     optimizer.minimize(x0);
 

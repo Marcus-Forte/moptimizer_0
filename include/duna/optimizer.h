@@ -20,10 +20,10 @@ namespace duna
             m_maximum_iterations = 15;
         }
         Optimizer(const Optimizer &) = delete;
-        void operator=(const Optimizer &) = delete;
+        Optimizer & operator=(const Optimizer &) = delete;
         virtual ~Optimizer() = default;
 
-        void setMaximumIterations(int max_iterations)
+        inline void setMaximumIterations(int max_iterations)
         {
             m_maximum_iterations = max_iterations;
         }
