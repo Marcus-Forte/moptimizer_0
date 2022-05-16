@@ -72,10 +72,6 @@ namespace duna
                 }
             }
 
-            // for(const auto& it : *m_normal_map)
-            // {
-            //     std::cerr << it.second << std::endl;
-            // }
         }
         else
         {
@@ -88,7 +84,6 @@ namespace duna
                 if (sqrd_distances[0] > max_sqrd_dist)
                     continue;
 
-                // TODO precompute normals
                 pcl::Correspondence corr;
                 corr.index_query = i;
                 corr.index_match = indices[0];
@@ -107,6 +102,7 @@ namespace duna
 
         CostFunctionBase<Scalar> *cost;
 
+        // TODO abstract
         if (m_normal_distance_mode)
         {
             cost = new duna::CostFunctionNumericalDiff<Point2Plane<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
@@ -122,6 +118,7 @@ namespace duna
 
         m_optimizer->setCost(cost);
 
+        // TODO abstract
         Eigen::Matrix<Scalar, 6, 1> x0;
 
         Matrix4 delta_transform;
@@ -139,6 +136,7 @@ namespace duna
             if (status == OptimizationStatus::NUMERIC_ERROR)
                 throw std::runtime_error("Optimizer Numeric error");
 
+            // TODO abstract
             so3::convert6DOFParameterToMatrix(x0.data(), delta_transform);
 
             pcl::transformPointCloud(*m_transformed_source, *m_transformed_source, delta_transform);
@@ -158,4 +156,4 @@ namespace duna
     template class Registration<pcl::PointNormal, pcl::PointNormal, double>;
     template class Registration<pcl::PointNormal, pcl::PointNormal, float>;
 
-}
+} // namespace

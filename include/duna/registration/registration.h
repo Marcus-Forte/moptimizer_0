@@ -45,8 +45,8 @@ namespace duna
         void align(const Matrix4 &guess) override;
 
     protected:
-        void updateCorrespondences() override;
-        void registrationLoop();
+        virtual void updateCorrespondences() override;
+        virtual void registrationLoop();
         bool m_normal_distance_mode = false;
         std::unique_ptr<std::unordered_map<int, pcl::Normal>> m_normal_map;
     };

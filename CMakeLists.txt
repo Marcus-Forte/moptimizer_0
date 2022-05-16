@@ -28,6 +28,7 @@ add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
 src/cost_function.cpp
 src/registration.cpp
+src/registration_3dof.cpp
 src/so3.cpp
 )
 
@@ -63,6 +64,8 @@ if(BUILD_TESTS)
         test/curve_fitting.cpp
         test/registration_point2plane.cpp
         test/registration_point2point.cpp
+
+        test/registration3dof_point2plane.cpp
 
         test/draft.cpp
         )

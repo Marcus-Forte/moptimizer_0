@@ -57,7 +57,7 @@ TEST(PowellFunction, InitialCondition0)
 
     for(int i = 0; i < 4; ++i)
     {
-        EXPECT_NEAR(x0[i],0.0, 2e-5);
+        EXPECT_NEAR(x0[i],0.0, 5e-5);
     }
 
     

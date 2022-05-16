@@ -35,10 +35,15 @@ namespace so3
         transform_matrix_(3, 3) = 1;
 
         // Compute w from the unit quaternion
-        Eigen::Quaternion<Scalar> q(0, x[0], x[1], x[2]);
-        q.w() = static_cast<Scalar>(std::sqrt(1 - q.dot(q)));
-        q.normalize();
-        transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
+        // Eigen::Quaternion<Scalar> q(0, x[0], x[1], x[2]);
+        // q.w() = static_cast<Scalar>(std::sqrt(1 - q.dot(q)));
+        // q.normalize();
+        // transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
+        Eigen::Matrix<Scalar, 3, 1> delta(x[0], x[1], x[2]);
+        delta = 2 * delta; // TODO why ?
+        Eigen::Matrix<Scalar, 3, 3> rot;
+        Exp<Scalar>(delta, rot);
+        transform_matrix_.topLeftCorner(3, 3) = rot;
     }
 
     template <typename Scalar>
@@ -58,9 +63,9 @@ namespace so3
     }
 
     template <typename Scalar>
-    void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
+    inline void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
     {
-        Eigen::Vector3d delta_conv(delta[0],delta[1],delta[2]);
+        Eigen::Vector3d delta_conv(delta[0], delta[1], delta[2]);
         double theta_sq = delta_conv.dot(delta_conv);
 
         double theta;
@@ -80,7 +85,7 @@ namespace so3
             imag_factor = std::sin(half_theta) / theta;
             real_factor = std::cos(half_theta);
         }
-        
+
         Eigen::Quaterniond q(real_factor, imag_factor * delta_conv[0], imag_factor * delta_conv[1], imag_factor * delta_conv[2]);
         R = q.toRotationMatrix().template cast<Scalar>();
 
@@ -104,7 +109,7 @@ namespace so3
     }
 
     template <typename Scalar>
-    void Log(const Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> &R, Eigen::Matrix<Scalar, 3, 1> &delta)
+    inline void Log(const Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> &R, Eigen::Matrix<Scalar, 3, 1> &delta)
     {
         Scalar theta = (R.trace() > 3.0 - 1e-6) ? 0.0 : std::acos(0.5 * (R.trace() - 1));
         Eigen::Matrix<Scalar, 3, 1> K(R(2, 1) - R(1, 2), R(0, 2) - R(2, 0), R(1, 0) - R(0, 1));
@@ -120,6 +125,9 @@ namespace so3
 
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
+
+    template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
+    template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
     template void DUNA_OPTIMIZER_EXPORT Exp<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<double, 3, 3>> R);
     template void DUNA_OPTIMIZER_EXPORT Exp<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<float, 3, 3>> R);

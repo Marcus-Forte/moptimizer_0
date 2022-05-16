@@ -41,6 +41,11 @@ public:
         optimizer.setCost(cost);
     }
 
+    ~SimpleModel()
+    {
+        delete cost;
+    }
+
 protected:
     
     duna::LevenbergMarquadt<float, 2> optimizer;

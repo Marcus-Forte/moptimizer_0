@@ -45,7 +45,7 @@ private:
 };
 
 template <typename Scalar>
-class TestAnalyticalDifferentiation : public ::testing::Test
+class Differentiation : public ::testing::Test
 {
 
 protected:
@@ -53,9 +53,9 @@ protected:
 
 using ScalarTypes = ::testing::Types<float, double>;
 
-TYPED_TEST_SUITE(TestAnalyticalDifferentiation, ScalarTypes);
+TYPED_TEST_SUITE(Differentiation, ScalarTypes);
 
-TYPED_TEST(TestAnalyticalDifferentiation, SimpleModel)
+TYPED_TEST(Differentiation, SimpleModel)
 {
     TypeParam x_data[] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70, 5, 0};
     TypeParam y_data[] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317, 0.2, 0};
@@ -141,7 +141,7 @@ struct Powell
     }
 };
 
-TEST(TestAnalyticalDifferentiation, PowellModel)
+TEST(Differentiation, PowellModel)
 {
 
     const int m_residuals = 4;
@@ -168,7 +168,7 @@ TEST(TestAnalyticalDifferentiation, PowellModel)
     std::cerr << HessianNum << std::endl;
 }
 
-TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
+TYPED_TEST(Differentiation, Poin2PointDistance)
 {
 
     pcl::PointCloud<pcl::PointXYZ> source;

@@ -44,6 +44,7 @@ namespace duna
             delete[] residuals_data;
             delete[] residuals_plus_data;
             delete[] residuals_minus_data;
+            // delete m_model;
         }
 
         Scalar computeCost(const Scalar *x, bool setup_data) override
@@ -81,10 +82,10 @@ namespace duna
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_plus(x_map.size(), *m_model);
-            // std::vector<Model> diff_minus(x0.size(), *m_model);
+            std::vector<Model> diff_minus(x_map.size(), *m_model);
 
             std::vector<ParameterVector> x_plus(x_map.size(), x_map);
-            // std::vector<ParameterVector> x_minus(x0.size(), x0);
+            // std::vector<ParameterVector> x_minus(x_map.size(), x_map);
 
             // Step size
             Scalar *h = new Scalar[x_map.size()];
@@ -117,7 +118,7 @@ namespace duna
                     diff_plus[j](x_plus[j].data(), residuals_plus_data, i);
                     // diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
 
-                    jacobian_row.col(j) = (residuals_plus - residuals) / (1 * h[j]);
+                    jacobian_row.col(j) = (residuals_plus - residuals) / ( h[j]);
                 }
 
                 // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
