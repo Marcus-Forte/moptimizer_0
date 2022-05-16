@@ -8,6 +8,8 @@
 #include <pcl/features/normal_3d.h>
 #include <duna/logging.h>
 #include <duna/registration/registration_model.h>
+#include <unordered_set>
+#include <unordered_map>
 
 namespace duna
 {
@@ -41,7 +43,7 @@ namespace duna
         void updateCorrespondences() override;
         void registrationLoop();
         bool m_normal_distance_mode = false;
-        PointCloudNormalT::Ptr target_normals;
+        std::unique_ptr<std::unordered_map<int,pcl::Normal>> m_normal_map;
     };
 }
 

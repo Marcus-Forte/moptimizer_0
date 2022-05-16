@@ -55,9 +55,9 @@ public:
         pcl_icp.setMaxCorrespondenceDistance(10);
         pcl_icp.setMaximumIterations(50);
         pcl_icp.setSearchMethodTarget(this->target_kdtree);
-       
+
 #ifndef NDEBUG
-        pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+        pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
 #endif
     }
 
@@ -98,15 +98,15 @@ TYPED_TEST(RegistrationPoint2Point, Translation)
     {
         std::cerr << ex.what() << std::endl;
     }
-    std::string message ( "Duna ICP: " + std::to_string(this->registration.getFinalIterationsNumber()) + "/" + std::to_string(this->registration.getMaximumICPIterations()) );
+    std::string message("Duna ICP: " + std::to_string(this->registration.getFinalIterationsNumber()) + "/" + std::to_string(this->registration.getMaximumICPIterations()));
     timer.tock(message);
 
     Eigen::Matrix<TypeParam, 4, 4> final_transform = this->registration.getFinalTransformation();
 
     // this->estimation.reset(new pcl::registration::TransformationEstimationLM<PointT, PointT, TypeParam>);
     // this->estimation.reset(new pcl::registration::TransformationEstimationDualQuaternion<PointT,PointT,TypeParam>);
-    this->estimation.reset(new pcl::registration::TransformationEstimationSVD<PointT,PointT,TypeParam>);
-    this-> pcl_icp.setTransformationEstimation(this->estimation);
+    this->estimation.reset(new pcl::registration::TransformationEstimationSVD<PointT, PointT, TypeParam>);
+    this->pcl_icp.setTransformationEstimation(this->estimation);
     timer.tick();
     PointCloutT output;
     this->pcl_icp.align(output);
@@ -144,13 +144,13 @@ TYPED_TEST(RegistrationPoint2Point, Rotation)
     {
         std::cerr << ex.what() << std::endl;
     }
-    std::string message ( "Duna ICP: " + std::to_string(this->registration.getFinalIterationsNumber()) + "/" + std::to_string(this->registration.getMaximumICPIterations()) );
+    std::string message("Duna ICP: " + std::to_string(this->registration.getFinalIterationsNumber()) + "/" + std::to_string(this->registration.getMaximumICPIterations()));
     timer.tock(message);
 
     Eigen::Matrix<TypeParam, 4, 4> final_transform = this->registration.getFinalTransformation();
 
     this->estimation.reset(new pcl::registration::TransformationEstimationLM<PointT, PointT, TypeParam>);
-    this-> pcl_icp.setTransformationEstimation(this->estimation);
+    this->pcl_icp.setTransformationEstimation(this->estimation);
     timer.tick();
     PointCloutT output;
     this->pcl_icp.align(output);
@@ -170,14 +170,14 @@ TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslation)
 {
 
     Eigen::Matrix<TypeParam, 3, 3> rot;
-    rot = Eigen::AngleAxis<TypeParam>(0.2, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
-          Eigen::AngleAxis<TypeParam>(0.3, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
-          Eigen::AngleAxis<TypeParam>(0.4, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
+    rot = Eigen::AngleAxis<TypeParam>(0.8, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
+          Eigen::AngleAxis<TypeParam>(0.5, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
+          Eigen::AngleAxis<TypeParam>(0.2, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
 
     this->reference_transform.topLeftCorner(3, 3) = rot;
-    this->reference_transform(0, 3) = 1;
-    this->reference_transform(1, 3) = 2;
-    this->reference_transform(2, 3) = 2;
+    this->reference_transform(0, 3) = -0.5;
+    this->reference_transform(1, 3) = -0.2;
+    this->reference_transform(2, 3) = 0.1;
 
     Eigen::Matrix<TypeParam, 4, 4> reference_transform_inverse = this->reference_transform.inverse();
 
@@ -192,13 +192,13 @@ TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslation)
     {
         std::cerr << ex.what() << std::endl;
     }
-    std::string message ( "Duna ICP: " + std::to_string(this->registration.getFinalIterationsNumber()) + "/" + std::to_string(this->registration.getMaximumICPIterations()) );
+    std::string message("Duna ICP: " + std::to_string(this->registration.getFinalIterationsNumber()) + "/" + std::to_string(this->registration.getMaximumICPIterations()));
     timer.tock(message);
 
     Eigen::Matrix<TypeParam, 4, 4> final_transform = this->registration.getFinalTransformation();
 
     this->estimation.reset(new pcl::registration::TransformationEstimationLM<PointT, PointT, TypeParam>);
-    this-> pcl_icp.setTransformationEstimation(this->estimation);
+    this->pcl_icp.setTransformationEstimation(this->estimation);
     timer.tick();
     PointCloutT output;
     this->pcl_icp.align(output);
@@ -206,6 +206,42 @@ TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslation)
 
     std::cerr << "PCL ICP: \n";
     std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+
+    std::cerr << final_transform << std::endl;
+    std::cerr << reference_transform_inverse << std::endl;
+
+    for (int i = 0; i < this->reference_transform.size(); ++i)
+        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
+}
+
+TYPED_TEST(RegistrationPoint2Point, Guess)
+{
+    Eigen::Matrix<TypeParam, 3, 3> rot;
+    rot = Eigen::AngleAxis<TypeParam>(0.0, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
+          Eigen::AngleAxis<TypeParam>(0.0, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
+          Eigen::AngleAxis<TypeParam>(0.0, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
+
+    this->reference_transform.topLeftCorner(3, 3) = rot;
+    this->reference_transform(0, 3) = 15;
+    this->reference_transform(1, 3) = 15;
+    this->reference_transform(2, 3) = 15;
+
+    pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
+    Eigen::Matrix<TypeParam, 4, 4> reference_transform_inverse = this->reference_transform.inverse();
+    
+    Eigen::Matrix<TypeParam, 4, 4> guess = reference_transform_inverse;
+    // Apply a small transform
+    guess(0, 3) += 0.1;
+    try
+    {
+        this->registration.align(guess);
+    }
+    catch (std::exception &ex)
+    {
+        std::cerr << ex.what() << std::endl;
+    }
+
+    Eigen::Matrix<TypeParam, 4, 4> final_transform = this->registration.getFinalTransformation();
 
     std::cerr << final_transform << std::endl;
     std::cerr << reference_transform_inverse << std::endl;

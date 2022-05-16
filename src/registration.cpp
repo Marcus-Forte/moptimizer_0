@@ -5,8 +5,7 @@ namespace duna
     template <typename PointSource, typename PointTarget, typename Scalar>
     void Registration<PointSource, PointTarget, Scalar>::align()
     {
-        m_final_transformation.setIdentity();
-        align(m_final_transformation);
+        align(Matrix4::Identity());
     }
 
     template <typename PointSource, typename PointTarget, typename Scalar>
@@ -24,11 +23,12 @@ namespace duna
         DUNA_DEBUG("Target pts: %ld \n", m_target->size());
         DUNA_DEBUG("Source pts: %ld \n", m_source->size());
 
+        m_final_transformation = guess;
         // Prepare data
         if (m_normal_distance_mode)
         {
-            target_normals.reset(new PointCloudNormalT);
-            target_normals->resize(m_target->size());
+            m_normal_map.reset(new std::unordered_map<int,pcl::Normal>);
+            m_normal_map->reserve(m_source->size());
         }
 
         registrationLoop();
@@ -60,15 +60,22 @@ namespace duna
                 corr.index_match = indices[0];
                 m_correspondences.push_back(corr);
 
-                // TODO avoid recompute
-                Eigen::Vector4f normal_;
-                float unused;
-                pcl::computePointNormal(*m_target, indices, normal_, unused);
-
-                target_normals->points[indices[0]].normal_x = normal_[0];
-                target_normals->points[indices[0]].normal_y = normal_[1];
-                target_normals->points[indices[0]].normal_z = normal_[2];
+                // if (!m_normal_map->count(i))
+                {
+                    Eigen::Vector4f normal_;
+                    float unused;
+                    pcl::computePointNormal(*m_target, indices, normal_, unused);
+                    // Use index 'i' to map correspondence 'i' of source to target_normal 'i'
+                    (*m_normal_map)[corr.index_query].normal_x = normal_[0];
+                    (*m_normal_map)[corr.index_query].normal_y = normal_[1];
+                    (*m_normal_map)[corr.index_query].normal_z = normal_[2];
+                }
             }
+
+            // for(const auto& it : *m_normal_map)
+            // {
+            //     std::cerr << it.second << std::endl;
+            // }
         }
         else
         {
@@ -103,15 +110,13 @@ namespace duna
         if (m_normal_distance_mode)
         {
             cost = new duna::CostFunctionNumericalDiff<Point2Plane<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
-                new Point2Plane<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, *target_normals, m_correspondences)
-                );
+                new Point2Plane<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, *m_normal_map, m_correspondences));
             std::cerr << "point2plane\n";
         }
         else
         {
             cost = new duna::CostFunctionNumericalDiff<Point2Point<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
-                new Point2Point<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, m_correspondences)
-                );
+                new Point2Point<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, m_correspondences));
             std::cerr << "point2point\n";
         }
 

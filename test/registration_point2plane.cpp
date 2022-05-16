@@ -12,6 +12,8 @@
 using PointT = pcl::PointNormal;
 using PointCloutT = pcl::PointCloud<PointT>;
 
+#define TOLERANCE 1e-2
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
@@ -35,9 +37,6 @@ public:
             throw std::runtime_error("Unable to laod test data 'bunny.pcd'");
         }
 
-        
-        
-
         std::cout << "Loaded : " << target->size() << " points\n";
 
         target_kdtree->setInputCloud(target);
@@ -45,7 +44,7 @@ public:
         pcl::NormalEstimation<PointT,PointT> ne;
         ne.setInputCloud(target);
         ne.setSearchMethod(target_kdtree);
-        ne.setKSearch(15);
+        ne.setKSearch(5);
         ne.compute(*target);
 
         registration.setMaximumICPIterations(50);
@@ -53,7 +52,7 @@ public:
         registration.setInputTarget(target);
         registration.setTargetSearchMethod(target_kdtree);
         registration.setMaximumCorrespondenceDistance(10);
-        registration.setMaximumOptimizerIterations(1);
+        registration.setMaximumOptimizerIterations(3);
         registration.setPoint2Plane();
 
         // pcl NL //
@@ -65,7 +64,7 @@ public:
         pcl_icp.setSearchMethodTarget(this->target_kdtree);
        
 #ifndef NDEBUG
-        pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+        pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
 #endif
     }
 
@@ -88,9 +87,9 @@ TYPED_TEST_SUITE(RegistrationPoint2Plane, ScalarTypes);
 
 TYPED_TEST(RegistrationPoint2Plane, Translation)
 {
-    this->reference_transform(0, 3) = 1;
-    this->reference_transform(1, 3) = 2;
-    this->reference_transform(2, 3) = 3;
+    this->reference_transform(0, 3) = -0.5;
+    this->reference_transform(1, 3) = 0.3;
+    this->reference_transform(2, 3) = 0.2;
 
     Eigen::Matrix<TypeParam, 4, 4> reference_transform_inverse = this->reference_transform.inverse();
 
@@ -113,12 +112,12 @@ TYPED_TEST(RegistrationPoint2Plane, Translation)
 
     // this->estimation.reset(new pcl::registration::TransformationEstimationLM<PointT, PointT, TypeParam>);
     // this->estimation.reset(new pcl::registration::TransformationEstimationDualQuaternion<PointT,PointT,TypeParam>);
-    this->estimation.reset(new pcl::registration::TransformationEstimationPointToPlane<PointT,PointT,TypeParam>);
+    this->estimation.reset(new pcl::registration::TransformationEstimationPointToPlaneLLS<PointT,PointT,TypeParam>);
     this-> pcl_icp.setTransformationEstimation(this->estimation);
     timer.tick();
     PointCloutT output;
     this->pcl_icp.align(output);
-    timer.tock("PCL ICP");
+    timer.tock("PCL ICP(LLS)");
 
     std::cerr << "PCL ICP: \n";
     std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
@@ -127,7 +126,7 @@ TYPED_TEST(RegistrationPoint2Plane, Translation)
     std::cerr << reference_transform_inverse << std::endl;
 
     for (int i = 0; i < this->reference_transform.size(); ++i)
-        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), 1e-3);
+        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
 }
 
 TYPED_TEST(RegistrationPoint2Plane, Rotation)
@@ -171,7 +170,7 @@ TYPED_TEST(RegistrationPoint2Plane, Rotation)
     std::cerr << reference_transform_inverse << std::endl;
 
     for (int i = 0; i < this->reference_transform.size(); ++i)
-        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), 1e-3);
+        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
 }
 
 TYPED_TEST(RegistrationPoint2Plane, RotationPlusTranslation)
@@ -183,9 +182,9 @@ TYPED_TEST(RegistrationPoint2Plane, RotationPlusTranslation)
           Eigen::AngleAxis<TypeParam>(0.5, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
 
     this->reference_transform.topLeftCorner(3, 3) = rot;
-    this->reference_transform(0, 3) = 1;
-    this->reference_transform(1, 3) = 2;
-    this->reference_transform(2, 3) = 3;
+    this->reference_transform(0, 3) = 0.5;
+    this->reference_transform(1, 3) = 0.2;
+    this->reference_transform(2, 3) = 0.3;
 
     Eigen::Matrix<TypeParam, 4, 4> reference_transform_inverse = this->reference_transform.inverse();
 
@@ -205,7 +204,7 @@ TYPED_TEST(RegistrationPoint2Plane, RotationPlusTranslation)
 
     Eigen::Matrix<TypeParam, 4, 4> final_transform = this->registration.getFinalTransformation();
 
-    this->estimation.reset(new pcl::registration::TransformationEstimationPointToPlaneLLS<PointT, PointT, TypeParam>);
+    this->estimation.reset(new pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>);
     this-> pcl_icp.setTransformationEstimation(this->estimation);
     timer.tick();
     PointCloutT output;
@@ -219,5 +218,5 @@ TYPED_TEST(RegistrationPoint2Plane, RotationPlusTranslation)
     std::cerr << reference_transform_inverse << std::endl;
 
     for (int i = 0; i < this->reference_transform.size(); ++i)
-        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), 1e-3);
+        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
 }

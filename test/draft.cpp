@@ -2,6 +2,9 @@
 
 #include <Eigen/Dense>
 
+#include <unordered_map>
+#include <unordered_set>
+
 /* Draft space for testing quick stuff */
 
 int main(int argc, char **argv)
@@ -14,16 +17,10 @@ int main(int argc, char **argv)
 
 TEST(Draft, Draft)
 {
-Eigen::Matrix<double,-1,1> vector;
+    std::unordered_set<int> set;
 
-vector.resize(10);
-vector.setZero();
-
-double* pointer = vector.data();
-
-pointer[0] = 1;
-pointer[1] = 2;
-std::cout << vector << std::endl;
+    if(!set.count(55))
+        set.insert(55);
 
 
 }
