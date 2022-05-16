@@ -76,10 +76,10 @@ namespace duna
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_plus(x0.size(), *m_model);
-            std::vector<Model> diff_minus(x0.size(), *m_model);
+            // std::vector<Model> diff_minus(x0.size(), *m_model);
 
             std::vector<ParameterVector> x_plus(x0.size(), x0);
-            std::vector<ParameterVector> x_minus(x0.size(), x0);
+            // std::vector<ParameterVector> x_minus(x0.size(), x0);
 
             // Step size
             Scalar *h = new Scalar[x0.size()];
@@ -93,10 +93,10 @@ namespace duna
 
                 // TODO Manifold operation
                 x_plus[j][j] += h[j];
-                x_minus[j][j] -= h[j];
+                // x_minus[j][j] -= h[j];
 
                 diff_plus[j].setup((x_plus[j]).data());
-                diff_minus[j].setup((x_minus[j]).data());
+                // diff_minus[j].setup((x_minus[j]).data());
             }
 
             m_model[0].setup(x0.data()); // this was inside the loop below.. Very bad.
@@ -110,14 +110,14 @@ namespace duna
                 for (int j = 0; j < x0.size(); ++j)
                 {
                     diff_plus[j](x_plus[j].data(), residuals_plus_data, i);
-                    diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
+                    // diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
 
                     jacobian_row.col(j) = (residuals_plus - residuals) / ( 1 * h[j]);
                 }
 
                 // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
-                hessian = hessian + (jacobian_row.transpose() * jacobian_row);
-                b += jacobian_row.transpose() * residuals;
+                hessian.noalias() += (jacobian_row.transpose() * jacobian_row);
+                b.noalias() += jacobian_row.transpose() * residuals;
             }
 
             delete h;

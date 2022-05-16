@@ -13,7 +13,7 @@ namespace duna
     template <typename PointSource, typename PointTarget, typename Scalar = double>
     class RegistrationBase
     {
-    public:
+    protected:
         using PointCloudSource = pcl::PointCloud<PointSource>;
         using PointCloudSourcePtr = typename PointCloudSource::Ptr;
         using PointCloudSourceConstPtr = typename PointCloudSource::ConstPtr;
@@ -34,7 +34,7 @@ namespace duna
             m_transformed_source.reset(new PointCloudSource);
             m_optimizer = new duna::LevenbergMarquadt<Scalar,6,1>;
 
-            // Run only one optimization loop, then transform source closer to target.
+            // 
             m_optimizer->setMaximumIterations(3);
             
         }
@@ -45,9 +45,12 @@ namespace duna
         void setMaximumOptimizerIterations(unsigned int max_iterations ) { m_optimizer->setMaximumIterations(max_iterations); }
         void setTargetSearchMethod(TargetSearchMethodConstPtr method) { m_target_search_method = method; }
         void setMaximumCorrespondenceDistance( float max_distance ) { m_max_corr_dist = max_distance; }
-        void setMaxNearestK(unsigned int nearest_k) { m_nearest_k = nearest_k;}
+        void setNearestK(unsigned int nearest_k) { m_nearest_k = nearest_k;}
 
-        Matrix4 getFinalTransformation() { return m_final_transformation; }
+        inline unsigned int getFinalIterationsNumber() const { return m_current_iterations; }
+        inline unsigned int getMaximumICPIterations() const { return m_max_icp_iterations; }
+
+        Matrix4 getFinalTransformation() const { return m_final_transformation; }
 
         virtual void align() = 0;
         virtual void align(const Matrix4 &guess) = 0;
@@ -57,6 +60,7 @@ namespace duna
         virtual void updateCorrespondences() = 0;
         
         unsigned int m_max_icp_iterations = 10;
+        unsigned int m_current_iterations;
         PointCloudSourceConstPtr m_source;
         PointCloudTargetConstPtr m_target;
 

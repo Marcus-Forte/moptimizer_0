@@ -41,7 +41,7 @@ struct Model
 TEST(PowellFunction, InitialCondition0)
 {
     //
-    utilities::Stopwatch timer(true);
+    utilities::Stopwatch timer;
     timer.tick();
     double x0[] = {3, -1, 0, 4};
 
@@ -57,7 +57,7 @@ TEST(PowellFunction, InitialCondition0)
 
     for(int i = 0; i < 4; ++i)
     {
-        EXPECT_NEAR(x0[i],0.0, 1e-5);
+        EXPECT_NEAR(x0[i],0.0, 2e-5);
     }
 
     

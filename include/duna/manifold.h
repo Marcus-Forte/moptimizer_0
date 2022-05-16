@@ -15,7 +15,7 @@ public:
     using LinearRepresentation = Eigen::Matrix<Scalar, LinearDim, 1>;
     using TangentRepresentation = Eigen::Matrix<Scalar, TangentDim, 1>;
 
-    Manifold() {}
+    Manifold() = default;
     Manifold(const LinearRepresentation &linear_rep) : parameter(linear_rep) {}
 
     LinearRepresentation &getEunclideanRepresentation()

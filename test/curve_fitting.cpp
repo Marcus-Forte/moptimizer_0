@@ -113,7 +113,7 @@ struct Model
 TEST(CurveFitting, InitialCondition0)
 {
     
-    utilities::Stopwatch timer(1);
+    utilities::Stopwatch timer;
     timer.tick();
     duna::LevenbergMarquadt<double,2,1> optimizer;
 
@@ -133,7 +133,7 @@ TEST(CurveFitting, InitialCondition0)
 TEST(CurveFitting, InitialCondition2)
 {
     
-    utilities::Stopwatch timer(1);
+    utilities::Stopwatch timer;
     timer.tick();
     duna::LevenbergMarquadt<double,2,1> optimizer;
     optimizer.setMaximumIterations(50);

@@ -3,7 +3,7 @@
 #include <iostream>
 namespace so3
 {
-    // TODO check for errors in conversion. High angles are problematic
+
     template <typename Scalar>
     inline void convert6DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {

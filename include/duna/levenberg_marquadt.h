@@ -52,14 +52,7 @@ namespace duna
         using Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::m_maximum_iterations;
 
         // Delta Convergence
-        bool isDeltaSmall(ParameterVector &delta)
-        {
-            Scalar epsilon = delta.array().abs().maxCoeff();
-
-            if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
-                return true;
-            return false;
-        }
+        bool isDeltaSmall(ParameterVector &delta);
     };
 }
 

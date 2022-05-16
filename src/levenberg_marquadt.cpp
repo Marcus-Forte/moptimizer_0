@@ -7,13 +7,13 @@ namespace duna
 {
 
     template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::step(Scalar * x0)
+    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::step(Scalar *x0)
     {
         return OptimizationStatus::NUMERIC_ERROR;
     }
 
     template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::minimize(Scalar * x0)
+    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::minimize(Scalar *x0)
     {
         // std::cout << " Minimizing...\n";
 
@@ -25,7 +25,7 @@ namespace duna
 
         reset();
 
-        Eigen::Map<ParameterVector> x0_map (x0);
+        Eigen::Map<ParameterVector> x0_map(x0);
         HessianMatrix hessian;
         HessianMatrix hessian_diagonal;
         ParameterVector b;
@@ -40,9 +40,9 @@ namespace duna
 
             Scalar y0 = m_cost->linearize(x0_map, hessian, b);
 
-            if( abs(y0) < 1e-20)
+            if (abs(y0) < std::numeric_limits<Scalar>::epsilon() * 1)
             {
-                DUNA_DEBUG("[LM] --- Small Cost reached --- : %f\n", y0);
+                DUNA_DEBUG("[LM] --- Small Cost reached --- : %e\n", y0);
                 return OptimizationStatus::CONVERGED;
             }
 
@@ -54,8 +54,6 @@ namespace duna
 
             if (m_lm_lambda < 0.0)
                 m_lm_lambda = m_lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
-            
-
 
             Scalar nu = 2.0;
 
@@ -76,11 +74,11 @@ namespace duna
                 // DUNA_DEBUG_STREAM("[LM] --- Solver delta: ");
                 // DUNA_DEBUG_STREAM(delta << std::endl);
 
-                if (isDeltaSmall(delta))
-                {
-                    DUNA_DEBUG("[LM] --- Small Delta reached --- : %f\n", delta.norm());
-                    return OptimizationStatus::SMALL_DELTA;
-                }
+                // if (isDeltaSmall(delta))
+                // {
+                //     DUNA_DEBUG("[LM] --- Small Delta reached --- : %f\n", delta.norm());
+                //     return OptimizationStatus::SMALL_DELTA;
+                // }
 
                 // TODO Manifold operation
                 xi = x0_map + delta;
@@ -96,13 +94,17 @@ namespace duna
                                       << b << std::endl);
                     return OptimizationStatus::NUMERIC_ERROR;
                 }
+
                 Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
-                DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %f %f %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)
                 {
                     if (isDeltaSmall(delta))
+                    {
+                        DUNA_DEBUG("[LM] --- Small Delta reached --- : %e\n", delta.norm());
                         return OptimizationStatus::SMALL_DELTA;
+                    }
 
                     m_lm_lambda = nu * m_lm_lambda;
                     nu = 2 * nu;
@@ -118,14 +120,24 @@ namespace duna
         return OptimizationStatus::MAXIMUM_ITERATIONS_REACHED;
     }
 
+    template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
+    bool LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::isDeltaSmall(ParameterVector &delta)
+    {
+        Scalar epsilon = delta.array().abs().maxCoeff();
+
+        // if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
+        if (epsilon < std::numeric_limits<Scalar>::epsilon() * 100)
+            return true;
+        return false;
+    }
+
     // Instantiations
     template class LevenbergMarquadt<double, 2, 1>;
     template class LevenbergMarquadt<float, 2, 1>;
 
-   
-    template class LevenbergMarquadt<double, 6, 2>;  // Camera calibration
-    template class LevenbergMarquadt<double, 4, 4>; //powell
-    
+    template class LevenbergMarquadt<double, 6, 2>; // Camera calibration
+    template class LevenbergMarquadt<double, 4, 4>; // powell
+
     // Registration
     template class LevenbergMarquadt<double, 6, 1>;
     template class LevenbergMarquadt<double, 3, 1>; // 3DOF

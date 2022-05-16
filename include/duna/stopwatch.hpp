@@ -12,11 +12,6 @@ namespace utilities
         Stopwatch() = default;
         ~Stopwatch() = default;
 
-        Stopwatch(bool enable_)
-        {
-            enable();   
-        }
-
         inline void enable()
         {
             is_enabled = true;
@@ -51,7 +46,6 @@ namespace utilities
     private:
         // Debug timing
         std::chrono::time_point<std::chrono::high_resolution_clock> m_tick;
-        bool is_enabled = false;
+        bool is_enabled = true;
     };
 }
-

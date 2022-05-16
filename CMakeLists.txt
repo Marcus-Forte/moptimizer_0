@@ -10,7 +10,8 @@ set(CMAKE_INSTALL_PREFIX install) # install locally
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
 find_package(GTest REQUIRED)
-link_libraries(Eigen3::Eigen)
+find_package(OpenMP)
+link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX)
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
 
 # add_compile_options(-msse2 -msse3)
@@ -26,6 +27,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
 src/cost_function.cpp
+src/registration.cpp
 src/so3.cpp
 )
 
@@ -60,7 +62,8 @@ if(BUILD_TESTS)
         test/manifold.cpp
         test/powell.cpp
         test/curve_fitting.cpp
-        test/registration.cpp
+        test/registration_point2plane.cpp
+        test/registration_point2point.cpp
 
         test/draft.cpp
         )

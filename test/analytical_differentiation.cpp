@@ -214,7 +214,4 @@ TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
     std::cerr << "Hessian:\n" << Hessian << std::endl;
     std::cerr << "Hessian Numerical:\n" << HessianNum << std::endl;
 
-
-    
-
 }
