@@ -6,14 +6,14 @@
 namespace duna
 {
 
-    template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::step(Scalar *x0)
+    template <class Scalar, int N_PARAMETERS>
+    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::step(Scalar *x0)
     {
         return OptimizationStatus::NUMERIC_ERROR;
     }
 
-    template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::minimize(Scalar *x0)
+    template <class Scalar, int N_PARAMETERS>
+    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
     {
         // std::cout << " Minimizing...\n";
 
@@ -38,7 +38,8 @@ namespace duna
         {
             DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << j + 1 << "/" << m_maximum_iterations << " ##\n");
 
-            Scalar y0 = m_cost->linearize(x0_map, hessian, b);
+            Scalar y0;
+            y0 = m_cost->linearize(x0, hessian.data(), b.data());
 
             if (abs(y0) < std::numeric_limits<Scalar>::epsilon() * 1)
             {
@@ -120,8 +121,8 @@ namespace duna
         return OptimizationStatus::MAXIMUM_ITERATIONS_REACHED;
     }
 
-    template <class Scalar, int N_PARAMETERS, int N_OUTPUTS>
-    bool LevenbergMarquadt<Scalar, N_PARAMETERS, N_OUTPUTS>::isDeltaSmall(ParameterVector &delta)
+    template <class Scalar, int N_PARAMETERS>
+    bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isDeltaSmall(ParameterVector &delta)
     {
         Scalar epsilon = delta.array().abs().maxCoeff();
 
@@ -132,17 +133,16 @@ namespace duna
     }
 
     // Instantiations
-    template class LevenbergMarquadt<double, 2, 1>;
-    template class LevenbergMarquadt<float, 2, 1>;
+    template class LevenbergMarquadt<double, 2>;
+    template class LevenbergMarquadt<float, 2>;
 
-    template class LevenbergMarquadt<double, 6, 2>; // Camera calibration
-    template class LevenbergMarquadt<double, 4, 4>; // powell
+    template class LevenbergMarquadt<double, 4>; // powell
 
     // Registration
-    template class LevenbergMarquadt<double, 6, 1>;
-    template class LevenbergMarquadt<double, 3, 1>; // 3DOF
+    template class LevenbergMarquadt<double, 6>;
+    template class LevenbergMarquadt<double, 3>; // 3DOF
 
-    template class LevenbergMarquadt<float, 6, 1>;
-    template class LevenbergMarquadt<float, 3, 1>; // 3DOF
+    template class LevenbergMarquadt<float, 6>;
+    template class LevenbergMarquadt<float, 3>; // 3DOF
 
 } // namespace duna

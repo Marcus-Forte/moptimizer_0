@@ -31,12 +31,7 @@ namespace duna
     public:
         RegistrationBase()
         {
-            m_transformed_source.reset(new PointCloudSource);
-            m_optimizer = new duna::LevenbergMarquadt<Scalar,6,1>;
-
-            // 
-            m_optimizer->setMaximumIterations(3);
-            
+            m_transformed_source.reset(new PointCloudSource);            
         }
 
         void setInputSource(PointCloudSourceConstPtr source) { m_source = source; }
@@ -72,7 +67,7 @@ namespace duna
 
         Matrix4 m_final_transformation;
         pcl::Correspondences m_correspondences;
-        Optimizer<Scalar, 6, 1> *m_optimizer;
+        Optimizer<Scalar> *m_optimizer;
     };
 }
 

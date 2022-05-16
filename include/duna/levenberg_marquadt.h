@@ -5,14 +5,12 @@
 
 namespace duna
 {
-    template <class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_OUTPUTS = duna::Dynamic>
-    class LevenbergMarquadt : public Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>
+    template <class Scalar = double, int N_PARAMETERS = duna::Dynamic>
+    class LevenbergMarquadt : public Optimizer<Scalar>
     {
     public:
-        using ParameterVector = typename Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::ParameterVector;
-        using HessianMatrix = typename Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::HessianMatrix;
-        using JacobianMatrix = typename Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::JacobianMatrix;
-        using CostFunctionType = typename Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::CostFunctionType;
+    using HessianMatrix = Eigen::Matrix<Scalar,N_PARAMETERS,N_PARAMETERS>;
+    using ParameterVector = Eigen::Matrix<Scalar,N_PARAMETERS,1>;
 
         LevenbergMarquadt()
         {
@@ -33,8 +31,8 @@ namespace duna
             m_lm_max_iterations = max_iterations;
         }
 
-        OptimizationStatus step(Scalar* x0) override;
-        OptimizationStatus minimize(Scalar* x0) override;
+        OptimizationStatus step(Scalar *x0) override;
+        OptimizationStatus minimize(Scalar *x0) override;
 
     protected:
         // TODO
@@ -48,8 +46,8 @@ namespace duna
         Scalar m_lm_lambda;
         int m_lm_max_iterations;
 
-        using Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::m_cost;
-        using Optimizer<Scalar, N_PARAMETERS, N_OUTPUTS>::m_maximum_iterations;
+        using Optimizer<Scalar>::m_cost;
+        using Optimizer<Scalar>::m_maximum_iterations;
 
         // Delta Convergence
         bool isDeltaSmall(ParameterVector &delta);

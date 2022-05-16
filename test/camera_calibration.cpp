@@ -102,7 +102,7 @@ public:
 
 protected:
     duna::CostFunctionNumericalDiff<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
-    duna::LevenbergMarquadt<double, MODEL_PARAMETERS, MODEL_OUTPUTS> optimizer;
+    duna::LevenbergMarquadt<double, MODEL_PARAMETERS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;
     std::vector<Eigen::Vector2i> pixel_list;

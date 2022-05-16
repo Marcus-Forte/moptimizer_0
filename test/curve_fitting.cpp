@@ -115,7 +115,7 @@ TEST(CurveFitting, InitialCondition0)
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna::LevenbergMarquadt<double,2,1> optimizer;
+    duna::LevenbergMarquadt<double,2> optimizer;
 
     optimizer.setCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations));
 
@@ -135,7 +135,7 @@ TEST(CurveFitting, InitialCondition2)
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna::LevenbergMarquadt<double,2,1> optimizer;
+    duna::LevenbergMarquadt<double,2> optimizer;
     optimizer.setMaximumIterations(50);
     optimizer.setCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations));
 

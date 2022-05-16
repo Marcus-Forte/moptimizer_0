@@ -6,21 +6,18 @@
 
 namespace duna
 {
-    template <class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_OUTPUTS = duna::Dynamic>
+    template <class Scalar = double>
     class Optimizer
     {
     public:
-        using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
-        using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
-        using JacobianMatrix = Eigen::Matrix<Scalar, N_OUTPUTS, N_PARAMETERS>;
-        using CostFunctionType = CostFunctionBase<Scalar, N_PARAMETERS, N_OUTPUTS>;
+        using CostFunctionType = CostFunctionBase<Scalar>;
 
         Optimizer()
         {
             m_maximum_iterations = 15;
         }
         Optimizer(const Optimizer &) = delete;
-        Optimizer & operator=(const Optimizer &) = delete;
+        Optimizer &operator=(const Optimizer &) = delete;
         virtual ~Optimizer() = default;
 
         inline void setMaximumIterations(int max_iterations)

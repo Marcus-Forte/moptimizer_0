@@ -7,26 +7,27 @@ namespace duna
 {
     // NOTE. We are using Model as a template to be able to call its copy constructors and enable numercial diff.
     template <typename Model, class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
-    class CostFunctionAnalytical : public CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>
+    class CostFunctionAnalytical : public CostFunctionBase<Scalar>
     {
     public:
-        using ParameterVector = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::ParameterVector;
-        using ResidualVector = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::ResidualVector;
-        using HessianMatrix = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::HessianMatrix;
-        using JacobianMatrix = typename CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::JacobianMatrix;
+        using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
+        using ResidualVector = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>;
+        using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
+        using JacobianMatrix = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS>;
 
         // TODO change pointer to smartpointer
         CostFunctionAnalytical(Model *model, int num_residuals) : m_model(model),
                                                                   residuals(nullptr),
                                                                   jacobian(nullptr),
-                                                                  CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>(num_residuals)
+                                                                  CostFunctionBase<Scalar>(num_residuals,N_MODEL_OUTPUTS)
         {
             init();
         }
 
         CostFunctionAnalytical(Model *model) : m_model(model),
                                                residuals(nullptr),
-                                               jacobian(nullptr)
+                                               jacobian(nullptr),
+                                               CostFunctionBase<Scalar>(1,N_MODEL_OUTPUTS)
         {
             init();
             // TODO remove warning
@@ -59,34 +60,38 @@ namespace duna
             return sum;
         }
 
-        Scalar linearize(const ParameterVector &x0, HessianMatrix &hessian, ParameterVector &b) override
+        Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
         {
-            hessian.setZero();
-            b.setZero();
+            Eigen::Map<const ParameterVector> x_map(x);
+            Eigen::Map<HessianMatrix> hessian_map(hessian);
+            Eigen::Map<ParameterVector> b_map(b);
+
+            hessian_map.setZero();
+            b_map.setZero();
 
             Scalar sum = 0.0;
 
             // Step size
-            Scalar *h = new Scalar[x0.size()];
+            Scalar *h = new Scalar[x_map.size()];
 
-            m_model[0].setup(x0.data()); // this was inside the loop below.. Very bad.
+            m_model[0].setup(x_map.data()); // this was inside the loop below.. Very bad.
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
 
-                m_model[0](x0.data(), residuals_data, i);
+                m_model[0](x_map.data(), residuals_data, i);
                 sum += 2 * residuals.squaredNorm();
 
-                m_model[0].df(x0.data(), jacobian_data, i);
+                m_model[0].df(x_map.data(), jacobian_data, i);
 
                 // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
-                hessian = hessian + (jacobian.transpose() * jacobian);
-                b += jacobian.transpose() * residuals;
+                hessian_map.noalias() += (jacobian.transpose() * jacobian);
+                b_map.noalias() += jacobian.transpose() * residuals;
             }
 
             delete h;
 
-            hessian.template triangularView<Eigen::Upper>() = hessian.transpose();
+            hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
 
             return sum;
         }
@@ -100,8 +105,8 @@ namespace duna
         Eigen::Map<const ResidualVector> residuals;
         Eigen::Map<const JacobianMatrix> jacobian;
 
-        using CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::m_num_outputs;
-        using CostFunctionBase<Scalar, N_PARAMETERS, N_MODEL_OUTPUTS>::m_num_residuals;
+        using CostFunctionBase<Scalar>::m_num_outputs;
+        using CostFunctionBase<Scalar>::m_num_residuals;
 
         void init()
         {

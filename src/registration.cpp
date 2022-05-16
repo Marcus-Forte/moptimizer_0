@@ -105,7 +105,7 @@ namespace duna
     {
         pcl::transformPointCloud(*m_source, *m_transformed_source, m_final_transformation);
 
-        CostFunctionBase<Scalar, 6, 1> *cost;
+        CostFunctionBase<Scalar> *cost;
 
         if (m_normal_distance_mode)
         {

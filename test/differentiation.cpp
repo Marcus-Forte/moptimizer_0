@@ -71,14 +71,17 @@ TYPED_TEST(TestAnalyticalDifferentiation, SimpleModel)
     Eigen::Matrix<TypeParam, 2, 1> Residuals;
     Eigen::Matrix<TypeParam, 2, 1> x0(0.9, 0.2);
 
-    cost_ana.linearize(x0, Hessian, Residuals);
-    cost_num.linearize(x0, HessianNum, Residuals);
+    cost_ana.linearize(x0.data(), Hessian.data(), Residuals.data());
+    cost_num.linearize(x0.data(), HessianNum.data(), Residuals.data());
 
     for (int i = 0; i < Hessian.size(); ++i)
     {
         // May be close enough
         EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
+
+    std::cerr << Hessian << std::endl;
+    std::cerr << HessianNum << std::endl;
 }
 
 struct Powell
@@ -153,27 +156,26 @@ TEST(TestAnalyticalDifferentiation, PowellModel)
     Eigen::Matrix<double, 4, 1> x0(3, -1, 0, 4);
     Eigen::Matrix<double, 4, 1> residuals;
 
-    cost_ana.linearize(x0, Hessian, residuals);
-    cost_num.linearize(x0, HessianNum, residuals);
+    cost_ana.linearize(x0.data(), Hessian.data(), residuals.data());
+    cost_num.linearize(x0.data(), HessianNum.data(), residuals.data());
 
     for (int i = 0; i < Hessian.size(); ++i)
     {
         EXPECT_NEAR(Hessian(i), HessianNum(i), 1e-4);
     }
 
-    // std::cerr << Hessian << std::endl;
-    // std::cerr << HessianNum << std::endl;
+    std::cerr << Hessian << std::endl;
+    std::cerr << HessianNum << std::endl;
 }
-
 
 TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
 {
 
-    pcl::PointCloud<pcl::PointXYZ> source;    
+    pcl::PointCloud<pcl::PointXYZ> source;
     pcl::PointCloud<pcl::PointXYZ> target;
 
-    pcl::PointXYZ src_pt(0,0,0);
-    pcl::PointXYZ tgt_pt(14,26,3);
+    pcl::PointXYZ src_pt(0, 0, 0);
+    pcl::PointXYZ tgt_pt(14, 26, 3);
 
     source.push_back(src_pt);
     target.push_back(tgt_pt);
@@ -183,35 +185,35 @@ TYPED_TEST(TestAnalyticalDifferentiation, Poin2PointDistance)
     corr.index_match = 0;
     corrs.push_back(corr);
 
-    duna::Point2Point<pcl::PointXYZ,pcl::PointXYZ,TypeParam> model(source,target,corrs); 
+    duna::Point2Point<pcl::PointXYZ, pcl::PointXYZ, TypeParam> model(source, target, corrs);
 
-    duna::CostFunctionNumericalDiff<duna::Point2Point<pcl::PointXYZ,pcl::PointXYZ,TypeParam> ,TypeParam,6,1> cost_num (&model);
-    duna::CostFunctionAnalytical<duna::Point2Point<pcl::PointXYZ,pcl::PointXYZ,TypeParam> ,TypeParam,6,1> cost_ana(&model);
+    duna::CostFunctionNumericalDiff<duna::Point2Point<pcl::PointXYZ, pcl::PointXYZ, TypeParam>, TypeParam, 6, 1> cost_num(&model);
+    duna::CostFunctionAnalytical<duna::Point2Point<pcl::PointXYZ, pcl::PointXYZ, TypeParam>, TypeParam, 6, 1> cost_ana(&model);
 
-    Eigen::Matrix<TypeParam,6,6> HessianNum;
-    Eigen::Matrix<TypeParam,6,6> Hessian;
-    Eigen::Matrix<TypeParam,6,1> Residuals;
+    Eigen::Matrix<TypeParam, 6, 6> HessianNum;
+    Eigen::Matrix<TypeParam, 6, 6> Hessian;
+    Eigen::Matrix<TypeParam, 6, 1> Residuals;
 
-    Eigen::Matrix<TypeParam,6,1> x0;
+    Eigen::Matrix<TypeParam, 6, 1> x0;
     x0.setZero();
-    x0[0] = 0; 
-    x0[1] = 0; 
+    x0[0] = 0;
+    x0[1] = 0;
     x0[2] = 0;
     // Test Small angles
     x0[3] = 0.0;
     x0[4] = 0.0;
     x0[5] = 0.0;
-    
 
-    cost_num.linearize(x0,HessianNum,Residuals);
-    cost_ana.linearize(x0,Hessian,Residuals);
+    cost_num.linearize(x0.data(), HessianNum.data(), Residuals.data());
+    cost_ana.linearize(x0.data(), Hessian.data(), Residuals.data());
 
     for (int i = 0; i < Hessian.size(); ++i)
     {
         EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
 
-    std::cerr << "Hessian:\n" << Hessian << std::endl;
-    std::cerr << "Hessian Numerical:\n" << HessianNum << std::endl;
-
+    std::cerr << "Hessian:\n"
+              << Hessian << std::endl;
+    std::cerr << "Hessian Numerical:\n"
+              << HessianNum << std::endl;
 }

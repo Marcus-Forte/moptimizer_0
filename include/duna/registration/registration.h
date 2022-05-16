@@ -33,6 +33,11 @@ namespace duna
         using PointCloudNormalT = pcl::PointCloud<pcl::Normal>;
 
     public:
+        Registration()
+        {
+            m_optimizer = new duna::LevenbergMarquadt<Scalar, 6>;
+            m_optimizer->setMaximumIterations(3);
+        }
 
         inline void setPoint2Plane() { m_normal_distance_mode = true; }
         inline void setPoint2Point() { m_normal_distance_mode = false; }
@@ -43,7 +48,7 @@ namespace duna
         void updateCorrespondences() override;
         void registrationLoop();
         bool m_normal_distance_mode = false;
-        std::unique_ptr<std::unordered_map<int,pcl::Normal>> m_normal_map;
+        std::unique_ptr<std::unordered_map<int, pcl::Normal>> m_normal_map;
     };
 }
 

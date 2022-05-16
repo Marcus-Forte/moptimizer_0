@@ -9,9 +9,6 @@ namespace so3
     void convert6DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_);
 
     template <typename Scalar>
-    void convert3DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_);
-
-    template <typename Scalar>
     void convertMatrixTo6DOFParameter(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 6, 1> &x);
 
     /* Performs R = exp(delta). This means R ⊞ delta*/
