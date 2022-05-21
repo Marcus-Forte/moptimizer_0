@@ -34,9 +34,9 @@ namespace duna
         hessian.setZero();
         b.setZero();
 
-        for (int j = 0; j < m_maximum_iterations; ++j)
+        for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
-            DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << j + 1 << "/" << m_maximum_iterations << " ##\n");
+            DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n");
 
             Scalar y0;
             y0 = m_cost->linearize(x0, hessian.data(), b.data());

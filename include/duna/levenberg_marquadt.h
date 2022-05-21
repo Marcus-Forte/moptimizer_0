@@ -31,6 +31,11 @@ namespace duna
             m_lm_max_iterations = max_iterations;
         }
 
+        inline unsigned int getLevenbergMarquadtIterations() const 
+        {
+            return m_lm_max_iterations;
+        }
+
         OptimizationStatus step(Scalar *x0) override;
         OptimizationStatus minimize(Scalar *x0) override;
 
@@ -44,10 +49,12 @@ namespace duna
     private:
         Scalar m_lm_init_lambda_factor_;
         Scalar m_lm_lambda;
-        int m_lm_max_iterations;
+        unsigned int m_lm_max_iterations;
+        
 
         using Optimizer<Scalar>::m_cost;
         using Optimizer<Scalar>::m_maximum_iterations;
+        using Optimizer<Scalar>::m_executed_iterations;
 
         // Delta Convergence
         bool isDeltaSmall(ParameterVector &delta);
