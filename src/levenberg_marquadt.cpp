@@ -60,6 +60,7 @@ namespace duna
 
             for (int k = 0; k < m_lm_max_iterations; ++k)
             {
+                // Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
                 ParameterVector delta = solver.solve(-b);
 

@@ -65,6 +65,9 @@ private:
 
     // Parameter to matrix conversion
     Eigen::Matrix4d transform;
+
+    public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 int main(int argc, char **argv)

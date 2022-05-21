@@ -2,6 +2,7 @@
 #define REGISTRATION3DOF_H
 #include <duna/registration/registration.h>
 
+#include <duna/registration/models/point2plane3dof.h>
 namespace duna
 {
     template <typename PointSource, typename PointTarget, typename Scalar>

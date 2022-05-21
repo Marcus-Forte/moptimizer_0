@@ -7,7 +7,10 @@
 #include <pcl/common/transforms.h>
 #include <pcl/features/normal_3d.h>
 #include <duna/logging.h>
-#include <duna/registration/registration_model.h>
+
+#include <duna/registration/models/point2point.h>
+#include <duna/registration/models/point2plane.h>
+
 #include <unordered_set>
 #include <unordered_map>
 

@@ -5,7 +5,8 @@
 #include <duna/levenberg_marquadt.h>
 #include <duna/so3.h>
 #include <pcl/point_types.h>
-#include <duna/registration/registration_model.h>
+
+#include <duna/registration/models/point2point.h>
 
 /* We compare with numerical diff for resonable results. It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
 

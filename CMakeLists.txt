@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(duna_optimizer VERSION 0.1 LANGUAGES CXX)
-
+set (CMAKE_CXX_STANDARD 17)
 
 option(BUILD_TESTS "Build test programs" ON)
 option(BUILD_EXPERIMENTAL "Build experimental programs" OFF)
@@ -14,7 +14,8 @@ find_package(OpenMP)
 link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX)
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
 
-# add_compile_options(-msse2 -msse3)
+# add_compile_options(-march=native)
+# add_compile_options(-msse -msse2 -mavx -mfma -msse4.2 -msse4.1)
 
 if(UNIX)
 # GTest required pthread in UNIX Os
@@ -66,8 +67,6 @@ if(BUILD_TESTS)
         test/registration_point2point.cpp
 
         test/registration3dof_point2plane.cpp
-
-        test/draft.cpp
         )
 
         foreach(test_case ${test_src})
@@ -77,6 +76,9 @@ if(BUILD_TESTS)
                 target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
                 gtest_discover_tests(${test_src_name})
         endforeach()
+
+        add_executable(draft test/draft.cpp)
+        target_link_libraries(draft ${GTEST_LIBRARIES})
 endif()
 
 install(TARGETS ${PROJECT_NAME}
