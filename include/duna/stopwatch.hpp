@@ -31,16 +31,19 @@ namespace utilities
         }
 
         // TODO decouble from <iostream>
-        inline void tock(const std::string &message)
+        inline double tock(const std::string &message)
         {
             if (!is_enabled)
             {
                 fprintf(stderr, "Warning, stopwatch not enabled\n");
-                return;
+                return 0;
             }
 
             const auto delta_tick = std::chrono::high_resolution_clock::now() - m_tick;
-            fprintf(stderr, "'%s' took: %f [s]\n", message.c_str(), std::chrono::duration<double>(delta_tick).count());
+            double duration = std::chrono::duration<double>(delta_tick).count();
+            fprintf(stderr, "'%s' took: %f [s]\n", message.c_str(), duration);
+
+            return duration;
         }
 
     private:

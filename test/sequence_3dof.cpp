@@ -104,7 +104,7 @@ TEST_F(SequenceRegistration, Indoor)
 
     // Copy full map cloud
     *HD_cloud = *target_;
-
+    double total_reg_time = 0.0;
     for (int i = 0; i < source_vector_.size(); ++i)
     {
         std::cout << "Registering " << i << ": " << source_vector_[i]->size() << std::endl;
@@ -128,7 +128,7 @@ TEST_F(SequenceRegistration, Indoor)
         registration.setInputSource(subsampled_input);
         timer.tick();
         registration.align(transform);
-        timer.tock("Registration");
+        total_reg_time += timer.tock("Registration");
 
         transform = registration.getFinalTransformation();
 
@@ -140,7 +140,7 @@ TEST_F(SequenceRegistration, Indoor)
         *HD_cloud = *HD_cloud + aligned;
         timer.tock("Accumulation");
     }
-
+    std::cout << "All registration took: " << total_reg_time;
     std::cout << "Saving final pointcloud\n";
     pcl::io::savePCDFileBinary("sequence3dof_final.pcd", *HD_cloud);
 }
