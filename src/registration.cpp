@@ -27,7 +27,7 @@ namespace duna
         // Prepare data
         if (m_normal_distance_mode)
         {
-            m_normal_map.reset(new std::unordered_map<int,pcl::Normal>);
+            m_normal_map.reset(new std::unordered_map<int, pcl::Normal>);
             m_normal_map->reserve(m_source->size());
         }
 
@@ -54,24 +54,28 @@ namespace duna
                 if (sqrd_distances[0] > max_sqrd_dist)
                     continue;
 
-                // TODO precompute normals
+                // if (!m_normal_map->count(i))
+
+                Eigen::Vector4f normal_;
+                float unused;
+                pcl::computePointNormal(*m_target, indices, normal_, unused);
+
+                if(std::isnan(normal_[0]))
+                {
+                    DUNA_DEBUG("NaN normal computation @ %d", i);
+                    continue;
+                }
+                
+                // Use index 'i' to map correspondence 'i' of source to target_normal 'i'
+                (*m_normal_map)[i].normal_x = normal_[0];
+                (*m_normal_map)[i].normal_y = normal_[1];
+                (*m_normal_map)[i].normal_z = normal_[2];
+
                 pcl::Correspondence corr;
                 corr.index_query = i;
                 corr.index_match = indices[0];
                 m_correspondences.push_back(corr);
-
-                // if (!m_normal_map->count(i))
-                {
-                    Eigen::Vector4f normal_;
-                    float unused;
-                    pcl::computePointNormal(*m_target, indices, normal_, unused);
-                    // Use index 'i' to map correspondence 'i' of source to target_normal 'i'
-                    (*m_normal_map)[corr.index_query].normal_x = normal_[0];
-                    (*m_normal_map)[corr.index_query].normal_y = normal_[1];
-                    (*m_normal_map)[corr.index_query].normal_z = normal_[2];
-                }
             }
-
         }
         else
         {
@@ -107,13 +111,13 @@ namespace duna
         {
             cost = new duna::CostFunctionNumericalDiff<Point2Plane<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
                 new Point2Plane<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, *m_normal_map, m_correspondences));
-            std::cerr << "point2plane\n";
+            DUNA_DEBUG_STREAM("point2plane\n");
         }
         else
         {
             cost = new duna::CostFunctionNumericalDiff<Point2Point<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
                 new Point2Point<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, m_correspondences));
-            std::cerr << "point2point\n";
+            DUNA_DEBUG_STREAM("point2point\n");
         }
 
         m_optimizer->setCost(cost);
@@ -155,5 +159,8 @@ namespace duna
 
     template class Registration<pcl::PointNormal, pcl::PointNormal, double>;
     template class Registration<pcl::PointNormal, pcl::PointNormal, float>;
+
+    template class Registration<pcl::PointXYZI, pcl::PointXYZI, double>;
+    template class Registration<pcl::PointXYZI, pcl::PointXYZI, float>;
 
 } // namespace

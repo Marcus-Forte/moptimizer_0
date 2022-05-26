@@ -33,9 +33,7 @@ namespace duna
         CostFunctionNumericalDiff(const CostFunctionNumericalDiff &) = delete;
         CostFunctionNumericalDiff &operator=(const CostFunctionNumericalDiff &) = delete;
 
-        ~CostFunctionNumericalDiff()
-        {
-        }
+        ~CostFunctionNumericalDiff() = default;
 
         Scalar computeCost(const Scalar *x, bool setup_data) override
         {
@@ -46,16 +44,10 @@ namespace duna
             if (setup_data)
                 m_model->setup(x);
 
-#pragma omp parallel num_threads(m_num_threads)
+            for (int i = 0; i < m_num_residuals; ++i)
             {
-                ResidualVector residuals;
-#pragma omp for reduction(+ \
-                          : sum) schedule(guided, 8)
-                for (int i = 0; i < m_num_residuals; ++i)
-                {
-                    (*m_model)(x, residuals.data(), i);
-                    sum += 2 * residuals.squaredNorm();
-                }
+                (*m_model)(x, residuals.data(), i);
+                sum += 2 * residuals.squaredNorm();
             }
 
             return sum;
@@ -64,6 +56,11 @@ namespace duna
         Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
         {
             Eigen::Map<const ParameterVector> x_map(x);
+            Eigen::Map<HessianMatrix> hessian_map(hessian);
+            Eigen::Map<ParameterVector> b_map(b);
+
+            hessian_map.setZero();
+            b_map.setZero();
 
             Scalar sum = 0.0;
 
@@ -79,7 +76,7 @@ namespace duna
             // std::vector<ParameterVector> x_minus(x_map.size(), x_map);
 
             // Step size
-            Scalar *h = new Scalar[x_map.size()];
+            std::vector<Scalar> h(x_map.size());
 
             for (int j = 0; j < x_map.size(); ++j)
             {
@@ -98,61 +95,40 @@ namespace duna
 
             m_model[0].setup(x_map.data()); // this was inside the loop below.. Very bad.
 
-            std::vector<HessianMatrix> Hs(m_num_threads);
-            std::vector<ParameterVector> Bs(m_num_threads);
-            for (int i = 0; i < m_num_threads; ++i)
-            {
-                Hs[i].setZero();
-                Bs[i].setZero();
-            }
+            ResidualVector residuals;
+            ResidualVector residuals_plus;
+            JacobianMatrix jacobian_row;
 
-#pragma omp parallel num_threads(m_num_threads)
+            for (int i = 0; i < m_num_residuals; ++i)
             {
-                ResidualVector residuals;
-                ResidualVector residuals_plus;
-                JacobianMatrix jacobian_row;
-#pragma omp for reduction(+ \
-                          : sum) schedule(guided, 8)
-                for (int i = 0; i < m_num_residuals; ++i)
+                m_model[0](x_map.data(), residuals.data(), i);
+
+                sum += 2 * residuals.squaredNorm();
+
+                for (int j = 0; j < x_map.size(); ++j)
                 {
+                    diff_plus[j](x_plus[j].data(), residuals_plus.data(), i);
+                    // diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
 
-                    m_model[0](x_map.data(), residuals.data(), i);
+                    jacobian_row.col(j) = (residuals_plus - residuals) / (h[j]);
+                }
 
-                    sum += 2 * residuals.squaredNorm();
+                // std::cout << "i: " <<  i << std::endl;
+                // std::cout << "res+: " << residuals_plus << std::endl;
+                // std::cout << "res:" << residuals << std::endl;
+                // std::cout << "jac " << jacobian_row << std::endl;
 
-                    for (int j = 0; j < x_map.size(); ++j)
-                    {
-                        diff_plus[j](x_plus[j].data(), residuals_plus.data(), i);
-                        // diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
+                hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
+                // hessian_map.noalias() += (jacobian_row.transpose() * jacobian_row);
+                b_map.noalias() += jacobian_row.transpose() * residuals;
 
-                        jacobian_row.col(j) = (residuals_plus - residuals) / (h[j]);
-                    }
-
-                    // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
-                    HessianMatrix Hi = (jacobian_row.transpose() * jacobian_row);
-                    ParameterVector bi = jacobian_row.transpose() * residuals;
-
-                    Hs[omp_get_thread_num()] += Hi;
-                    Bs[omp_get_thread_num()] += bi;
-
-                } // pragma for
-            }     // pragma parallel
-
-            Eigen::Map<HessianMatrix> hessian_map(hessian);
-            Eigen::Map<ParameterVector> b_map(b);
-
-            hessian_map.setZero();
-            b_map.setZero();
-
-            for (int i = 0; i < m_num_threads; ++i)
-            {
-                hessian_map.noalias() += Hs[i];
-                b_map.noalias() += Bs[i];
-            }
+            } // pragma for
+            // pragma parallel
 
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
 
-            delete h;
+            // std::cout << hessian_map << std::endl;
+
             return sum;
         }
 
@@ -165,8 +141,6 @@ namespace duna
         void init()
         {
             static_assert(N_PARAMETERS != -1, "Dynamic Cost Function not yet implemented");
-            omp_set_num_threads(8);
-            m_num_threads = omp_get_max_threads();
         }
     };
 }

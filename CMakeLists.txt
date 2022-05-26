@@ -14,8 +14,8 @@ find_package(OpenMP)
 link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX)
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
 
-# add_compile_options(-march=native)
-# add_compile_options(-msse -msse2 -mavx -mfma -msse4.2 -msse4.1)
+#add_compile_options(-march=native)
+#add_compile_options(-msse -msse2 -mavx -mfma -msse4.2 -msse4.1)
 
 if(UNIX)
 # GTest required pthread in UNIX Os
@@ -67,6 +67,7 @@ if(BUILD_TESTS)
         test/registration_point2point.cpp
 
         test/registration3dof_point2plane.cpp
+        test/sequence_3dof.cpp
         )
 
         foreach(test_case ${test_src})

@@ -11,18 +11,19 @@ namespace duna
         CostFunctionBase<Scalar> *cost;
 
         // TODO abstract
-        // if (m_normal_distance_mode)
+        if (m_normal_distance_mode)
         {
             cost = new duna::CostFunctionNumericalDiff<Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
                 new Point2Plane3DOF<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, *m_normal_map, m_correspondences));
-            std::cerr << "point2plane\n";
+            DUNA_DEBUG_STREAM("point2plane\n");
         }
-        // else
-        // {
+        else
+        {
+            assert((false,"Point2Point3DOF not implemented"));
         //     cost = new duna::CostFunctionNumericalDiff<Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
         //         new Point2Plane3DOF<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, m_correspondences));
         //     std::cerr << "point2point\n";
-        // }
+        }
 
         m_optimizer->setCost(cost);
 
@@ -34,7 +35,7 @@ namespace duna
         for (m_current_iterations = 0; m_current_iterations < m_max_icp_iterations; ++m_current_iterations)
         {
             DUNA_DEBUG("ICP ITERATION #%d / %d \n", m_current_iterations + 1, m_max_icp_iterations);
-            Registration<PointSource,PointTarget,Scalar>::updateCorrespondences();
+            Registration<PointSource, PointTarget, Scalar>::updateCorrespondences();
 
             cost->setNumResiduals(m_correspondences.size());
 
@@ -63,5 +64,8 @@ namespace duna
 
     template class Registration3DOF<pcl::PointNormal, pcl::PointNormal, double>;
     template class Registration3DOF<pcl::PointNormal, pcl::PointNormal, float>;
+
+    template class Registration3DOF<pcl::PointXYZI, pcl::PointXYZI, double>;
+    template class Registration3DOF<pcl::PointXYZI, pcl::PointXYZI, float>;
 
 } // namespace

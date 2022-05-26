@@ -2,21 +2,23 @@
 
 #include <Eigen/Dense>
 #include <duna/stopwatch.hpp>
+#include <omp.h>
 
 #include <memory.h>
 /* Draft space for testing quick stuff */
 int num_param = 100;
 int num_res = 10000;
+utilities::Stopwatch timer;
 #define TOL 1e-6
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
 
-    if (argc > 2)
-    {
+    if (argc > 1)
         num_param = atoi(argv[1]);
+
+    if (argc > 2)
         num_res = atoi(argv[2]);
-    }
 
     std::cerr << "Num Param: " << num_param << std::endl;
     std::cerr << "Num Res: " << num_res << std::endl;
@@ -24,12 +26,52 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
-TEST(Drafts, Draft1)
+TEST(Drafts, Draft0)
 {
+    Eigen::setNbThreads(8);
+    // Eigen::initParallel();
 
+    Eigen::MatrixXf A(num_param, num_param);
+    Eigen::MatrixXf B(num_param, num_param);
+    A.setRandom();
+    B.setRandom();
+
+    Eigen::MatrixXf C_vec(num_param, num_param);
+    Eigen::MatrixXf C_par(num_param, num_param);
+    Eigen::MatrixXf C_loop(num_param, num_param);
+
+    
+    if(num_param != 8000)
+        FAIL();
+
+    const int block_size = 4;
+    timer.tick();
+#pragma omp parallel
+    {
+#pragma omp for
+        for (int i = 0; i < num_param; i+=block_size)
+            C_par.block<8000,block_size>(0,i) = A.block<8000,block_size>(0,i) + B.block<8000,block_size>(0,i);
+    }
+    timer.tock("Parallel Sum");
+
+    timer.tick();
+    for (int i = 0; i < num_param; ++i)
+        for(int j = 0; j < num_param; ++j)
+            C_loop(i,j) = A(i,j) + B(i,j);
+    timer.tock("Sum Loop");
+
+    timer.tick();
+    C_vec = A + B;
+    timer.tock("C_vec = A+B");
+
+    for (int i = 0; i < num_param*num_param; ++i)
+    {
+        ASSERT_NEAR(C_loop(i), C_par(i), TOL);
+        EXPECT_NEAR(C_loop(i), C_vec(i), TOL);
+    }
 }
 
-TEST(Drafts, Draft0)
+TEST(Drafts, Draft1)
 {
     Eigen::MatrixXd bigJacobian(num_res, num_param);
     bigJacobian.setRandom();
@@ -37,7 +79,7 @@ TEST(Drafts, Draft0)
     Eigen::VectorXd residuals(num_res);
     residuals.setRandom();
     Eigen::MatrixXd Hessian;
-    utilities::Stopwatch timer;
+
     timer.tick();
     Hessian = bigJacobian.transpose() * bigJacobian;
     timer.tock("Hessian");
@@ -113,4 +155,3 @@ TEST(Drafts, Draft0)
 // 'FullPivHouseholderQR' took: 0.403789 [s]
 // 'FullPivLU' took: 0.342347 [s]
 // 'inverse_' took: 0.089391 [s]
-

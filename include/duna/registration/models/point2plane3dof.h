@@ -30,7 +30,6 @@ namespace duna
             Eigen::Matrix<Scalar, 4, 1> tgt_normal_(tgt_normal.normal_x, tgt_normal.normal_y, tgt_normal.normal_z, 0);
 
             Eigen::Matrix<Scalar, 4, 1> warped_src_ = transform * src_;
-
             f_x[0] = (warped_src_ - tgt_).dot(tgt_normal_);
         }
 
