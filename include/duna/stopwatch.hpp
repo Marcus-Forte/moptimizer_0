@@ -36,7 +36,7 @@ namespace utilities
             if (!is_enabled)
             {
                 fprintf(stderr, "Warning, stopwatch not enabled\n");
-                return 0;
+                return 0.0;
             }
 
             const auto delta_tick = std::chrono::high_resolution_clock::now() - m_tick;

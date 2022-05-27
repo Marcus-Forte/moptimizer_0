@@ -4,6 +4,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/filters/radius_outlier_removal.h>
 
 #include <duna/stopwatch.hpp>
 #include <duna/registration/registration_3dof.h>
@@ -24,6 +25,26 @@ int main(int argc, char **argv)
 
 class SequenceRegistration : public ::testing::Test
 {
+protected:
+    double compareClouds(const PointCloudT::ConstPtr &cloud_a, const PointCloudT::ConstPtr &cloud_b)
+    {
+        double diff = 0;
+        // Find correspondences
+        pcl::search::KdTree<PointT> cloud_a_kdtree;
+        cloud_a_kdtree.setInputCloud(cloud_a);
+
+        std::vector<int> indices;
+        std::vector<float> unused;
+        for (const auto &it : cloud_b->points)
+        {
+            cloud_a_kdtree.nearestKSearch(it, 1, indices, unused);
+            diff += (cloud_a->points[indices[0]].getVector3fMap() - it.getVector3fMap()).norm();
+        }
+
+        // RMSE
+        return diff / cloud_b->size();
+    }
+
 public:
     SequenceRegistration()
     {
@@ -120,10 +141,10 @@ TEST_F(SequenceRegistration, Indoor)
 
         timer.tick();
         voxel.setInputCloud(source_vector_[i]);
-        voxel.setLeafSize(0.2, 0.2, 0.2);
+        voxel.setLeafSize(0.1, 0.1, 0.1);
         voxel.filter(*subsampled_input);
         timer.tock("Voxel grid.");
-        
+
         std::cout << "Subsampled # points: " << subsampled_input->size() << std::endl;
         registration.setInputSource(subsampled_input);
         timer.tick();
@@ -132,7 +153,7 @@ TEST_F(SequenceRegistration, Indoor)
 
         transform = registration.getFinalTransformation();
 
-        std::cout << transform << std::endl;
+        // std::cout << transform << std::endl;
         timer.tick();
         pcl::transformPointCloud(*source_vector_[i], aligned, transform);
 
@@ -140,7 +161,25 @@ TEST_F(SequenceRegistration, Indoor)
         *HD_cloud = *HD_cloud + aligned;
         timer.tock("Accumulation");
     }
-    std::cout << "All registration took: " << total_reg_time;
-    std::cout << "Saving final pointcloud\n";
-    pcl::io::savePCDFileBinary("sequence3dof_final.pcd", *HD_cloud);
+    std::cout << "All registration took: " << total_reg_time << std::endl;
+
+    PointCloudT::Ptr reference_map(new PointCloudT);
+    pcl::io::loadPCDFile(TEST_DATA_DIR "/0_sequence_map_reference.pcd", *reference_map);
+
+    double diff = compareClouds(reference_map, HD_cloud);
+
+    std::cout << "Diff =  " << diff << std::endl;
+
+    EXPECT_NEAR(diff, 0.0, 1e-2);
+
+    // std::cout << "Filtering: " << HD_cloud->size() << std::endl;
+    // pcl::RadiusOutlierRemoval<PointT> ror;
+    // ror.setInputCloud(HD_cloud);
+    // ror.setRadiusSearch(0.2);
+    // ror.setMinNeighborsInRadius(500);
+    // ror.filter(*HD_cloud);
+    // std::cout << "Filtered to: " << HD_cloud->size() << std::endl;
+    std::string final_cloud_filename = "sequence_3dof_final.pcd";
+    std::cout << "Saving final pointcloud to " << final_cloud_filename << std::endl;
+    pcl::io::savePCDFileBinary(final_cloud_filename, *HD_cloud);
 }
