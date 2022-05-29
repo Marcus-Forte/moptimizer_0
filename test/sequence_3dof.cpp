@@ -23,6 +23,7 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
+template <typename Scalar>
 class SequenceRegistration : public ::testing::Test
 {
 protected:
@@ -63,13 +64,14 @@ public:
                 exit(-1);
             }
 
-            pcl::PassThrough<PointT> passthrough;
-            passthrough.setInputCloud(temp);
-            passthrough.setFilterLimits(.1, 100);
-            passthrough.setFilterFieldName("x");
-            passthrough.filter(*temp);
             *target_ = *target_ + *temp;
         }
+
+        pcl::PassThrough<PointT> passthrough;
+        passthrough.setInputCloud(target_);
+        passthrough.setFilterLimits(.1, 100);
+        passthrough.setFilterFieldName("x");
+        // passthrough.filter(*target_);
 
         PointCloudT::Ptr source_merge(new PointCloudT);
 
@@ -101,20 +103,24 @@ protected:
     pcl::search::KdTree<PointT>::Ptr target_kdtree_;
 };
 
-TEST_F(SequenceRegistration, Indoor)
+using ScalarTypes = ::testing::Types<float, double>;
+TYPED_TEST_SUITE(SequenceRegistration, ScalarTypes);
+
+TYPED_TEST(SequenceRegistration, Indoor)
 {
-    std::cout << "Map size: " << target_->size() << std::endl;
-    std::cout << "#Scans: " << source_vector_.size() << std::endl;
+    
+    std::cout << "Map size: " << this->target_->size() << std::endl;
+    std::cout << "#Scans: " << this->source_vector_.size() << std::endl;
 
-    duna::Registration3DOF<PointT, PointT, double> registration;
+    duna::Registration3DOF<PointT, PointT, TypeParam> registration;
 
-    registration.setInputTarget(target_);
+    registration.setInputTarget(this->target_);
     registration.setMaximumICPIterations(50);
-    registration.setTargetSearchMethod(target_kdtree_);
+    registration.setTargetSearchMethod(this->target_kdtree_);
     registration.setPoint2Plane();
     registration.setMaximumCorrespondenceDistance(0.15);
-    registration.setMaximumOptimizerIterations(3);
-    Eigen::Matrix4d transform;
+    registration.setMaximumOptimizerIterations(5);
+    Eigen::Matrix<TypeParam,4,4> transform;
     transform.setIdentity();
 
     PointCloudT aligned;
@@ -124,23 +130,23 @@ TEST_F(SequenceRegistration, Indoor)
     PointCloudT::Ptr HD_cloud(new PointCloudT);
 
     // Copy full map cloud
-    *HD_cloud = *target_;
+    *HD_cloud = *this->target_;
     double total_reg_time = 0.0;
-    for (int i = 0; i < source_vector_.size(); ++i)
+    for (int i = 0; i < this->source_vector_.size(); ++i)
     {
-        std::cout << "Registering " << i << ": " << source_vector_[i]->size() << std::endl;
+        std::cout << "Registering " << i << ": " << this->source_vector_[i]->size() << std::endl;
 
         pcl::VoxelGrid<PointT> voxel;
-        voxel.setInputCloud(target_);
+        voxel.setInputCloud(this->target_);
         voxel.setLeafSize(0.1, 0.1, 0.1);
-        voxel.filter(*target_);
+        voxel.filter(*this->target_);
 
         timer.tick();
-        target_kdtree_->setInputCloud(target_);
+        this->target_kdtree_->setInputCloud(this->target_);
         timer.tock("KDTree recomputation");
 
         timer.tick();
-        voxel.setInputCloud(source_vector_[i]);
+        voxel.setInputCloud(this->source_vector_[i]);
         voxel.setLeafSize(0.1, 0.1, 0.1);
         voxel.filter(*subsampled_input);
         timer.tock("Voxel grid.");
@@ -149,15 +155,16 @@ TEST_F(SequenceRegistration, Indoor)
         registration.setInputSource(subsampled_input);
         timer.tick();
         registration.align(transform);
+        std::cout << "Iterations: " << registration.getFinalIterationsNumber() << "/" << registration.getMaximumICPIterations() << std::endl;
         total_reg_time += timer.tock("Registration");
 
         transform = registration.getFinalTransformation();
 
         // std::cout << transform << std::endl;
         timer.tick();
-        pcl::transformPointCloud(*source_vector_[i], aligned, transform);
+        pcl::transformPointCloud(*this->source_vector_[i], aligned, transform);
 
-        *target_ = *target_ + aligned;
+        *this->target_ = *this->target_ + aligned;
         *HD_cloud = *HD_cloud + aligned;
         timer.tock("Accumulation");
     }
@@ -166,7 +173,7 @@ TEST_F(SequenceRegistration, Indoor)
     PointCloudT::Ptr reference_map(new PointCloudT);
     pcl::io::loadPCDFile(TEST_DATA_DIR "/0_sequence_map_reference.pcd", *reference_map);
 
-    double diff = compareClouds(reference_map, HD_cloud);
+    double diff = this->compareClouds(reference_map, HD_cloud);
 
     std::cout << "Diff =  " << diff << std::endl;
 
