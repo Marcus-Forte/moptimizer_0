@@ -33,6 +33,7 @@ namespace duna
         using RegistrationBase<PointSource, PointTarget, Scalar>::m_final_transformation;
         using RegistrationBase<PointSource, PointTarget, Scalar>::m_optimizer;
         using RegistrationBase<PointSource, PointTarget, Scalar>::m_current_iterations;
+        using RegistrationBase<PointSource, PointTarget, Scalar>::m_optimizator_status;
         using PointCloudNormalT = pcl::PointCloud<pcl::Normal>;
 
     public:

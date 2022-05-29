@@ -1,8 +1,8 @@
 #ifndef REGISTRATION3DOF_H
 #define REGISTRATION3DOF_H
 #include <duna/registration/registration.h>
-
 #include <duna/registration/models/point2plane3dof.h>
+
 namespace duna
 {
     template <typename PointSource, typename PointTarget, typename Scalar>
@@ -29,6 +29,8 @@ namespace duna
         using RegistrationBase<PointSource, PointTarget, Scalar>::m_final_transformation;
         using RegistrationBase<PointSource, PointTarget, Scalar>::m_optimizer;
         using RegistrationBase<PointSource, PointTarget, Scalar>::m_current_iterations;
+        using RegistrationBase<PointSource, PointTarget, Scalar>::m_optimizator_status;
+
         using PointCloudNormalT = pcl::PointCloud<pcl::Normal>;
         using Registration<PointSource, PointTarget, Scalar>::m_normal_distance_mode;
         using Registration<PointSource, PointTarget, Scalar>::m_normal_map;

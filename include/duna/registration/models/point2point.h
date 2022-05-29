@@ -60,7 +60,7 @@ namespace duna
             jacobian[5] = rho * (src_[0] * dy - src_[1] * dx);
         }
 
-    private:
+    protected:
         const pcl::PointCloud<PointSource> &source;
         const pcl::PointCloud<PointTarget> &target;
         const pcl::Correspondences &corrs;

@@ -10,7 +10,7 @@
 #include <duna/registration/registration_3dof.h>
 
 #define N_MAP 20
-#define N_SOURCE 100
+#define N_SOURCE 45
 #define N_SOURCE_MERGE 1
 
 using PointT = pcl::PointXYZI;
@@ -43,7 +43,7 @@ protected:
         }
 
         // RMSE
-        return diff / cloud_b->size();
+        return diff / (double)cloud_b->size();
     }
 
 public:
@@ -67,11 +67,12 @@ public:
             *target_ = *target_ + *temp;
         }
 
+        // Remove points clode to origin
         pcl::PassThrough<PointT> passthrough;
         passthrough.setInputCloud(target_);
         passthrough.setFilterLimits(.1, 100);
         passthrough.setFilterFieldName("x");
-        // passthrough.filter(*target_);
+        passthrough.filter(*target_);
 
         PointCloudT::Ptr source_merge(new PointCloudT);
 
@@ -93,22 +94,21 @@ public:
                 source_merge.reset(new PointCloudT);
             }
         }
-
         target_kdtree_.reset(new pcl::search::KdTree<PointT>);
     }
 
 protected:
-    std::vector<PointCloudT::Ptr> source_vector_;
     PointCloudT::Ptr target_;
+    std::vector<PointCloudT::Ptr> source_vector_;
     pcl::search::KdTree<PointT>::Ptr target_kdtree_;
 };
 
-using ScalarTypes = ::testing::Types<float, double>;
+using ScalarTypes = ::testing::Types<double>;
 TYPED_TEST_SUITE(SequenceRegistration, ScalarTypes);
 
 TYPED_TEST(SequenceRegistration, Indoor)
 {
-    
+
     std::cout << "Map size: " << this->target_->size() << std::endl;
     std::cout << "#Scans: " << this->source_vector_.size() << std::endl;
 
@@ -118,9 +118,9 @@ TYPED_TEST(SequenceRegistration, Indoor)
     registration.setMaximumICPIterations(50);
     registration.setTargetSearchMethod(this->target_kdtree_);
     registration.setPoint2Plane();
-    registration.setMaximumCorrespondenceDistance(0.15);
-    registration.setMaximumOptimizerIterations(5);
-    Eigen::Matrix<TypeParam,4,4> transform;
+    registration.setMaximumCorrespondenceDistance(0.25);
+    registration.setMaximumOptimizerIterations(3);
+    Eigen::Matrix<TypeParam, 4, 4> transform;
     transform.setIdentity();
 
     PointCloudT aligned;
@@ -156,6 +156,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
         timer.tick();
         registration.align(transform);
         std::cout << "Iterations: " << registration.getFinalIterationsNumber() << "/" << registration.getMaximumICPIterations() << std::endl;
+        std::cout << "registration exit code: " << registration.getOptimizationStatus() << std::endl;
         total_reg_time += timer.tock("Registration");
 
         transform = registration.getFinalTransformation();
@@ -186,7 +187,14 @@ TYPED_TEST(SequenceRegistration, Indoor)
     // ror.setMinNeighborsInRadius(500);
     // ror.filter(*HD_cloud);
     // std::cout << "Filtered to: " << HD_cloud->size() << std::endl;
-    std::string final_cloud_filename = "sequence_3dof_final.pcd";
+
+    std::string final_cloud_filename = "sequence_3dof";
+    if (std::is_same<TypeParam, float>::value)
+        final_cloud_filename += "_float";
+    else
+        final_cloud_filename += "_double";
+
+    final_cloud_filename += ".pcd";
     std::cout << "Saving final pointcloud to " << final_cloud_filename << std::endl;
     pcl::io::savePCDFileBinary(final_cloud_filename, *HD_cloud);
 }

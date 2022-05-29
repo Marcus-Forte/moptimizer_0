@@ -44,6 +44,7 @@ namespace duna
 
         inline unsigned int getFinalIterationsNumber() const { return m_current_iterations; }
         inline unsigned int getMaximumICPIterations() const { return m_max_icp_iterations; }
+        inline unsigned int getOptimizationStatus() const { return m_optimizator_status; }
 
         Matrix4 getFinalTransformation() const { return m_final_transformation; }
 
@@ -68,6 +69,7 @@ namespace duna
         Matrix4 m_final_transformation;
         pcl::Correspondences m_correspondences;
         Optimizer<Scalar> *m_optimizer;
+        OptimizationStatus m_optimizator_status;
     };
 }
 

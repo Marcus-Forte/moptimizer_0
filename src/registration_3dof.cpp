@@ -19,7 +19,7 @@ namespace duna
         }
         else
         {
-            assert((false,"Point2Point3DOF not implemented"));
+            throw std::runtime_error("3DOF point2point not implemented.");
         //     cost = new duna::CostFunctionNumericalDiff<Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
         //         new Point2Plane3DOF<PointSource, PointTarget, Scalar>(*m_transformed_source, *m_target, m_correspondences));
         //     std::cerr << "point2point\n";
@@ -40,9 +40,9 @@ namespace duna
             cost->setNumResiduals(m_correspondences.size());
 
             x0.setZero();
-            OptimizationStatus status = m_optimizer->minimize(x0.data());
+            m_optimizator_status = m_optimizer->minimize(x0.data());
 
-            if (status == OptimizationStatus::NUMERIC_ERROR)
+            if (m_optimizator_status == OptimizationStatus::NUMERIC_ERROR)
                 throw std::runtime_error("Optimizer Numeric error");
 
             // TODO abstract
@@ -52,7 +52,7 @@ namespace duna
 
             m_final_transformation = delta_transform * m_final_transformation;
 
-            if (status == OptimizationStatus::SMALL_DELTA || status == OptimizationStatus::CONVERGED)
+            if (m_optimizator_status == OptimizationStatus::SMALL_DELTA || m_optimizator_status == OptimizationStatus::CONVERGED)
                 return;
         }
 

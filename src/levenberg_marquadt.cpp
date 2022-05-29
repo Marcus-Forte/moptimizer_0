@@ -47,9 +47,6 @@ namespace duna
                 return OptimizationStatus::CONVERGED;
             }
 
-            // DUNA_DEBUG_STREAM("[LM] Hessian: " << hessian << std::endl);
-            // DUNA_DEBUG_STREAM("[LM] b: " << b << std::endl);
-
             hessian_diagonal = hessian.diagonal().asDiagonal();
             // hessian_diagonal = HessianMatrix::Identity();
 
@@ -72,15 +69,6 @@ namespace duna
                 }
                 fprintf(stderr, "\n");
 #endif
-
-                // DUNA_DEBUG_STREAM("[LM] --- Solver delta: ");
-                // DUNA_DEBUG_STREAM(delta << std::endl);
-
-                // if (isDeltaSmall(delta))
-                // {
-                //     DUNA_DEBUG("[LM] --- Small Delta reached --- : %f\n", delta.norm());
-                //     return OptimizationStatus::SMALL_DELTA;
-                // }
 
                 // TODO Manifold operation
                 xi = x0_map + delta;
