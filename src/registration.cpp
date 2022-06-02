@@ -60,12 +60,12 @@ namespace duna
                 float unused;
                 pcl::computePointNormal(*m_target, indices, normal_, unused);
 
-                if(std::isnan(normal_[0]))
+                if (std::isnan(normal_[0]))
                 {
                     DUNA_DEBUG("NaN normal computation @ %d", i);
                     continue;
                 }
-                
+
                 // Use index 'i' to map correspondence 'i' of source to target_normal 'i'
                 (*m_normal_map)[i].normal_x = normal_[0];
                 (*m_normal_map)[i].normal_y = normal_[1];
@@ -94,6 +94,9 @@ namespace duna
                 m_correspondences.push_back(corr);
             }
         }
+
+        // Estimate point cloud overlap
+        m_overlap = m_correspondences.size() / m_transformed_source->size();
 
         if (m_correspondences.size() == 0)
             throw std::runtime_error("No correspondences found.");
@@ -162,5 +165,8 @@ namespace duna
 
     template class Registration<pcl::PointXYZI, pcl::PointXYZI, double>;
     template class Registration<pcl::PointXYZI, pcl::PointXYZI, float>;
+
+    template class Registration<pcl::PointXYZINormal, pcl::PointXYZINormal, double>;
+    template class Registration<pcl::PointXYZINormal, pcl::PointXYZINormal, float>;
 
 } // namespace

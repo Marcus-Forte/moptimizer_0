@@ -59,13 +59,16 @@ namespace duna
         delete cost;
     }
 
-    template class Registration3DOF<pcl::PointXYZ, pcl::PointXYZ, double>;
-    template class Registration3DOF<pcl::PointXYZ, pcl::PointXYZ, float>;
+    template class  Registration3DOF<pcl::PointXYZ, pcl::PointXYZ, double>;
+    template class  Registration3DOF<pcl::PointXYZ, pcl::PointXYZ, float>;
 
-    template class Registration3DOF<pcl::PointNormal, pcl::PointNormal, double>;
-    template class Registration3DOF<pcl::PointNormal, pcl::PointNormal, float>;
+    template class  Registration3DOF<pcl::PointNormal, pcl::PointNormal, double>;
+    template class  Registration3DOF<pcl::PointNormal, pcl::PointNormal, float>;
 
-    template class Registration3DOF<pcl::PointXYZI, pcl::PointXYZI, double>;
-    template class Registration3DOF<pcl::PointXYZI, pcl::PointXYZI, float>;
+    template class  Registration3DOF<pcl::PointXYZI, pcl::PointXYZI, double>;
+    template class  Registration3DOF<pcl::PointXYZI, pcl::PointXYZI, float>;
+
+    template class  Registration3DOF<pcl::PointXYZINormal, pcl::PointXYZINormal, double>;
+    template class  Registration3DOF<pcl::PointXYZINormal, pcl::PointXYZINormal, float>;
 
 } // namespace

@@ -45,6 +45,7 @@ namespace duna
         inline unsigned int getFinalIterationsNumber() const { return m_current_iterations; }
         inline unsigned int getMaximumICPIterations() const { return m_max_icp_iterations; }
         inline unsigned int getOptimizationStatus() const { return m_optimizator_status; }
+        inline float getOverlap() const { return m_overlap;}
 
         Matrix4 getFinalTransformation() const { return m_final_transformation; }
 
@@ -57,6 +58,7 @@ namespace duna
         
         unsigned int m_max_icp_iterations = 10;
         unsigned int m_current_iterations;
+        float m_overlap = 0;
         PointCloudSourceConstPtr m_source;
         PointCloudTargetConstPtr m_target;
 
