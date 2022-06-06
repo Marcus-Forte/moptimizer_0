@@ -2,6 +2,7 @@
 #define COSTFUNCTIONNUMERICAL_H
 
 #include <duna/cost_function.h>
+#include <duna/logging.h>
 
 namespace duna
 {
@@ -13,27 +14,33 @@ namespace duna
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
         using ResidualVector = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>;
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
-        using JacobianMatrix = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS>;
-
+        using JacobianBlockMatrix = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS>;
+        using JacobianMatrix = Eigen::Matrix<Scalar, 1, N_PARAMETERS>;
         // TODO change pointer to smartpointer
-        CostFunctionNumericalDiff(Model *model, int num_residuals) : m_model(model),
-                                                                     CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
+        CostFunctionNumericalDiff(Model *model, int num_residuals, bool delete_model = false) : m_model(model),
+                                                                                                CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
         {
+            m_delete_model = delete_model;
             init();
         }
 
-        CostFunctionNumericalDiff(Model *model) : m_model(model),
-                                                  CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
+        CostFunctionNumericalDiff(Model *model, bool delete_model = false) : m_model(model),
+                                                                             CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
         {
+            m_delete_model = delete_model;
             init();
             // TODO remove warning
-            std::cout << "Warning, num_residuals not set\n";
+            DUNA_DEBUG("Warning, num_residuals not set\n");
         }
 
         CostFunctionNumericalDiff(const CostFunctionNumericalDiff &) = delete;
         CostFunctionNumericalDiff &operator=(const CostFunctionNumericalDiff &) = delete;
 
-        ~CostFunctionNumericalDiff() = default;
+        ~CostFunctionNumericalDiff()
+        {
+            if (m_delete_model)
+                delete m_model;
+        }
 
         Scalar computeCost(const Scalar *x, bool setup_data) override
         {
@@ -51,6 +58,13 @@ namespace duna
             }
 
             return sum;
+        }
+
+        Scalar jacobian(const Scalar *x, Scalar *jacobian, Scalar *res)
+        {
+            // Eigen::Map<const ParameterVector> x_map(x);
+            // Eigen::Map<JacobianMatrix> hessian_map(hessian);
+            // Eigen::Map<ParameterVector> b_map(b);
         }
 
         Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
@@ -97,7 +111,7 @@ namespace duna
 
             ResidualVector residuals;
             ResidualVector residuals_plus;
-            JacobianMatrix jacobian_row;
+            JacobianBlockMatrix jacobian_row;
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
@@ -137,6 +151,7 @@ namespace duna
         int m_num_threads;
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
+        bool m_delete_model;
         // TODO test if dynamic
         void init()
         {

@@ -21,7 +21,7 @@ namespace duna
         void operator()(const Scalar *x, Scalar *f_x, unsigned int index)
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
-            const PointSource &tgt_pt = target.points[corrs[index].index_match];
+            const PointTarget &tgt_pt = target.points[corrs[index].index_match];
 
             Eigen::Matrix<Scalar, 4, 1> src_(src_pt.x, src_pt.y, src_pt.z, 1);
             Eigen::Matrix<Scalar, 4, 1> tgt_(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
@@ -35,7 +35,7 @@ namespace duna
         void df(const Scalar *x, Scalar *jacobian, unsigned int index)
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
-            const PointSource &tgt_pt = target.points[corrs[index].index_match];
+            const PointTarget &tgt_pt = target.points[corrs[index].index_match];
 
             Eigen::Matrix<Scalar, 4, 1> src_(src_pt.x, src_pt.y, src_pt.z, 1);
             Eigen::Matrix<Scalar, 4, 1> tgt_(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);

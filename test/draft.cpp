@@ -26,49 +26,93 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
+class A
+{
+    public:
+    using Ptr = std::shared_ptr<A>;
+    using ConstPtr = std::shared_ptr<const A>;
+
+    virtual void print() const
+    {
+        std::cout << "I'm A\n";
+    }
+};
+
+class B : public A
+{
+    public:
+    using Ptr = std::shared_ptr<B>;
+    using ConstPtr = std::shared_ptr<const B>;
+    void print() const override
+    {
+        std::cout << "I'm B\n";
+    }
+};
+
+void printObject(const A::Ptr& object)
+{
+    object->print();
+}
+
+TEST(Drafts, DraftSharedPtrInherited)
+{
+    A::Ptr parent;
+    parent.reset(new A);  
+    parent->print();
+
+    parent.reset(new B);
+    parent->print();
+
+    B::Ptr child(new B);
+    
+    
+    printObject(parent);
+    printObject(child); // Works as well
+}
+
 TEST(Drafts, Draft0)
 {
-    Eigen::setNbThreads(8);
-    // Eigen::initParallel();
+//     Eigen::setNbThreads(8);
+//     // Eigen::initParallel();
 
-    Eigen::MatrixXf A(num_param, num_param);
-    Eigen::MatrixXf B(num_param, num_param);
-    A.setRandom();
-    B.setRandom();
+//     Eigen::MatrixXf A(num_param, num_param);
+//     Eigen::MatrixXf B(num_param, num_param);
+//     A.setRandom();
+//     B.setRandom();
 
-    Eigen::MatrixXf C_vec(num_param, num_param);
-    Eigen::MatrixXf C_par(num_param, num_param);
-    Eigen::MatrixXf C_loop(num_param, num_param);
+//     Eigen::MatrixXf C_vec(num_param, num_param);
+//     Eigen::MatrixXf C_par(num_param, num_param);
+//     Eigen::MatrixXf C_loop(num_param, num_param);
 
     
-    if(num_param != 8000)
-        FAIL();
+//     if(num_param != 8000)
+//         FAIL();
 
-    const int block_size = 4;
-    timer.tick();
-#pragma omp parallel
-    {
-#pragma omp for
-        for (int i = 0; i < num_param; i+=block_size)
-            C_par.block<8000,block_size>(0,i) = A.block<8000,block_size>(0,i) + B.block<8000,block_size>(0,i);
-    }
-    timer.tock("Parallel Sum");
+//     const int block_size = 4;
+//     timer.tick();
+// #pragma omp parallel
+//     {
+// #pragma omp for
+//         for (int i = 0; i < num_param; i+=block_size)
+//             C_par.block<8000,block_size>(0,i) = A.block<8000,block_size>(0,i) + B.block<8000,block_size>(0,i);
+//     }
+//     timer.tock("Parallel Sum");
 
-    timer.tick();
-    for (int i = 0; i < num_param; ++i)
-        for(int j = 0; j < num_param; ++j)
-            C_loop(i,j) = A(i,j) + B(i,j);
-    timer.tock("Sum Loop");
+//     timer.tick();
+//     for (int i = 0; i < num_param; ++i)
+//         for(int j = 0; j < num_param; ++j)
+//             C_loop(i,j) = A(i,j) + B(i,j);
+//     timer.tock("Sum Loop");
 
-    timer.tick();
-    C_vec = A + B;
-    timer.tock("C_vec = A+B");
+//     timer.tick();
+//     C_vec = A + B;
+//     timer.tock("C_vec = A+B");
 
-    for (int i = 0; i < num_param*num_param; ++i)
-    {
-        ASSERT_NEAR(C_loop(i), C_par(i), TOL);
-        EXPECT_NEAR(C_loop(i), C_vec(i), TOL);
-    }
+//     for (int i = 0; i < num_param*num_param; ++i)
+//     {
+//         ASSERT_NEAR(C_loop(i), C_par(i), TOL);
+//         EXPECT_NEAR(C_loop(i), C_vec(i), TOL);
+//     }
 }
 
 TEST(Drafts, Draft1)

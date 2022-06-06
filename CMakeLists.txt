@@ -5,17 +5,20 @@ set (CMAKE_CXX_STANDARD 17)
 option(BUILD_TESTS "Build test programs" ON)
 option(BUILD_EXPERIMENTAL "Build experimental programs" OFF)
 
-set(CMAKE_INSTALL_PREFIX install) # install locally
+set(CMAKE_INSTALL_PREFIX install) # always install locally
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
 find_package(GTest REQUIRED)
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX)
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
+add_definitions(${PCL_DEFINITIONS})
 
-#add_compile_options(-march=native)
-#add_compile_options(-msse -msse2 -mavx -mfma -msse4)
+
+
+add_compile_options(-march=native)
+add_compile_options(-msse -msse2 -mavx -mfma -msse4)
 
 if(UNIX)
 # GTest required pthread in UNIX Os
@@ -28,9 +31,9 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
 src/cost_function.cpp
-src/registration.cpp
-src/registration_3dof.cpp
 src/so3.cpp
+src/transformation_estimation6DOF.cpp
+src/transformation_estimation3DOF.cpp
 )
 
 
@@ -63,10 +66,13 @@ if(BUILD_TESTS)
         test/manifold.cpp
         test/powell.cpp
         test/curve_fitting.cpp
+
+        # REG
         test/registration_point2plane.cpp
         test/registration_point2point.cpp
+        test/registration_point2plane3DOF.cpp
 
-        test/registration3dof_point2plane.cpp
+        # Sequence
         test/sequence_3dof.cpp
         )
 

@@ -7,8 +7,8 @@ namespace duna
     template <typename PointSource, typename PointTarget, typename Scalar>
     struct Point2Plane3DOF : public Point2Plane<PointSource,PointTarget,Scalar>
     {
-        Point2Plane3DOF(const pcl::PointCloud<PointSource> &source_, const pcl::PointCloud<PointSource> &target_, const std::unordered_map<int, pcl::Normal> &target_normal_map_, const pcl::Correspondences &corrs_) :
-        Point2Plane<PointSource,PointTarget,Scalar>(source_, target_, target_normal_map_,corrs_)
+        Point2Plane3DOF(const pcl::PointCloud<PointSource> &source_, const pcl::PointCloud<PointSource> &target_, const pcl::Correspondences &corrs_) :
+        Point2Plane<PointSource,PointTarget,Scalar>(source_, target_,corrs_)
         {}
         
         void setup(const Scalar *x) override

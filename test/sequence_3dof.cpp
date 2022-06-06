@@ -1,3 +1,4 @@
+#define PCL_NO_PRECOMPILE
 #include <gtest/gtest.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -6,14 +7,17 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/radius_outlier_removal.h>
 
+#include <pcl/features/normal_3d.h>
+
 #include <duna/stopwatch.hpp>
-#include <duna/registration/registration_3dof.h>
+#include <duna/registration/transformation_estimation3DOF.h>
+#include <pcl/registration/icp.h>
 
 #define N_MAP 20
-#define N_SOURCE 45
+#define N_SOURCE 85
 #define N_SOURCE_MERGE 1
 
-using PointT = pcl::PointXYZI;
+using PointT = pcl::PointXYZINormal;
 using PointCloudT = pcl::PointCloud<PointT>;
 
 int main(int argc, char **argv)
@@ -103,7 +107,7 @@ protected:
     pcl::search::KdTree<PointT>::Ptr target_kdtree_;
 };
 
-using ScalarTypes = ::testing::Types<double>;
+using ScalarTypes = ::testing::Types<double,float>;
 TYPED_TEST_SUITE(SequenceRegistration, ScalarTypes);
 
 TYPED_TEST(SequenceRegistration, Indoor)
@@ -112,14 +116,15 @@ TYPED_TEST(SequenceRegistration, Indoor)
     std::cout << "Map size: " << this->target_->size() << std::endl;
     std::cout << "#Scans: " << this->source_vector_.size() << std::endl;
 
-    duna::Registration3DOF<PointT, PointT, TypeParam> registration;
+    pcl::IterativeClosestPoint<PointT, PointT, TypeParam> icp;
 
-    registration.setInputTarget(this->target_);
-    registration.setMaximumICPIterations(50);
-    registration.setTargetSearchMethod(this->target_kdtree_);
-    registration.setPoint2Plane();
-    registration.setMaximumCorrespondenceDistance(0.25);
-    registration.setMaximumOptimizerIterations(3);
+    // this is where the magic happens
+    typename duna::TransformationEstimator3DOF<PointT, PointT, TypeParam>::Ptr duna_3dof_estimator(new duna::TransformationEstimator3DOF<PointT, PointT, TypeParam>(true));
+    icp.setTransformationEstimation(duna_3dof_estimator);
+
+    icp.setMaximumIterations(50);
+    icp.setMaxCorrespondenceDistance(0.25);
+
     Eigen::Matrix<TypeParam, 4, 4> transform;
     transform.setIdentity();
 
@@ -128,6 +133,12 @@ TYPED_TEST(SequenceRegistration, Indoor)
 
     utilities::Stopwatch timer;
     PointCloudT::Ptr HD_cloud(new PointCloudT);
+
+    // pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
+
+    pcl::NormalEstimation<PointT, PointT> ne;
+
+    PointCloudT output;
 
     // Copy full map cloud
     *HD_cloud = *this->target_;
@@ -145,28 +156,39 @@ TYPED_TEST(SequenceRegistration, Indoor)
         this->target_kdtree_->setInputCloud(this->target_);
         timer.tock("KDTree recomputation");
 
+
+        // TODO how do we track new points only?
+        timer.tick();
+        ne.setInputCloud(this->target_);
+        ne.setSearchMethod(this->target_kdtree_);
+        ne.setKSearch(15);
+        ne.compute(*this->target_);
+        timer.tock("Normal recomputation ");
+
         timer.tick();
         voxel.setInputCloud(this->source_vector_[i]);
-        voxel.setLeafSize(0.1, 0.1, 0.1);
+        voxel.setLeafSize(0.25, 0.25, 0.25);
         voxel.filter(*subsampled_input);
         timer.tock("Voxel grid.");
 
         std::cout << "Subsampled # points: " << subsampled_input->size() << std::endl;
-        registration.setInputSource(subsampled_input);
+
         timer.tick();
-        registration.align(transform);
-        std::cout << "Iterations: " << registration.getFinalIterationsNumber() << "/" << registration.getMaximumICPIterations() << std::endl;
-        std::cout << "registration exit code: " << registration.getOptimizationStatus() << std::endl;
+        icp.setInputTarget(this->target_);
+        icp.setSearchMethodTarget(this->target_kdtree_);
+        icp.setInputSource(subsampled_input);
+
+        icp.align(output, transform);
         total_reg_time += timer.tock("Registration");
 
-        transform = registration.getFinalTransformation();
+        transform = icp.getFinalTransformation();
 
-        // std::cout << transform << std::endl;
+        pcl::transformPointCloud(*this->source_vector_[i], output, transform);
+
         timer.tick();
-        pcl::transformPointCloud(*this->source_vector_[i], aligned, transform);
 
-        *this->target_ = *this->target_ + aligned;
-        *HD_cloud = *HD_cloud + aligned;
+        *this->target_ = *this->target_ + output;
+        *HD_cloud = *HD_cloud + output;
         timer.tock("Accumulation");
     }
     std::cout << "All registration took: " << total_reg_time << std::endl;
