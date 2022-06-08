@@ -13,8 +13,8 @@ namespace duna
     class TransformationEstimator3DOF : public pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>
     {
     public:
-        using Ptr = std::shared_ptr<TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
-        using ConstPtr = std::shared_ptr<const TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
+        using Ptr = pcl::shared_ptr<TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
+        using ConstPtr = pcl::shared_ptr<const TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
         using Matrix4 = typename pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>::Matrix4;
 
         TransformationEstimator3DOF(bool point2plane = false) : m_point2plane(point2plane) {}
@@ -29,7 +29,7 @@ namespace duna
         }
         void
         estimateRigidTransformation(const pcl::PointCloud<PointSource> &cloud_src,
-                                    const pcl::Indices &indices_src,
+                                    const std::vector<int> &indices_src,
                                     const pcl::PointCloud<PointTarget> &cloud_tgt,
                                     Matrix4 &transformation_matrix) const override
         {
@@ -38,9 +38,9 @@ namespace duna
 
         void
         estimateRigidTransformation(const pcl::PointCloud<PointSource> &cloud_src,
-                                    const pcl::Indices &indices_src,
+                                    const std::vector<int> &indices_src,
                                     const pcl::PointCloud<PointTarget> &cloud_tgt,
-                                    const pcl::Indices &indices_tgt,
+                                    const std::vector<int> &indices_tgt,
                                     Matrix4 &transformation_matrix) const override
         {
             throw std::runtime_error("Unimplemented!");
