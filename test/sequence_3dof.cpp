@@ -6,6 +6,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/radius_outlier_removal.h>
+#include <pcl/registration/correspondence_rejection_trimmed.h>
 
 #include <pcl/features/normal_3d.h>
 
@@ -107,7 +108,7 @@ protected:
     pcl::search::KdTree<PointT>::Ptr target_kdtree_;
 };
 
-using ScalarTypes = ::testing::Types<double,float>;
+using ScalarTypes = ::testing::Types<double, float>;
 TYPED_TEST_SUITE(SequenceRegistration, ScalarTypes);
 
 TYPED_TEST(SequenceRegistration, Indoor)
@@ -123,7 +124,10 @@ TYPED_TEST(SequenceRegistration, Indoor)
     icp.setTransformationEstimation(duna_3dof_estimator);
 
     icp.setMaximumIterations(50);
-    icp.setMaxCorrespondenceDistance(0.25);
+    icp.setMaxCorrespondenceDistance(0.15);
+    pcl::registration::CorrespondenceRejectorTrimmed::Ptr rejector0(new pcl::registration::CorrespondenceRejectorTrimmed);
+    rejector0->setOverlapRatio(0.8);
+    icp.addCorrespondenceRejector(rejector0);
 
     Eigen::Matrix<TypeParam, 4, 4> transform;
     transform.setIdentity();
@@ -137,8 +141,14 @@ TYPED_TEST(SequenceRegistration, Indoor)
     // pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
 
     pcl::NormalEstimation<PointT, PointT> ne;
+    timer.tick();
+    ne.setInputCloud(this->target_);
+    ne.setSearchMethod(this->target_kdtree_);
+    ne.setKSearch(15);
+    ne.compute(*this->target_);
+    timer.tock("Normal computation ");
 
-    PointCloudT output;
+    PointCloudT::Ptr output(new PointCloudT);
 
     // Copy full map cloud
     *HD_cloud = *this->target_;
@@ -156,14 +166,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
         this->target_kdtree_->setInputCloud(this->target_);
         timer.tock("KDTree recomputation");
 
-
         // TODO how do we track new points only?
-        timer.tick();
-        ne.setInputCloud(this->target_);
-        ne.setSearchMethod(this->target_kdtree_);
-        ne.setKSearch(15);
-        ne.compute(*this->target_);
-        timer.tock("Normal recomputation ");
 
         timer.tick();
         voxel.setInputCloud(this->source_vector_[i]);
@@ -177,19 +180,32 @@ TYPED_TEST(SequenceRegistration, Indoor)
         icp.setInputTarget(this->target_);
         icp.setSearchMethodTarget(this->target_kdtree_);
         icp.setInputSource(subsampled_input);
-
-        icp.align(output, transform);
+        icp.align(*output, transform);
         total_reg_time += timer.tock("Registration");
 
+        timer.tick();
+        
+        // int new_points_size = output.size();
+        // std::vector<int> new_point_indices(new_points_size);
+        // std::iota(new_point_indices.begin(), new_point_indices.end(),this->target_->size() - new_points_size);
+        // for (int l=0; l < new_points_size; ++ l)
+        // {
+        //     ASSERT_NEAR(this->target_->points[new_point_indices[l]].x, output[l].x, 1e-3);
+        // }
+        ne.setInputCloud(output);
+        ne.setSearchSurface(this->target_);
+        ne.setSearchMethod(this->target_kdtree_);
+        ne.setKSearch(5);
+        ne.compute(*output);
+        *this->target_ += *output;
+
+        timer.tock("Accumulation and normal recomputation");
         transform = icp.getFinalTransformation();
 
-        pcl::transformPointCloud(*this->source_vector_[i], output, transform);
+        pcl::transformPointCloud(*this->source_vector_[i], *output, transform);
 
-        timer.tick();
-
-        *this->target_ = *this->target_ + output;
-        *HD_cloud = *HD_cloud + output;
-        timer.tock("Accumulation");
+        *HD_cloud = *HD_cloud + *output;
+        
     }
     std::cout << "All registration took: " << total_reg_time << std::endl;
 
@@ -219,4 +235,5 @@ TYPED_TEST(SequenceRegistration, Indoor)
     final_cloud_filename += ".pcd";
     std::cout << "Saving final pointcloud to " << final_cloud_filename << std::endl;
     pcl::io::savePCDFileBinary(final_cloud_filename, *HD_cloud);
+    pcl::io::savePCDFileBinary("ss_" + final_cloud_filename, *this->target_);
 }
