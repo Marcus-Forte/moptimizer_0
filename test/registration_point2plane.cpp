@@ -6,6 +6,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/registration/transformation_estimation.h>
+#include <pcl/registration/transformation_estimation_point_to_plane_lls.h>
 #include <pcl/registration/transformation_estimation_lm.h>
 #include <pcl/registration/transformation_estimation_point_to_plane.h>
 
@@ -59,6 +60,8 @@ public:
         pcl_icp.setMaxCorrespondenceDistance(10);
         pcl_icp.setMaximumIterations(100);
         pcl_icp.setSearchMethodTarget(target_kdtree);
+        pcl_icp.setTransformationEpsilon(1e-4);
+        
 
 #ifndef NDEBUG
         pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
@@ -86,8 +89,8 @@ TYPED_TEST(RegistrationPoint2Plane, Trannslation)
     pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
     // Instantiate estimators
-    typename pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>::Ptr pcl_transform (new pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>);
-    typename duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>::Ptr duna_transform (new duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>(true));
+    typename pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>::Ptr pcl_transform(new pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>);
+    typename duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>::Ptr duna_transform(new duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>(true));
     PointCloutT output;
 
     this->pcl_icp.setInputSource(this->source);
@@ -134,10 +137,10 @@ TYPED_TEST(RegistrationPoint2Plane, RotationPlusTranslation)
     pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
     // Instantiate estimators
-    typename pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>::Ptr pcl_transform (new pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>);
-    typename duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>::Ptr duna_transform (new duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>(true));
+    typename pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>::Ptr pcl_transform(new pcl::registration::TransformationEstimationPointToPlane<PointT, PointT, TypeParam>);
+    typename duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>::Ptr duna_transform(new duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>(true));
     PointCloutT output;
-    
+
     this->pcl_icp.setInputSource(this->source);
     this->pcl_icp.setTransformationEstimation(pcl_transform);
     utilities::Stopwatch timer;

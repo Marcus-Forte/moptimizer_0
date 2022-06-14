@@ -7,6 +7,7 @@
 #include <pcl/point_types.h>
 
 #include <duna/registration/models/point2point.h>
+#include <duna/registration/models/point2plane.h>
 
 /* We compare with numerical diff for resonable results. It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
 
@@ -169,14 +170,16 @@ TEST(Differentiation, PowellModel)
     std::cerr << HessianNum << std::endl;
 }
 
+
 TYPED_TEST(Differentiation, Poin2PointDistance)
 {
+    using PointT = pcl::PointXYZ;
 
-    pcl::PointCloud<pcl::PointXYZ> source;
-    pcl::PointCloud<pcl::PointXYZ> target;
+    pcl::PointCloud<PointT> source;
+    pcl::PointCloud<PointT> target;
 
-    pcl::PointXYZ src_pt(0, 0, 0);
-    pcl::PointXYZ tgt_pt(14, 26, 3);
+    PointT src_pt(10, 11, 12);
+    PointT tgt_pt(14, 26, 3);
 
     source.push_back(src_pt);
     target.push_back(tgt_pt);
@@ -186,10 +189,10 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
     corr.index_match = 0;
     corrs.push_back(corr);
 
-    duna::Point2Point<pcl::PointXYZ, pcl::PointXYZ, TypeParam> model(source, target, corrs);
+    duna::Point2Point<PointT, PointT, TypeParam> model(source, target, corrs);
 
-    duna::CostFunctionNumericalDiff<duna::Point2Point<pcl::PointXYZ, pcl::PointXYZ, TypeParam>, TypeParam, 6, 1> cost_num(&model);
-    duna::CostFunctionAnalytical<duna::Point2Point<pcl::PointXYZ, pcl::PointXYZ, TypeParam>, TypeParam, 6, 1> cost_ana(&model);
+    duna::CostFunctionNumericalDiff<duna::Point2Point<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_num(&model);
+    duna::CostFunctionAnalytical<duna::Point2Point<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_ana(&model);
 
     Eigen::Matrix<TypeParam, 6, 6> HessianNum;
     Eigen::Matrix<TypeParam, 6, 6> Hessian;
@@ -210,7 +213,77 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
 
     for (int i = 0; i < Hessian.size(); ++i)
     {
-        EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
+         if (std::is_same<TypeParam, float>::value)
+          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
+        else // double
+          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
+    }
+
+    std::cerr << "Hessian:\n"
+              << Hessian << std::endl;
+    std::cerr << "Hessian Numerical:\n"
+              << HessianNum << std::endl;
+}
+
+TYPED_TEST(Differentiation, Poin2PlaneDistance)
+{
+    using PointT = pcl::PointNormal;
+
+    pcl::PointCloud<PointT> source;
+    pcl::PointCloud<PointT> target;
+
+    PointT src_pt;
+    src_pt.x = 10;
+    src_pt.y = 11;
+    src_pt.z = 12;
+
+    PointT tgt_pt;
+    tgt_pt.x = 14;
+    tgt_pt.y = 26;
+    tgt_pt.z = 3;
+
+    tgt_pt.normal_x = 1.0;
+    tgt_pt.normal_y = 2.0;
+    tgt_pt.normal_z = 3.0;
+    tgt_pt.getNormalVector3fMap().normalize();
+
+    source.push_back(src_pt);
+    target.push_back(tgt_pt);
+    pcl::Correspondences corrs;
+    pcl::Correspondence corr;
+    corr.index_query = 0;
+    corr.index_match = 0;
+    corrs.push_back(corr);
+
+    duna::Point2Plane<PointT, PointT, TypeParam> model(source, target, corrs);
+    
+
+    duna::CostFunctionNumericalDiff<duna::Point2Plane<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_num(&model);
+    duna::CostFunctionAnalytical<duna::Point2Plane<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_ana(&model);
+
+    Eigen::Matrix<TypeParam, 6, 6> HessianNum;
+    Eigen::Matrix<TypeParam, 6, 6> Hessian;
+    Eigen::Matrix<TypeParam, 6, 1> Residuals;
+
+    Eigen::Matrix<TypeParam, 6, 1> x0;
+    x0.setZero();
+    x0[0] = 0;
+    x0[1] = 0;
+    x0[2] = 0;
+    // Test Small angles
+    x0[3] = 0.0;
+    x0[4] = 0.0;
+    x0[5] = 0.0;
+
+    cost_num.linearize(x0.data(), HessianNum.data(), Residuals.data());
+    cost_ana.linearize(x0.data(), Hessian.data(), Residuals.data());
+
+    for (int i = 0; i < Hessian.size(); ++i)
+    {
+        if (std::is_same<TypeParam, float>::value)
+          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
+        else // double
+          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
 
     std::cerr << "Hessian:\n"

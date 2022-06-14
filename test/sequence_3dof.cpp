@@ -125,6 +125,8 @@ TYPED_TEST(SequenceRegistration, Indoor)
 
     icp.setMaximumIterations(50);
     icp.setMaxCorrespondenceDistance(0.15);
+    icp.setTransformationEpsilon(1e-6);
+    // icp.setTransformationRotationEpsilon(1e-12);
     pcl::registration::CorrespondenceRejectorTrimmed::Ptr rejector0(new pcl::registration::CorrespondenceRejectorTrimmed);
     rejector0->setOverlapRatio(0.8);
     icp.addCorrespondenceRejector(rejector0);

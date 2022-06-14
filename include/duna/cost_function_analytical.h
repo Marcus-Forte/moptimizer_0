@@ -2,6 +2,7 @@
 #define COSTFUNCTIONANALYTICAL_H
 
 #include <duna/cost_function.h>
+#include <duna/logging.h>
 
 namespace duna
 {
@@ -13,25 +14,23 @@ namespace duna
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
         using ResidualVector = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>;
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
-        using JacobianMatrix = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS>;
+        using JacobianBlockMatrix = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS>;
+        using JacobianMatrix = Eigen::Matrix<Scalar, 1, N_PARAMETERS>;
 
         // TODO change pointer to smartpointer
-        CostFunctionAnalytical(Model *model, int num_residuals) : m_model(model),
-                                                                  residuals(nullptr),
-                                                                  jacobian(nullptr),
-                                                                  CostFunctionBase<Scalar>(num_residuals,N_MODEL_OUTPUTS)
+        CostFunctionAnalytical(Model *model, int num_residuals, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
+                                                                                             CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
         {
             init();
         }
 
-        CostFunctionAnalytical(Model *model) : m_model(model),
-                                               residuals(nullptr),
-                                               jacobian(nullptr),
-                                               CostFunctionBase<Scalar>(1,N_MODEL_OUTPUTS)
+        CostFunctionAnalytical(Model *model, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
+                                                                          CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
         {
+
             init();
             // TODO remove warning
-            std::cout << "Warning, num_residuals not set\n";
+            DUNA_DEBUG("Warning, num_residuals not set\n");
         }
 
         CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
@@ -39,13 +38,14 @@ namespace duna
 
         ~CostFunctionAnalytical()
         {
-            delete[] residuals_data;
-            delete[] jacobian_data;
+            if (m_delete_model)
+                delete m_model;
         }
 
         Scalar computeCost(const Scalar *x, bool setup_data) override
         {
             Scalar sum = 0;
+            ResidualVector residuals;
 
             // TODO make dirty variables?
             if (setup_data)
@@ -53,7 +53,7 @@ namespace duna
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*m_model)(x, residuals_data, i);
+                (*m_model)(x, residuals.data(), i);
                 sum += 2 * residuals.squaredNorm();
             }
 
@@ -71,25 +71,23 @@ namespace duna
 
             Scalar sum = 0.0;
 
-            // Step size
-            Scalar *h = new Scalar[x_map.size()];
-
             m_model[0].setup(x_map.data()); // this was inside the loop below.. Very bad.
+
+            ResidualVector residuals;
+            JacobianBlockMatrix jacobian_row;
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
 
-                m_model[0](x_map.data(), residuals_data, i);
+                m_model[0](x_map.data(), residuals.data(), i);
                 sum += 2 * residuals.squaredNorm();
 
-                m_model[0].df(x_map.data(), jacobian_data, i);
+                m_model[0].df(x_map.data(), jacobian_row.data(), i);
 
-                // hessian.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
-                hessian_map.noalias() += (jacobian.transpose() * jacobian);
-                b_map.noalias() += jacobian.transpose() * residuals;
+                hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
+                // hessian_map.noalias() += (jacobian_row.transpose() * jacobian_row);
+                b_map.noalias() += jacobian_row.transpose() * residuals;
             }
-
-            delete h;
 
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
 
@@ -99,25 +97,12 @@ namespace duna
     protected:
         Model *m_model;
         // Holds results for cost computations
-        Scalar *residuals_data;
-        Scalar *jacobian_data;
-
-        Eigen::Map<const ResidualVector> residuals;
-        Eigen::Map<const JacobianMatrix> jacobian;
-
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
+        bool m_delete_model;
 
         void init()
         {
-            // m_num_outputs = N_MODEL_OUTPUTS;
-            residuals_data = new Scalar[m_num_outputs];
-            jacobian_data = new Scalar[m_num_outputs * N_PARAMETERS];
-
-            // Map allocated arrays to eigen types using placement new syntax.
-            new (&residuals) Eigen::Map<const ResidualVector>(residuals_data);
-            new (&jacobian) Eigen::Map<const JacobianMatrix>(jacobian_data);
-
             static_assert(N_PARAMETERS != -1, "Dynamic Cost Function not yet implemented");
         }
     };

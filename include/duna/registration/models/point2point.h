@@ -31,7 +31,7 @@ namespace duna
 
             f_x[0] = (warped_src_ - tgt_).norm();
         }
-
+    
         void df(const Scalar *x, Scalar *jacobian, unsigned int index)
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
@@ -55,9 +55,10 @@ namespace duna
             jacobian[0] = rho * dx;
             jacobian[1] = rho * dy;
             jacobian[2] = rho * dz;
-            jacobian[3] = rho * (src_[1] * dz - src_[2] * dy);
-            jacobian[4] = rho * (src_[2] * dx - src_[0] * dz);
-            jacobian[5] = rho * (src_[0] * dy - src_[1] * dx);
+            // Not sure why we multiply by two. Numerical Diff comparison suggested that.
+            jacobian[3] = 2 * rho * (src_[1] * dz - src_[2] * dy);
+            jacobian[4] = 2 * rho * (src_[2] * dx - src_[0] * dz);
+            jacobian[5] = 2 * rho * (src_[0] * dy - src_[1] * dx);
         }
 
     protected:

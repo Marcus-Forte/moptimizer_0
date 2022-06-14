@@ -5,6 +5,7 @@ set (CMAKE_CXX_STANDARD 17)
 option(BUILD_TESTS "Build test programs" ON)
 option(BUILD_EXPERIMENTAL "Build experimental programs" OFF)
 
+set(CMAKE_BUILD_TYPE Release) # 
 set(CMAKE_INSTALL_PREFIX install) # always install locally
 
 find_package(Eigen3 REQUIRED)

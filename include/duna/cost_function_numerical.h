@@ -17,17 +17,15 @@ namespace duna
         using JacobianBlockMatrix = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS>;
         using JacobianMatrix = Eigen::Matrix<Scalar, 1, N_PARAMETERS>;
         // TODO change pointer to smartpointer
-        CostFunctionNumericalDiff(Model *model, int num_residuals, bool delete_model = false) : m_model(model),
+        CostFunctionNumericalDiff(Model *model, int num_residuals, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
                                                                                                 CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
         {
-            m_delete_model = delete_model;
             init();
         }
 
-        CostFunctionNumericalDiff(Model *model, bool delete_model = false) : m_model(model),
+        CostFunctionNumericalDiff(Model *model, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
                                                                              CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
         {
-            m_delete_model = delete_model;
             init();
             // TODO remove warning
             DUNA_DEBUG("Warning, num_residuals not set\n");
@@ -67,7 +65,7 @@ namespace duna
             // Eigen::Map<ParameterVector> b_map(b);
         }
 
-        Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
+        virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
         {
             Eigen::Map<const ParameterVector> x_map(x);
             Eigen::Map<HessianMatrix> hessian_map(hessian);
@@ -84,10 +82,10 @@ namespace duna
 
             // Create a new model for each numerical increment
             std::vector<Model> diff_plus(x_map.size(), *m_model);
-            // std::vector<Model> diff_minus(x_map.size(), *m_model);
+            std::vector<Model> diff_minus(x_map.size(), *m_model);
 
             std::vector<ParameterVector> x_plus(x_map.size(), x_map);
-            // std::vector<ParameterVector> x_minus(x_map.size(), x_map);
+            std::vector<ParameterVector> x_minus(x_map.size(), x_map);
 
             // Step size
             std::vector<Scalar> h(x_map.size());
@@ -111,6 +109,7 @@ namespace duna
 
             ResidualVector residuals;
             ResidualVector residuals_plus;
+            // ResidualVector residuals_minus;
             JacobianBlockMatrix jacobian_row;
 
             for (int i = 0; i < m_num_residuals; ++i)
@@ -122,22 +121,18 @@ namespace duna
                 for (int j = 0; j < x_map.size(); ++j)
                 {
                     diff_plus[j](x_plus[j].data(), residuals_plus.data(), i);
-                    // diff_minus[j](x_minus[j].data(), residuals_minus_data, i);
+                    // diff_minus[j](x_minus[j].data(), residuals_minus.data(), i);
 
-                    jacobian_row.col(j) = (residuals_plus - residuals) / (h[j]);
+                    // jacobian_row.col(j) = (residuals_plus - residuals) / (h[j]);
+                    jacobian_row.col(j) = (residuals_plus - residuals) / ( 1 * h[j]);
                 }
-
-                // std::cout << "i: " <<  i << std::endl;
-                // std::cout << "res+: " << residuals_plus << std::endl;
-                // std::cout << "res:" << residuals << std::endl;
-                // std::cout << "jac " << jacobian_row << std::endl;
 
                 hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_row.transpose()); // this sums ? yes
                 // hessian_map.noalias() += (jacobian_row.transpose() * jacobian_row);
                 b_map.noalias() += jacobian_row.transpose() * residuals;
 
-            } // pragma for
-            // pragma parallel
+            } 
+            
 
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
 
@@ -148,10 +143,10 @@ namespace duna
 
     protected:
         Model *m_model;
-        int m_num_threads;
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
         bool m_delete_model;
+        
         // TODO test if dynamic
         void init()
         {
