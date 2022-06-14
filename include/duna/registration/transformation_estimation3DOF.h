@@ -1,5 +1,6 @@
 #include <pcl/registration/transformation_estimation.h>
 #include <duna/cost_function_numerical.h>
+#include <duna/cost_function_analytical.h>
 #include <duna/levenberg_marquadt.h>
 
 #include <duna/registration/models/point2plane3dof.h>

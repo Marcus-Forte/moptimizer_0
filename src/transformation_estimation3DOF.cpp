@@ -14,7 +14,7 @@ namespace duna
 
         if (m_point2plane)
         {
-            cost = new duna::CostFunctionNumericalDiff<duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
+            cost = new duna::CostFunctionAnalytical<duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
                 new duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences), true);
         }
         else
