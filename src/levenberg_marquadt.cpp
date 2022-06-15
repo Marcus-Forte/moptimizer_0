@@ -41,7 +41,7 @@ namespace duna
             Scalar y0;
             y0 = m_cost->linearize(x0, hessian.data(), b.data());
 
-            if (abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
+            if ( std::abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
             {
                 DUNA_DEBUG("[LM] --- Small Cost reached --- : %e\n", y0);
                 return OptimizationStatus::CONVERGED;
