@@ -4,7 +4,7 @@
 #include <duna/stopwatch.hpp>
 #include <omp.h>
 
-#include <memory.h>
+#include <memory>
 /* Draft space for testing quick stuff */
 int num_param = 100;
 int num_res = 10000;
@@ -52,6 +52,15 @@ class B : public A
 void printObject(const A::Ptr& object)
 {
     object->print();
+}
+
+TEST(Drafts, MachinePrecisison)
+{
+    std::cerr << "Float machine epsilon: " << std::numeric_limits<float>::epsilon() << std::endl;
+    std::cerr << "Float machine epsilon (sqrt): " << sqrt(std::numeric_limits<float>::epsilon()) << std::endl;
+
+    std::cerr << "Double machine epsilon: " << std::numeric_limits<double>::epsilon() << std::endl;
+    std::cerr << "Double machine epsilon (sqrt): " << sqrt(std::numeric_limits<double>::epsilon()) << std::endl;
 }
 
 TEST(Drafts, DraftSharedPtrInherited)
