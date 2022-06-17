@@ -94,24 +94,48 @@ if(BUILD_TESTS)
         target_link_libraries(draft ${GTEST_LIBRARIES})
 endif()
 
-# Does this change anything ?
+# Link library to headers, but does not install. 
 target_include_directories(${PROJECT_NAME} PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 $<INSTALL_INTERFACE:include>
 )
 
+# Install Artifacts
 install(
   DIRECTORY include/
   DESTINATION include
 )
 
 install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}_Targets
+        EXPORT ${PROJECT_NAME}Targets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
+        INCLUDES DESTINATION include       
 )
+
+### Install Config and ConfigVersion files
+set (CMAKE_INSTALL_LIBDIR share/cmake/duna_optimizer)
+
+install(
+        EXPORT ${PROJECT_NAME}Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE duna::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+        ${PROJECT_NAME}Version.cmake
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion
+        )
+
+install(FILES 
+        cmake/${PROJECT_NAME}Config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Version.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
 
 # Packaging
 if(UNIX)
@@ -124,4 +148,5 @@ elseif(WIN32)
         set(CPACK_GENERATOR NSIS)
         include(CPack)
 endif()
+
 
