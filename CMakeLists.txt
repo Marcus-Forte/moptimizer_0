@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(duna_optimizer VERSION 0.1 LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 17)
 
-option(BUILD_TESTS "Build test programs" ON)
+option(BUILD_TESTS "Build test programs" OFF)
 option(BUILD_EXPERIMENTAL "Build experimental programs" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-set(CMAKE_INSTALL_PREFIX install) # always install locally
+# set(CMAKE_INSTALL_PREFIX install) # always install locally
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
@@ -94,15 +94,23 @@ if(BUILD_TESTS)
         target_link_libraries(draft ${GTEST_LIBRARIES})
 endif()
 
-install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION lib
+# Does this change anything ?
+target_include_directories(${PROJECT_NAME} PUBLIC
+$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+$<INSTALL_INTERFACE:include>
 )
 
-install(DIRECTORY include/
-        DESTINATION include
-        FILES_MATCHING
-        PATTERN "*.h"
-        PATTERN "*.hpp"        
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}_Targets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
 )
 
 # Packaging
