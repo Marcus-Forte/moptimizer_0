@@ -1,5 +1,5 @@
 # duna-optimizer
-Duna non-linear optimization library.
+This is Duna's non-linear optimization library.
 
 # Roadmap
 - Provide API for registration
