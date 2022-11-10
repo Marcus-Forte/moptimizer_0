@@ -4,6 +4,7 @@
 #include <duna/levenberg_marquadt.h>
 
 #include <duna/registration/models/point2plane3dof.h>
+#include <duna/registration/models/point2point.h>
 #include <duna/logging.h>
 #include <duna/so3.h>
 
@@ -18,9 +19,9 @@ namespace duna
         using ConstPtr = pcl::shared_ptr<const TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
         using Matrix4 = typename pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>::Matrix4;
 
-        TransformationEstimator3DOF(bool point2plane = false) : m_point2plane(point2plane)
+        TransformationEstimator3DOF(bool point2plane = false) : m_point2plane(point2plane),
+        max_optimizator_iterations(3)
         {
-            max_optimizator_iterations = 3;
         }
         virtual ~TransformationEstimator3DOF() = default;
 
@@ -56,10 +57,15 @@ namespace duna
                                     const pcl::Correspondences &correspondences,
                                     Matrix4 &transformation_matrix) const override;
 
+        inline void setOverlapRef(float* overlap) {
+            overlap_ = overlap;
+        }
+
     public:
         int max_optimizator_iterations;
 
     private:
         bool m_point2plane;
+        float* overlap_;
     };
 }

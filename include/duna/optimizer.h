@@ -17,7 +17,12 @@ namespace duna
         Optimizer &operator=(const Optimizer &) = delete;
         virtual ~Optimizer() = default;
 
-        inline void setMaximumIterations(int max_iterations) { m_maximum_iterations = max_iterations; }
+        inline void setMaximumIterations(int max_iterations)
+        {
+            if (max_iterations < 0)
+                throw std::invalid_argument("Optimization::max_iterations cannot be less than 0.");
+            m_maximum_iterations = max_iterations;
+        }
         inline unsigned int getMaximumIterations() const { return m_maximum_iterations; }
         inline unsigned int getExecutedIterations() const { return m_executed_iterations; }
 
