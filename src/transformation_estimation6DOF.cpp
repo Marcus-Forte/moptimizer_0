@@ -10,7 +10,7 @@ namespace duna
     {
         CostFunctionBase<Scalar> *cost;
         auto optimizer = new duna::LevenbergMarquadt<Scalar, 6>;
-        optimizer->setMaximumIterations(3);
+        optimizer->setMaximumIterations(max_optimizator_iterations);
 
         if (m_point2plane)
         {

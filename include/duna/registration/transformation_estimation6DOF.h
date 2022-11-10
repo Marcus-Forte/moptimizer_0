@@ -18,9 +18,11 @@ namespace duna
         using ConstPtr = pcl::shared_ptr<const TransformationEstimator6DOF<PointSource, PointTarget, Scalar>>;
         using Matrix4 = typename pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>::Matrix4;
 
-
         // Signals point2plane metric
-        TransformationEstimator6DOF(bool point2plane = false) : m_point2plane(point2plane) {}
+        TransformationEstimator6DOF(bool point2plane = false) : m_point2plane(point2plane) 
+        {
+            max_optimizator_iterations = 3;
+        }
 
         virtual ~TransformationEstimator6DOF() = default;
 
@@ -56,7 +58,10 @@ namespace duna
                                     const pcl::Correspondences &correspondences,
                                     Matrix4 &transformation_matrix) const override;
 
-        private:
+    public:
+        int max_optimizator_iterations;
+
+    private:
         bool m_point2plane;
     };
 }
