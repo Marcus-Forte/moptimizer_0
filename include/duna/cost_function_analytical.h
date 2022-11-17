@@ -50,7 +50,6 @@ namespace duna
             if (setup_data)
                 m_model->setup(x);
 
-            std::cout << "computing sum..." << std::endl;
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
@@ -74,7 +73,6 @@ namespace duna
             Scalar sum = 0.0;
 
             m_model[0].setup(x);
-            std::cout << "computing jacobian..." << std::endl;
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i );
@@ -83,8 +81,6 @@ namespace duna
 
             hessian_map.noalias() = jacobian_.transpose() * jacobian_;
             b_map.noalias() = jacobian_.transpose() * residuals_;
-
-            std::cout << jacobian_ << std::endl;
             
             sum = residuals_.transpose() * residuals_;
             return sum;

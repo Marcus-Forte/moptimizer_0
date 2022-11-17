@@ -66,6 +66,6 @@ namespace duna
 
     private:
         bool m_point2plane;
-        float* overlap_;
+        float* overlap_ = nullptr;
     };
 }
