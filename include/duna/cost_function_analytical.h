@@ -14,7 +14,7 @@ namespace duna
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
         using JacobianMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, N_PARAMETERS, Eigen::RowMajor>;
-        using ResidualVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1 >;
+        using ResidualVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
         // TODO change pointer to smartpointer
         CostFunctionAnalytical(Model *model, int num_residuals, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
@@ -53,9 +53,8 @@ namespace duna
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
-                // sum += 2 * residuals.squaredNorm();
             }
-            sum = residuals_.transpose() * residuals_;
+            sum = 2 * residuals_.transpose() * residuals_;
             return sum;
         }
 
@@ -72,17 +71,18 @@ namespace duna
 
             Scalar sum = 0.0;
 
-            m_model[0].setup(x);
+            (*m_model).setup(x);
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i );
-                m_model[0].df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i );
+                (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                (*m_model).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
 
-            hessian_map.noalias() = jacobian_.transpose() * jacobian_;
+            // hessian_map.noalias() = jacobian_.transpose() * jacobian_;
+            hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
+            hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
             b_map.noalias() = jacobian_.transpose() * residuals_;
-            
-            sum = residuals_.transpose() * residuals_;
+            sum = 2 * residuals_.transpose() * residuals_;
             return sum;
         }
 
@@ -91,9 +91,10 @@ namespace duna
         // Holds results for cost computations
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
-        bool m_delete_model;
         JacobianMatrix jacobian_;
         ResidualVector residuals_;
+
+        bool m_delete_model;
 
         void init()
         {
