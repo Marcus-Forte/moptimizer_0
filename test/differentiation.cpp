@@ -113,32 +113,32 @@ struct Powell
                     .
                     .
                     .
-    */
+    */ /* ROW MAJOR*/
     void df(const double *x, double *jacobian, unsigned int index)
     {
 
         // Df / dx0
         jacobian[0] = 1;
-        jacobian[1] = 0;
-        jacobian[2] = 0;
-        jacobian[3] = sqrt(10) * 2 * (x[0] - x[3]);
+        jacobian[4] = 0;
+        jacobian[8] = 0;
+        jacobian[12] = sqrt(10) * 2 * (x[0] - x[3]);
 
         // Df / dx1
-        jacobian[4] = 10;
+        jacobian[1] = 10;
         jacobian[5] = 0;
-        jacobian[6] = 2 * (x[1] + 2 * x[2]);
-        jacobian[7] = 0;
+        jacobian[9] = 2 * (x[1] + 2 * x[2]);
+        jacobian[13] = 0;
 
         // Df / dx2
-        jacobian[8] = 0;
-        jacobian[9] = sqrt(5);
+        jacobian[2] = 0;
+        jacobian[6] = sqrt(5);
         jacobian[10] = 2 * (x[1] + 2 * x[2]) * (-2);
-        jacobian[11] = 0;
+        jacobian[14] = 0;
 
         // Df / dx3
-        jacobian[12] = 0;
-        jacobian[13] = -sqrt(5);
-        jacobian[14] = 0;
+        jacobian[3] = 0;
+        jacobian[7] = -sqrt(5);
+        jacobian[11] = 0;
         jacobian[15] = sqrt(10) * 2 * (x[0] - x[3]) * (-1);
     }
 };
@@ -146,7 +146,7 @@ struct Powell
 TEST(Differentiation, PowellModel)
 {
 
-    const int m_residuals = 4;
+    const int m_residuals = 1;
 
     Powell powell;
 
