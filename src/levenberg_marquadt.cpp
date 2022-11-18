@@ -31,9 +31,16 @@ namespace duna
         ParameterVector b;
         ParameterVector xi;
 
+        // Setup data for costs if applicable.
+        for (const auto cost : costs_)
+        {
+            cost->setup(x0);
+        }
+
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
             // DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n");
+            // std::cout << "## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n";
 
             Scalar y0 = 0;
             hessian.setZero();
@@ -79,7 +86,7 @@ namespace duna
                 }
 
                 Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
-                // DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                // printf("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)
                 {

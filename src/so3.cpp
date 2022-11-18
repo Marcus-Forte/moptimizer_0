@@ -27,10 +27,20 @@ namespace so3
         transform_matrix_(3, 3) = 1;
 
         Eigen::Matrix<Scalar, 3, 1> delta(x[0], x[1], x[2]);
-        delta = 2 * delta; // TODO why ?
+        delta = 1 * delta; // TODO why ?
         Eigen::Matrix<Scalar, 3, 3> rot;
         Exp<Scalar>(delta, rot);
         transform_matrix_.topLeftCorner(3, 3) = rot;
+    }
+
+    template <typename Scalar>
+    inline void convert3DOFParameterToMatrix3(const Scalar *x, Eigen::Matrix<Scalar, 3, 3> &transform_matrix_)
+    {
+        transform_matrix_.setZero();
+        Eigen::Matrix<Scalar, 3, 1> delta(x[0], x[1], x[2]);
+        delta = 1 * delta; // TODO why ?
+        Eigen::Matrix<Scalar, 3, 3> rot;
+        Exp<Scalar>(delta, transform_matrix_);
     }
 
     template <typename Scalar>
@@ -93,15 +103,38 @@ namespace so3
         }
     }
 
+    template <typename Scalar>
+    void inverseRightJacobian(const Eigen::Matrix<Scalar, 3, 1> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> inv_jacobian)
+    {
+        double theta_sq = r.dot(r);
+        if (theta_sq < 1e-5)
+        {
+            inv_jacobian = Eigen::Matrix<Scalar, 3, 3>::Identity();
+            return;
+        }
+
+        Eigen::Matrix<Scalar, 3, 3> r_skew;
+        r_skew << SKEW_SYMMETRIC_FROM(r);
+
+        Scalar factor = 1 / r.squaredNorm() - (1 + cos(r.norm())) / (2 * r.norm() * sin(r.norm()));
+        inv_jacobian = Eigen::Matrix<Scalar, 3, 3>::Identity() + 0.5 * r_skew + factor * r_skew * r_skew;
+    }
+
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
     template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
+    template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix3<float>(const float *x, Eigen::Matrix<float, 3, 3> &transform_matrix_);
+    template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix3<double>(const double *x, Eigen::Matrix<double, 3, 3> &transform_matrix_);
+
     template void DUNA_OPTIMIZER_EXPORT Exp<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<double, 3, 3>> R);
     template void DUNA_OPTIMIZER_EXPORT Exp<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<float, 3, 3>> R);
 
     template void DUNA_OPTIMIZER_EXPORT Log<double>(const Eigen::Ref<Eigen::Matrix<double, 3, 3>> &R, Eigen::Matrix<double, 3, 1> &delta);
     template void DUNA_OPTIMIZER_EXPORT Log<float>(const Eigen::Ref<Eigen::Matrix<float, 3, 3>> &R, Eigen::Matrix<float, 3, 1> &delta);
+
+    template void DUNA_OPTIMIZER_EXPORT inverseRightJacobian<float>(const Eigen::Matrix<float, 3, 1> &r, Eigen::Ref<Eigen::Matrix<float, 3, 3>> inv_jacobian);
+    template void DUNA_OPTIMIZER_EXPORT inverseRightJacobian<double>(const Eigen::Matrix<double, 3, 1> &r, Eigen::Ref<Eigen::Matrix<double, 3, 3>> inv_jacobian);
 }

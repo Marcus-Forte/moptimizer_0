@@ -15,7 +15,7 @@ namespace duna
     {
     public:
 
-        CostFunctionBase() = delete;
+        CostFunctionBase() = default;
 
         CostFunctionBase(int num_residuals, int num_model_outputs) : m_num_residuals(num_residuals), m_num_outputs(num_model_outputs)
         {
@@ -27,6 +27,7 @@ namespace duna
 
         void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
         
+        virtual void setup(const Scalar *x) {}
         virtual Scalar computeCost(const Scalar *x, bool setup_data = true) = 0;
         virtual Scalar linearize(const Scalar *x, Scalar * hessian, Scalar * b) = 0;
 
