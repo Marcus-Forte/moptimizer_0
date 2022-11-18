@@ -66,7 +66,7 @@ private:
     // Parameter to matrix conversion
     Eigen::Matrix4d transform;
 
-    public:
+public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
@@ -99,8 +99,13 @@ public:
 
         cost = new duna::CostFunctionNumericalDiff<Model, double, 6, 2>(
             new Model(point_list, pixel_list),
-            5);
-        optimizer.setCost(cost);
+            5, true);
+        optimizer.addCost(cost);
+    }
+
+    ~CameraCalibration()
+    {
+        delete cost;
     }
 
 protected:
@@ -120,14 +125,13 @@ protected:
     };
 
     const double ceres_solution[MODEL_PARAMETERS] =
-    {
-        -0.0101065,
-        0.0206767,
-        -0.0582803,
-        0.00917777,
-        -0.000653687,
-        0.0137064
-    };
+        {
+            -0.0101065,
+            0.0206767,
+            -0.0582803,
+            0.00917777,
+            -0.000653687,
+            0.0137064};
 };
 
 TEST_F(CameraCalibration, GoodWeather)
@@ -141,12 +145,12 @@ TEST_F(CameraCalibration, GoodWeather)
         EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
     }
 
-    std::cerr << Eigen::Map<Eigen::Matrix<double,6,1>>(x0);
+    std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);
 }
 
 TEST_F(CameraCalibration, BadWeather)
 {
-    double x0[6] = {0.5,0.5,0.5,0.2,0.5,0.5};
+    double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
 
     optimizer.minimize(x0);
     optimizer.setMaximumIterations(50);
@@ -156,5 +160,5 @@ TEST_F(CameraCalibration, BadWeather)
         EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
     }
 
-    std::cerr << Eigen::Map<Eigen::Matrix<double,6,1>>(x0);
+    std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);
 }

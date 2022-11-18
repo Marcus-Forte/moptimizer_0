@@ -52,7 +52,7 @@ namespace duna
         unsigned int m_lm_max_iterations;
         
 
-        using Optimizer<Scalar>::m_cost;
+        using Optimizer<Scalar>::costs_;
         using Optimizer<Scalar>::m_maximum_iterations;
         using Optimizer<Scalar>::m_executed_iterations;
 

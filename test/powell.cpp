@@ -48,7 +48,7 @@ TEST(PowellFunction, InitialCondition0)
     duna::LevenbergMarquadt<double, 4> optimizer;
     optimizer.setMaximumIterations(50);
 
-    optimizer.setCost(new duna::CostFunctionNumericalDiff<Model, double, 4, 4>(
+    optimizer.addCost(new duna::CostFunctionNumericalDiff<Model, double, 4, 4>(
         new Model,1));
 
     optimizer.minimize(x0);

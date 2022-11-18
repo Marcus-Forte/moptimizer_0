@@ -17,7 +17,7 @@ namespace duna
     {
         // std::cout << " Minimizing...\n";
 
-        if (m_cost == 0)
+        if (costs_.size() == 0)
         {
             std::cerr << "no cost object!\n";
             throw std::runtime_error("no cost object.");
@@ -31,19 +31,24 @@ namespace duna
         ParameterVector b;
         ParameterVector xi;
 
-        hessian.setZero();
-        b.setZero();
-
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
-            DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n");
+            // DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n");
 
-            Scalar y0;
-            y0 = m_cost->linearize(x0, hessian.data(), b.data());
-
-            if ( std::abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
+            Scalar y0 = 0;
+            hessian.setZero();
+            b.setZero();
+            for (const auto cost : costs_)
             {
-                DUNA_DEBUG("[LM] --- Small Cost reached --- : %e\n", y0);
+                HessianMatrix cost_hessian = HessianMatrix::Zero();
+                ParameterVector cost_b = ParameterVector::Zero();
+                y0 += cost->linearize(x0, cost_hessian.data(), cost_b.data());
+                hessian += cost_hessian;
+                b += cost_b;
+            }
+
+            if (std::abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
+            {
                 return OptimizationStatus::CONVERGED;
             }
 
@@ -57,42 +62,29 @@ namespace duna
 
             for (int k = 0; k < m_lm_max_iterations; ++k)
             {
-                // Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
                 ParameterVector delta = solver.solve(-b);
-
-#ifndef NDEBUG
-                fprintf(stderr, "delta: ");
-                for (int n = 0; n < x0_map.size(); ++n)
-                {
-                    fprintf(stderr, "%f ", delta[n]);
-                }
-                fprintf(stderr, "\n");
-#endif
 
                 // TODO Manifold operation
                 xi = x0_map + delta;
 
-                Scalar yi = m_cost->computeCost(xi.data());
+                Scalar yi = 0;
+                for (const auto cost : costs_)
+                    yi += cost->computeCost(xi.data());
 
                 if (std::isnan(yi))
                 {
-                    DUNA_DEBUG("[LM] --- Numeric Error --- \n");
-                    DUNA_DEBUG_STREAM("Hessian: \n"
-                                      << hessian << std::endl);
-                    DUNA_DEBUG_STREAM("b(residuals): \n"
-                                      << b << std::endl);
+
                     return OptimizationStatus::NUMERIC_ERROR;
                 }
 
                 Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
-                DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                // DUNA_DEBUG("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)
                 {
                     if (isDeltaSmall(delta))
                     {
-                        DUNA_DEBUG("[LM] --- Small Delta reached --- : %e\n", delta.norm());
                         return OptimizationStatus::SMALL_DELTA;
                     }
 

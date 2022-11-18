@@ -26,13 +26,16 @@ namespace duna
         inline unsigned int getMaximumIterations() const { return m_maximum_iterations; }
         inline unsigned int getExecutedIterations() const { return m_executed_iterations; }
 
-        void setCost(CostFunctionType *cost) { m_cost = cost; }
+        void addCost(CostFunctionType *cost)
+        {
+            costs_.push_back(cost);
+        }
         virtual OptimizationStatus step(Scalar *x0) = 0;
         virtual OptimizationStatus minimize(Scalar *x0) = 0;
 
     protected:
         virtual bool hasConverged() = 0;
-        CostFunctionType *m_cost;
+        std::vector<CostFunctionType *> costs_;
         unsigned int m_maximum_iterations;
         unsigned int m_executed_iterations;
     };

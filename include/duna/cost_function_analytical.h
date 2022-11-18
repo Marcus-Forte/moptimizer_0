@@ -26,10 +26,7 @@ namespace duna
         CostFunctionAnalytical(Model *model, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
                                                                           CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
         {
-
             init();
-            // TODO remove warning
-            DUNA_DEBUG("Warning, num_residuals not set\n");
         }
 
         CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;

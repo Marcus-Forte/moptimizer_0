@@ -38,10 +38,10 @@ public:
     {
         cost = new duna::CostFunctionNumericalDiff<Model,Scalar, 2, 1>(
             new Model(x_data, y_data),
-            7);
+            7, true);
 
 
-        optimizer.setCost(cost);
+        optimizer.addCost(cost);
     }
 
     ~SimpleModel()

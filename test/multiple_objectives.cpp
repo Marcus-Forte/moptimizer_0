@@ -110,46 +110,32 @@ struct Model
 };
 
 
-TEST(CurveFitting, InitialCondition0)
+TEST(MultipleObjectives, SplitCost)
 {
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations, true);
-    optimizer.addCost(cost);
-
-    double x0[]= {0.0 , 0.0};
-
-    optimizer.minimize(x0);
-
-    timer.tock("Curve Fitting");
-    EXPECT_NEAR(x0[0], 0.291861, 5e-5);
-    EXPECT_NEAR(x0[1], 0.131439, 5e-5);
-
-    std::cerr << x0[0] << ", " << x0[1] << std::endl;
-    delete cost;
-}
-
-TEST(CurveFitting, InitialCondition2)
-{
+    duna::LevenbergMarquadt<double,2> multi_optimizer;
+    duna::LevenbergMarquadt<double,2> single_optimizer;
+    double x0_multi[]= {0.0 , 0.0};
+    double x0_single[]= {0.0 , 0.0};
     
-    utilities::Stopwatch timer;
-    timer.tick();
-    duna::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations, true);
-    optimizer.setMaximumIterations(50);
-    optimizer.addCost(cost);
+    single_optimizer.addCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),67));
 
-    double x0[]= {2.70 , 2.0};
+    // Here we split the cost into two over the same parameter x0. Results should be the same as a single cost function.
+    // first 30 observations
+    multi_optimizer.addCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),30)); 
 
-    optimizer.minimize(x0);
+    // next 37 observations. Note we use data[60] as there are two data points per observation.
+    multi_optimizer.addCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(&data[60]),37)); 
+
+    multi_optimizer.minimize(x0_multi);
+    single_optimizer.minimize(x0_single);
 
     timer.tock("Curve Fitting");
-    EXPECT_NEAR(x0[0], 0.291861, 1e-4);
-    EXPECT_NEAR(x0[1], 0.131439, 1e-4);
+    EXPECT_NEAR(x0_multi[0], x0_single[0], 1e-8);
+    EXPECT_NEAR(x0_multi[1], x0_single[1], 1e-8);
 
-    std::cerr << x0[0] << ", " << x0[1] << std::endl;
-
-    delete cost;
+    EXPECT_NEAR(x0_multi[0], 0.291861, 5e-5);
+    EXPECT_NEAR(x0_multi[1], 0.131439, 5e-5);
 }

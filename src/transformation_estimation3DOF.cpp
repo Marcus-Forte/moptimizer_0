@@ -25,7 +25,7 @@ namespace duna
         }
 
         // std::cout << "Duna transform estimator\n";
-        optimizer->setCost(cost);
+        optimizer->addCost(cost);
         cost->setNumResiduals(correspondences.size());
 
         Eigen::Matrix<Scalar, 3, 1> x0;

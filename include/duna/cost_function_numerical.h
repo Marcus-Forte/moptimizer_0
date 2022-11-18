@@ -26,8 +26,6 @@ namespace duna
                                                                              CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
         {
             init();
-            // TODO remove warning
-            DUNA_DEBUG("Warning, num_residuals not set\n");
         }
 
         CostFunctionNumericalDiff(const CostFunctionNumericalDiff &) = delete;
@@ -61,7 +59,7 @@ namespace duna
             Eigen::Map<const ParameterVector> x_map(x);
             Eigen::Map<HessianMatrix> hessian_map(hessian);
             Eigen::Map<ParameterVector> b_map(b);
-
+            
             jacobian_.resize(m_num_residuals * N_MODEL_OUTPUTS, N_PARAMETERS);
             residuals_.resize(m_num_residuals * N_MODEL_OUTPUTS);
             residuals_plus_.resize(m_num_residuals * N_MODEL_OUTPUTS);

@@ -70,6 +70,7 @@ if(BUILD_TESTS)
         test/manifold.cpp
         test/powell.cpp
         test/curve_fitting.cpp
+        test/multiple_objectives.cpp
 
         # REG
         test/registration_point2plane.cpp
