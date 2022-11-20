@@ -22,7 +22,7 @@ namespace duna
 
         Eigen::Matrix<Scalar, 6, 1> x0;
         x0.setZero();
-
+        optimizer->getLogger().setVerbosityLevel(duna::L_DEBUG);
         optimizer->minimize(x0.data());
 
         so3::convert3DOFParameterToMatrix(x0.data(), transformation_matrix);

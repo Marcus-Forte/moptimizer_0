@@ -19,7 +19,7 @@ namespace duna
 
         void reset()
         {
-            m_lm_max_iterations = 10;
+            m_lm_max_iterations = 8;
             m_lm_init_lambda_factor_ = 1e-9;
             m_lm_lambda = -1.0;
         }

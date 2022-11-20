@@ -119,7 +119,8 @@ TEST(MultipleObjectives, SplitCost)
     duna::LevenbergMarquadt<double,2> single_optimizer;
     double x0_multi[]= {0.0 , 0.0};
     double x0_single[]= {0.0 , 0.0};
-    
+    single_optimizer.getLogger().setVerbosityLevel(duna::L_DEBUG);
+    multi_optimizer.getLogger().setVerbosityLevel(duna::L_DEBUG);
     single_optimizer.addCost(new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),67));
 
     // Here we split the cost into two over the same parameter x0. Results should be the same as a single cost function.

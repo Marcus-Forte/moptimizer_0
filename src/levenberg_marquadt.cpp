@@ -36,16 +36,20 @@ namespace duna
 
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
-            logger_.log(duna::L_DEBUG, "## Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
+            logger_.log(duna::L_DEBUG, "##[LM] Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
 
             Scalar y0 = 0;
             hessian.setZero();
             b.setZero();
+            int cost_i = 0;
             for (const auto cost : costs_)
             {
                 HessianMatrix cost_hessian = HessianMatrix::Zero();
                 ParameterVector cost_b = ParameterVector::Zero();
-                y0 += cost->linearize(x0, cost_hessian.data(), cost_b.data());
+                Scalar yi = cost->linearize(x0, cost_hessian.data(), cost_b.data());
+
+                logger_.log(duna::L_DEBUG, "[LM] Cost(%d) = %f ", cost_i++, yi);
+                y0 += yi;
                 hessian += cost_hessian;
                 b += cost_b;
             }
@@ -65,6 +69,7 @@ namespace duna
 
             Scalar nu = 2.0;
 
+            logger_.log(duna::L_DEBUG, "[LM] Internal Iteration --- : it | max | prev_cost | new_cost | rho | lambda| nu");
             for (int k = 0; k < m_lm_max_iterations; ++k)
             {
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
@@ -84,12 +89,13 @@ namespace duna
                 }
 
                 Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
-                logger_.log(duna::L_DEBUG, "[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                logger_.log(duna::L_DEBUG, "[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)
                 {
                     if (isDeltaSmall(delta))
                     {
+                        logger_.log(duna::L_DEBUG, "## Small delta reached: %f", delta.array().abs().maxCoeff());
                         return OptimizationStatus::SMALL_DELTA;
                     }
 
