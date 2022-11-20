@@ -39,8 +39,9 @@ src/so3.cpp
 src/transformation_estimation6DOF.cpp
 src/transformation_estimation3DOF.cpp
 src/transformation_estimationMAP.cpp
-)
 
+src/logger.cpp
+)
 
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
@@ -93,7 +94,7 @@ if(BUILD_TESTS)
         endforeach()
 
         add_executable(draft test/draft.cpp)
-        target_link_libraries(draft ${GTEST_LIBRARIES})
+        target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
 endif()
 
 # Link library to headers, but does not install. 

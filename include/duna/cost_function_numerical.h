@@ -2,7 +2,7 @@
 #define COSTFUNCTIONNUMERICAL_H
 
 #include <duna/cost_function.h>
-#include <duna/logging.h>
+#include <duna/logger.h>
 
 namespace duna
 {

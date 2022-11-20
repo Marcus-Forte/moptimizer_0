@@ -1,7 +1,4 @@
 #include <duna/levenberg_marquadt.h>
-#include <duna/logging.h>
-
-#include <iostream>
 
 namespace duna
 {
@@ -39,8 +36,7 @@ namespace duna
 
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
-            // DUNA_DEBUG_STREAM("## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n");
-            std::cout << "## Levenberg-Marquadt Iteration: " << m_executed_iterations + 1 << "/" << m_maximum_iterations << " ##\n";
+            logger_.log(duna::L_DEBUG, "## Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
 
             Scalar y0 = 0;
             hessian.setZero();
@@ -88,7 +84,7 @@ namespace duna
                 }
 
                 Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
-                printf("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                logger_.log(duna::L_DEBUG, "[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f\n", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)
                 {

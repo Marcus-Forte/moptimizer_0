@@ -4,7 +4,7 @@
 
 #include <duna/registration/models/point2point.h>
 #include <duna/registration/models/point2plane.h>
-#include <duna/logging.h>
+#include <duna/logger.h>
 #include <duna/so3.h>
 
 namespace duna
