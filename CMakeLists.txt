@@ -39,7 +39,7 @@ src/so3.cpp
 src/transformation_estimation6DOF.cpp
 src/transformation_estimation3DOF.cpp
 src/transformation_estimationMAP.cpp
-
+src/registration.cpp
 src/logger.cpp
 )
 

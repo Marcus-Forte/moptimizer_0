@@ -1,4 +1,4 @@
-#include <duna/registration/transformation_estimationMAP.h>
+#include <duna/map/transformation_estimationMAP.h>
 
 namespace duna
 {
@@ -11,11 +11,13 @@ namespace duna
         auto optimizer = new duna::LevenbergMarquadt<Scalar, 6>;
         optimizer->setMaximumIterations(max_optimizator_iterations);
 
-        auto cost = new duna::CostFunctionAnalytical<duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
+        auto cost = new duna::CostFunctionAnalyticalCovariance<duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
             new duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences), true);
 
-        auto state_cost = new duna::CostFunctionRotationError<Scalar>;
-        // std::cout << "Duna transform estimator\n";
+        auto state_cost = new duna::CostFunctionRotationError<Scalar>(state_covariance_);
+
+        cost->setCovariance(measurement_covariance_);
+
         optimizer->addCost(cost);
         optimizer->addCost(state_cost);
         cost->setNumResiduals(correspondences.size());
@@ -25,11 +27,14 @@ namespace duna
         optimizer->getLogger().setVerbosityLevel(duna::L_DEBUG);
         optimizer->minimize(x0.data());
 
+        updated_covariance_ = cost->computeUpdatedCovariance(state_covariance_);
+
         so3::convert3DOFParameterToMatrix(x0.data(), transformation_matrix);
 
         if (overlap_)
             *overlap_ = (float)correspondences.size() / (float)cloud_src.size();
 
+        has_run_ = true;
         delete optimizer;
         delete cost;
     }

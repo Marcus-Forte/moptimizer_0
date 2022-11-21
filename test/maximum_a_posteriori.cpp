@@ -1,8 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <duna/levenberg_marquadt.h>
-#include <duna/cost_function_analytical.h>
-#include <duna/cost_function_rotation_state.h>
+#include <duna/map/cost_function_rotation_state.h>
 
 int main(int argc, char **argv)
 {
@@ -31,10 +30,6 @@ TEST(MaximumAPosteriori, StateJacobian)
 
     double y_error = state_cost.computeCost(x0.data());
     double y_error_lin = state_cost.linearize(x0.data(), hessian.data(), b.data());
-
-    // std::cout << hessian << std::endl;
-    // std::cout << b << std::endl;
-
     
     EXPECT_NEAR(y_error, 2 * x0.dot(x0), 1e-9);
     EXPECT_NEAR(y_error_lin, 2 * x0.dot(x0), 1e-9);

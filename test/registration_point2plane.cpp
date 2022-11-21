@@ -62,10 +62,7 @@ public:
         pcl_icp.setSearchMethodTarget(target_kdtree);
         pcl_icp.setTransformationEpsilon(1e-4);
         
-
-#ifndef NDEBUG
-        pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
-#endif
+        pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
     }
 
 protected:

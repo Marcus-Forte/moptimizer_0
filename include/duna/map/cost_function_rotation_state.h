@@ -12,6 +12,7 @@ namespace duna
     template <typename Scalar>
     class CostFunctionRotationError : public CostFunctionBase<Scalar>
     {
+    public:
         using RotationVector = Eigen::Matrix<Scalar, 3, 1>;
         using RotationMatrix = Eigen::Matrix<Scalar, 3, 3>;
 
@@ -20,16 +21,24 @@ namespace duna
 
     public:
         // Construct the rotation matrix with the initial states
-        CostFunctionRotationError() = default;
 
-        // Initialize states and rotations at the beggining of the optimization. See Eq (15) from
+        CostFunctionRotationError(const StateMatrix &covariance)
+        {
+            covariance_inverse_ = covariance.inverse();
+        }
+        CostFunctionRotationError()
+        {
+            covariance_inverse_.setIdentity();
+        };
+
+        // Initialize states and rotations at the beggining of the optimization. See Eq (15) from FASTLIO
         void setup(const Scalar *x) override
         {
-            R_k.setIdentity();
+            R_k_.setIdentity();
             RotationVector x_(x[0], x[1], x[2]);
-            so3::convert3DOFParameterToMatrix3<Scalar>(x_.data(), R_k);
+            so3::convert3DOFParameterToMatrix3<Scalar>(x_.data(), R_k_);
             Eigen::Map<const StateVector> x_map(x);
-            x_k = x_map;
+            x_k_ = x_map;
         }
 
         Scalar computeCost(const Scalar *x, bool setup_data = true) override
@@ -40,7 +49,7 @@ namespace duna
             RotationMatrix R_k_k;
             so3::convert3DOFParameterToMatrix3<Scalar>(x, R_k_k);
 
-            RotationMatrix &&rot_diff = R_k.transpose() * R_k_k;
+            RotationMatrix &&rot_diff = R_k_.transpose() * R_k_k;
             RotationVector diff_r;
             so3::Log<Scalar>(rot_diff, diff_r);
 
@@ -48,11 +57,11 @@ namespace duna
             x_diff[0] = diff_r[0];
             x_diff[1] = diff_r[1];
             x_diff[2] = diff_r[2];
-            x_diff[3] = x_map[3] - x_k[3];
-            x_diff[4] = x_map[4] - x_k[4];
-            x_diff[5] = x_map[5] - x_k[5];
+            x_diff[3] = x_map[3] - x_k_[3];
+            x_diff[4] = x_map[4] - x_k_[4];
+            x_diff[5] = x_map[5] - x_k_[5];
 
-            Scalar sum = 2 * x_diff.transpose() * x_diff;
+            Scalar sum = 2 * x_diff.transpose() * covariance_inverse_ * x_diff;
 
             return sum;
         }
@@ -73,7 +82,7 @@ namespace duna
             so3::convert3DOFParameterToMatrix3<Scalar>(x, R_k_k);
 
             // Calculate difference R_k_k - R_k in SO3 space.
-            RotationMatrix &&diff = R_k.transpose() * R_k_k;
+            RotationMatrix &&diff = R_k_.transpose() * R_k_k;
 
             RotationVector diff_r;
             so3::Log<Scalar>(diff, diff_r);
@@ -84,7 +93,7 @@ namespace duna
             // Note, this is already symmetric
             jacobian.template block<3, 3>(0, 0) = right_inv_jacobian;
 
-            hessian_map = jacobian.transpose() * jacobian;
+            hessian_map = jacobian.transpose() * covariance_inverse_ * jacobian;
             // hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian.transpose()); // H = J^T * J
             // hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
 
@@ -92,17 +101,18 @@ namespace duna
             x_diff[0] = diff_r[0];
             x_diff[1] = diff_r[1];
             x_diff[2] = diff_r[2];
-            x_diff[3] = x_map[3] - x_k[3];
-            x_diff[4] = x_map[4] - x_k[4];
-            x_diff[5] = x_map[5] - x_k[5];
+            x_diff[3] = x_map[3] - x_k_[3];
+            x_diff[4] = x_map[4] - x_k_[4];
+            x_diff[5] = x_map[5] - x_k_[5];
 
-            b_map.noalias() = jacobian.transpose() * x_diff;
+            b_map.noalias() = jacobian.transpose() * covariance_inverse_ * x_diff;
 
-            return 2 * x_diff.transpose() * x_diff;
+            return 2 * x_diff.transpose() * covariance_inverse_ * x_diff;
         }
 
     private:
-        RotationMatrix R_k;
-        StateVector x_k;
+        RotationMatrix R_k_;
+        StateVector x_k_;
+        StateMatrix covariance_inverse_;
     };
 }

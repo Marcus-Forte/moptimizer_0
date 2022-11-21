@@ -36,7 +36,7 @@ namespace duna
 
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
-            logger_.log(duna::L_DEBUG, "##[LM] Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
+            logger_.log(duna::L_DEBUG, "[LM] Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
 
             Scalar y0 = 0;
             hessian.setZero();
@@ -84,7 +84,7 @@ namespace duna
 
                 if (std::isnan(yi))
                 {
-
+                    logger_.log(duna::L_ERROR, "[LM] Numeric Error!");
                     return OptimizationStatus::NUMERIC_ERROR;
                 }
 
@@ -95,7 +95,7 @@ namespace duna
                 {
                     if (isDeltaSmall(delta))
                     {
-                        logger_.log(duna::L_DEBUG, "## Small delta reached: %f", delta.array().abs().maxCoeff());
+                        logger_.log(duna::L_DEBUG, "## Small delta reached: %e", delta.array().abs().maxCoeff());
                         return OptimizationStatus::SMALL_DELTA;
                     }
 

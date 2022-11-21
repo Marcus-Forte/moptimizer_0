@@ -60,9 +60,7 @@ public:
         pcl_icp.setMaximumIterations(100);
         pcl_icp.setSearchMethodTarget(target_kdtree);
 
-#ifndef NDEBUG
-        pcl::console::setVerbosityLevel(pcl::console::L_VERBOSE);
-#endif
+        pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
     }
 
 protected:

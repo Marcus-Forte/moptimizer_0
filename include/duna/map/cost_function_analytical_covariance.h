@@ -3,11 +3,13 @@
 #include <duna/cost_function.h>
 #include <duna/logger.h>
 
+// TODO fix duplicates
+
 namespace duna
 {
     // NOTE. We are using Model as a template to be able to call its copy constructors and enable numercial diff.
     template <typename Model, class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
-    class CostFunctionAnalytical : public CostFunctionBase<Scalar>
+    class CostFunctionAnalyticalCovariance : public CostFunctionBase<Scalar>
     {
     public:
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
@@ -16,22 +18,22 @@ namespace duna
         using ResidualVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
         // TODO change pointer to smartpointer
-        CostFunctionAnalytical(Model *model, int num_residuals, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
-                                                                                             CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
+        CostFunctionAnalyticalCovariance(Model *model, int num_residuals, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
+                                                                                                       CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS), covariance_inverse_(1)
         {
             init();
         }
 
-        CostFunctionAnalytical(Model *model, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
-                                                                          CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
+        CostFunctionAnalyticalCovariance(Model *model, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
+                                                                                    CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS), covariance_inverse_(1)
         {
             init();
         }
 
-        CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
-        CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
+        CostFunctionAnalyticalCovariance(const CostFunctionAnalyticalCovariance &) = delete;
+        CostFunctionAnalyticalCovariance &operator=(const CostFunctionAnalyticalCovariance &) = delete;
 
-        ~CostFunctionAnalytical()
+        ~CostFunctionAnalyticalCovariance()
         {
             if (m_delete_model)
                 delete m_model;
@@ -50,7 +52,7 @@ namespace duna
             {
                 (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
-            sum = 2 * residuals_.transpose() * residuals_;
+            sum = 2 * residuals_.transpose() * covariance_inverse_ * residuals_;
             return sum;
         }
 
@@ -73,12 +75,27 @@ namespace duna
                 (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
                 (*m_model).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
-            // hessian_map.noalias() = jacobian_.transpose() * jacobian_;
-            hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
-            hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
-            b_map.noalias() = jacobian_.transpose() * residuals_;
-            sum = 2 * residuals_.transpose() * residuals_;
+            hessian_map.noalias() = jacobian_.transpose() * covariance_inverse_ * jacobian_;
+            hessian_ = hessian_map;// coppies hessian locally
+            // hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
+            // hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
+            b_map.noalias() = jacobian_.transpose() * covariance_inverse_ * residuals_;
+            sum = 2 * residuals_.transpose() * covariance_inverse_ * residuals_;
             return sum;
+        }
+
+        // Set (scalar) measurement covariance.
+        void setCovariance(const Scalar covariance)
+        {
+            covariance_inverse_ = 1 / covariance;
+        }
+
+        // Gets computed P_k = (I - KH)P_k-1
+        HessianMatrix computeUpdatedCovariance(const HessianMatrix &P) const
+        {
+            HessianMatrix kalman_gain = computeUpdatedKalmanGain(P);
+
+            return (HessianMatrix::Identity() - kalman_gain * jacobian_) * P;
         }
 
     protected:
@@ -88,12 +105,26 @@ namespace duna
         using CostFunctionBase<Scalar>::m_num_residuals;
         JacobianMatrix jacobian_;
         ResidualVector residuals_;
+        HessianMatrix hessian_; // local hessian
+
+        // Covariance
+        Scalar covariance_inverse_;
 
         bool m_delete_model;
 
         void init()
         {
             static_assert(N_PARAMETERS != -1, "Dynamic Cost Function not yet implemented");
+        }
+
+    private:
+        // Computes K = (H^T * R^(-1) * H + P^(-1) )^-1 H^T * R^(-1) with a given state covariance P.
+        //      Hessian <---------------|   |
+        //      State Cov                <--|
+        //         
+        HessianMatrix computeUpdatedKalmanGain(const HessianMatrix &P) const
+        {
+            return (hessian_ + P.inverse()).inverse() * jacobian_.transpose() * covariance_inverse_;
         }
     };
 }
