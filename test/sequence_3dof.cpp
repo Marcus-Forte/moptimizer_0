@@ -6,6 +6,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/radius_outlier_removal.h>
+#include <pcl/filters/uniform_sampling.h>
 #include <pcl/registration/correspondence_rejection_trimmed.h>
 
 #include <pcl/features/normal_3d.h>
@@ -160,10 +161,10 @@ TYPED_TEST(SequenceRegistration, Indoor)
     {
         std::cout << "Registering " << i << ": " << this->source_vector_[i]->size() << std::endl;
 
-        pcl::VoxelGrid<PointT> voxel;
-        voxel.setInputCloud(this->target_);
-        voxel.setLeafSize(0.1, 0.1, 0.1);
-        voxel.filter(*this->target_);
+        pcl::UniformSampling<PointT> uniform_sampler;
+        uniform_sampler.setInputCloud(this->target_);
+        uniform_sampler.setRadiusSearch(0.1);
+        uniform_sampler.filter(*this->target_);
 
         timer.tick();
         this->target_kdtree_->setInputCloud(this->target_);
@@ -172,6 +173,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
         // TODO how do we track new points only?
 
         timer.tick();
+        pcl::VoxelGrid<PointT> voxel;
         voxel.setInputCloud(this->source_vector_[i]);
         voxel.setLeafSize(0.25, 0.25, 0.25);
         voxel.filter(*subsampled_input);
@@ -181,13 +183,13 @@ TYPED_TEST(SequenceRegistration, Indoor)
 
         timer.tick();
         icp.setInputTarget(this->target_);
-        icp.setSearchMethodTarget(this->target_kdtree_);
+        icp.setSearchMethodTarget(this->target_kdtree_, true);
         icp.setInputSource(subsampled_input);
         icp.align(*output, transform);
         total_reg_time += timer.tock("Registration");
 
         timer.tick();
-        
+
         // int new_points_size = output.size();
         // std::vector<int> new_point_indices(new_points_size);
         // std::iota(new_point_indices.begin(), new_point_indices.end(),this->target_->size() - new_points_size);
@@ -208,7 +210,6 @@ TYPED_TEST(SequenceRegistration, Indoor)
         pcl::transformPointCloud(*this->source_vector_[i], *output, transform);
 
         *HD_cloud = *HD_cloud + *output;
-        
     }
     std::cout << "All registration took: " << total_reg_time << std::endl;
 
@@ -241,7 +242,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
     pcl::io::savePCDFileBinary("ss_" + final_cloud_filename, *this->target_);
 }
 
-TYPED_TEST(SequenceRegistration, IndoorMAP)
+TYPED_TEST(SequenceRegistration, DISABLED_IndoorMAP)
 {
 
     std::cout << "Map size: " << this->target_->size() << std::endl;
@@ -289,10 +290,10 @@ TYPED_TEST(SequenceRegistration, IndoorMAP)
     {
         std::cout << "Registering " << i << ": " << this->source_vector_[i]->size() << std::endl;
 
-        pcl::VoxelGrid<PointT> voxel;
-        voxel.setInputCloud(this->target_);
-        voxel.setLeafSize(0.1, 0.1, 0.1);
-        voxel.filter(*this->target_);
+        pcl::UniformSampling<PointT> uniform_sampler;
+        uniform_sampler.setInputCloud(this->target_);
+        uniform_sampler.setRadiusSearch(0.1);
+        uniform_sampler.filter(*this->target_);
 
         timer.tick();
         this->target_kdtree_->setInputCloud(this->target_);
@@ -301,6 +302,7 @@ TYPED_TEST(SequenceRegistration, IndoorMAP)
         // TODO how do we track new points only?
 
         timer.tick();
+        pcl::VoxelGrid<PointT> voxel;
         voxel.setInputCloud(this->source_vector_[i]);
         voxel.setLeafSize(0.25, 0.25, 0.25);
         voxel.filter(*subsampled_input);
@@ -316,7 +318,7 @@ TYPED_TEST(SequenceRegistration, IndoorMAP)
         total_reg_time += timer.tock("Registration");
 
         timer.tick();
-        
+
         // int new_points_size = output.size();
         // std::vector<int> new_point_indices(new_points_size);
         // std::iota(new_point_indices.begin(), new_point_indices.end(),this->target_->size() - new_points_size);
@@ -337,7 +339,6 @@ TYPED_TEST(SequenceRegistration, IndoorMAP)
         pcl::transformPointCloud(*this->source_vector_[i], *output, transform);
 
         *HD_cloud = *HD_cloud + *output;
-        
     }
     std::cout << "All registration took: " << total_reg_time << std::endl;
 
