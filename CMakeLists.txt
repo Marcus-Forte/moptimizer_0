@@ -39,8 +39,6 @@ src/so3.cpp
 src/transformation_estimation6DOF.cpp
 src/transformation_estimation3DOF.cpp
 src/transformation_estimationMAP.cpp
-src/scan_matching.cpp
-src/scan_matching_3dof.cpp
 src/logger.cpp
 )
 
@@ -77,7 +75,6 @@ if(BUILD_TESTS)
         test/maximum_a_posteriori.cpp
 
         # REG
-        test/scan_matching.cpp
         test/registration_point2plane.cpp
         test/registration_point2point.cpp
         test/registration_point2plane3DOF.cpp

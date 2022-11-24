@@ -43,17 +43,11 @@ namespace duna
         virtual OptimizationStatus step(Scalar *x0) = 0;
         virtual OptimizationStatus minimize(Scalar *x0) = 0;
 
-        duna::logger &getLogger()
-        {
-            return logger_;
-        }
-
     protected:
         virtual bool hasConverged() = 0;
         std::vector<CostFunctionType *> costs_;
         unsigned int m_maximum_iterations;
         unsigned int m_executed_iterations;
-        duna::logger logger_;
     };
 }
 

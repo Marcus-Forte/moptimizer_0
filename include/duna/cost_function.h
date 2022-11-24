@@ -7,7 +7,7 @@
 
 namespace duna
 {
-    /* This class uses CostFunctor to process the total summation cost and linearization
+    /* This class serves as a Base for cost function implementations.
      */
 
     template <class Scalar = double>

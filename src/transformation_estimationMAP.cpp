@@ -24,7 +24,6 @@ namespace duna
 
         Eigen::Matrix<Scalar, 6, 1> x0;
         x0.setZero();
-        optimizer->getLogger().setVerbosityLevel(duna::L_DEBUG);
         optimizer->minimize(x0.data());
 
         updated_covariance_ = cost->computeUpdatedCovariance(state_covariance_);

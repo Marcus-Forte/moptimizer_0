@@ -32,7 +32,12 @@ TEST(Drafts, Logging)
 {
     duna::logger logger;
     logger.setVerbosityLevel(duna::L_WARN);
-    // logger.log(duna::L_INFO, "INFO");
+    duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+    duna::logger::log_info("info");
+    duna::logger::log_warn("warn");
+    duna::logger::log_error("error");
+    duna::logger::log_debug("debug");
+    logger.log(duna::L_INFO, "INFO");
     // logger.log(duna::L_WARN, "WARN");
     // logger.log(duna::L_ERROR, "ERROR");
     // logger.log(duna::L_DEBUG, "DEBUG");

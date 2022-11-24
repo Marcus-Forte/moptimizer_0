@@ -1,4 +1,4 @@
-#include <duna/registration/transformation_estimation3DOF.h>
+#include <duna/scan_matching/transformation_estimation3DOF.h>
 
 namespace duna
 {

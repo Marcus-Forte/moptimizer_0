@@ -1,4 +1,4 @@
-#include <duna/registration/transformation_estimation6DOF.h>
+#include <duna/scan_matching/transformation_estimation6DOF.h>
 
 namespace duna
 {

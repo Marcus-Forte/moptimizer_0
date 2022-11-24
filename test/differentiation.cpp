@@ -6,8 +6,8 @@
 #include <duna/so3.h>
 #include <pcl/point_types.h>
 
-#include <duna/registration/models/point2point.h>
-#include <duna/registration/models/point2plane.h>
+#include <duna/scan_matching/models/point2point.h>
+#include <duna/scan_matching/models/point2plane.h>
 
 /* We compare with numerical diff for resonable results. It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
 

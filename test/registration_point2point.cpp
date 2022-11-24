@@ -8,7 +8,7 @@
 #include <pcl/registration/transformation_estimation.h>
 #include <pcl/registration/transformation_estimation_lm.h>
 
-#include <duna/registration/transformation_estimation6DOF.h>
+#include <duna/scan_matching/transformation_estimation6DOF.h>
 #include <duna/stopwatch.hpp>
 
 using PointT = pcl::PointNormal;

@@ -1,9 +1,10 @@
 #include <pcl/registration/transformation_estimation.h>
 #include <duna/cost_function_numerical.h>
+#include <duna/cost_function_analytical.h>
 #include <duna/levenberg_marquadt.h>
 
-#include <duna/registration/models/point2point.h>
-#include <duna/registration/models/point2plane.h>
+#include <duna/scan_matching/models/point2plane3dof.h>
+#include <duna/scan_matching/models/point2point.h>
 #include <duna/logger.h>
 #include <duna/so3.h>
 
@@ -11,20 +12,18 @@ namespace duna
 {
     /* Wrapper Class around duna optimizer for PCL registration classes */
     template <typename PointSource, typename PointTarget, typename Scalar = double>
-    class TransformationEstimator6DOF : public pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>
+    class TransformationEstimator3DOF : public pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>
     {
     public:
-        using Ptr = pcl::shared_ptr<TransformationEstimator6DOF<PointSource, PointTarget, Scalar>>;
-        using ConstPtr = pcl::shared_ptr<const TransformationEstimator6DOF<PointSource, PointTarget, Scalar>>;
+        using Ptr = pcl::shared_ptr<TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
+        using ConstPtr = pcl::shared_ptr<const TransformationEstimator3DOF<PointSource, PointTarget, Scalar>>;
         using Matrix4 = typename pcl::registration::TransformationEstimation<PointSource, PointTarget, Scalar>::Matrix4;
 
-        // Signals point2plane metric
-        TransformationEstimator6DOF(bool point2plane = false) : m_point2plane(point2plane) 
+        TransformationEstimator3DOF(bool point2plane = false) : m_point2plane(point2plane),
+                                                                max_optimizator_iterations(3)
         {
-            max_optimizator_iterations = 3;
         }
-
-        virtual ~TransformationEstimator6DOF() = default;
+        virtual ~TransformationEstimator3DOF() = default;
 
         void
         estimateRigidTransformation(const pcl::PointCloud<PointSource> &cloud_src,
@@ -58,10 +57,17 @@ namespace duna
                                     const pcl::Correspondences &correspondences,
                                     Matrix4 &transformation_matrix) const override;
 
+        inline void setOverlapRef(float *overlap)
+        {
+            overlap_ = overlap;
+        }
+
+
     public:
         int max_optimizator_iterations;
 
     private:
         bool m_point2plane;
+        float *overlap_ = nullptr;
     };
 }

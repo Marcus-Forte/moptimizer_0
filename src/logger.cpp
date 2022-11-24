@@ -2,14 +2,15 @@
 
 namespace duna
 {
+    // Default setting for global/static log level;
+    VERBOSITY_LEVEL logger::s_level_ = L_ERROR;
 
     void logger::log(VERBOSITY_LEVEL level, const std::stringstream &stream) const
     {
         if (level > level_)
             return;
 
-        default_stream_ << "[" << logger_name_ << levelToString(level) << "]: " << stream.str() << std::endl;
-        
+        default_stream_ << "[" << logger_name_ << "." << levelToString(level) << "]: " << stream.str() << std::endl;
     }
 
     void logger::log(VERBOSITY_LEVEL level, const char *format, ...) const
@@ -33,7 +34,7 @@ namespace duna
         if (level > level_)
             return;
 
-        default_stream_ << "[" << logger_name_ << levelToString(level) << "]: " << message << std::endl;
+        default_stream_ << "[" << logger_name_ << "." << levelToString(level) << "]: " << message << std::endl;
     }
 
     std::string logger::levelToString(VERBOSITY_LEVEL level) const

@@ -2,7 +2,7 @@
 #include <duna/map/cost_function_analytical_covariance.h>
 #include <duna/map/cost_function_rotation_state.h>
 #include <duna/levenberg_marquadt.h>
-#include <duna/registration/models/point2plane3dof.h>
+#include <duna/scan_matching/models/point2plane3dof.h>
 
 #include <duna/logger.h>
 #include <duna/so3.h>

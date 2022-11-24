@@ -102,7 +102,7 @@ public:
             5, true);
         optimizer.addCost(cost);
 
-        optimizer.getLogger().setVerbosityLevel(duna::L_DEBUG);
+        
     }
 
     ~CameraCalibration()

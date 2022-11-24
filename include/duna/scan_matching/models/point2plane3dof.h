@@ -1,6 +1,6 @@
 #pragma once
 
-#include <duna/registration/models/point2plane.h>
+#include <duna/scan_matching/models/point2plane.h>
 
 namespace duna
 {

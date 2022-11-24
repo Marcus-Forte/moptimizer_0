@@ -1,6 +1,6 @@
 #pragma once
 
-#include <duna/registration/models/base_model.h>
+#include <duna/scan_matching/models/base_model.h>
 
 namespace duna
 {
