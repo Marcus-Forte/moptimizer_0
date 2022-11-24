@@ -12,21 +12,25 @@ namespace duna
     class ScanMatching3DOF : public ScanMatchingBase<PointSource, PointTarget, Scalar>
     {
     public:
+        using Matrix4 = typename ScanMatchingBase<PointSource, PointTarget, Scalar>::Matrix4;
+        using Ptr = std::shared_ptr<ScanMatching3DOF<PointSource, PointTarget, Scalar>>;
+        using ConstPtr = std::shared_ptr<const ScanMatching3DOF<PointSource, PointTarget, Scalar>>;
         ScanMatching3DOF()
         {
             optimizer_.reset(new duna::LevenbergMarquadt<Scalar, 3>);
-            optimizer_->getLogger().setVerbosityLevel(L_DEBUG);
             logger_.setLoggerName("Matcher3DOF");
         }
         virtual ~ScanMatching3DOF() = default;
 
         void match(Scalar *x0) override;
 
-        
+        // for compatibility
+        void match(const Matrix4 &guess);
 
     private:
         using PointCloudSource = typename ScanMatchingBase<PointSource, PointTarget, Scalar>::PointCloudSource;
         using PointCloudSourcePtr = typename ScanMatchingBase<PointSource, PointTarget, Scalar>::PointCloudSourcePtr;
+
         using ScanMatchingBase<PointSource, PointTarget, Scalar>::optimizer_;
         using ScanMatchingBase<PointSource, PointTarget, Scalar>::corr_estimator_;
         using ScanMatchingBase<PointSource, PointTarget, Scalar>::target_tree_;
@@ -37,5 +41,6 @@ namespace duna
         using ScanMatchingBase<PointSource, PointTarget, Scalar>::max_num_iterations_;
         using ScanMatchingBase<PointSource, PointTarget, Scalar>::max_num_opt_iterations_;
         using ScanMatchingBase<PointSource, PointTarget, Scalar>::final_transform_;
+        using ScanMatchingBase<PointSource, PointTarget, Scalar>::overlap_;
     };
 } // namespace

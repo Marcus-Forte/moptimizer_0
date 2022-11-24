@@ -75,6 +75,8 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
     duna::ScanMatching3DOF<PointT, PointT, TypeParam> matcher;
 
     Eigen::Matrix<TypeParam, 3, 1> x0;
+
+    Eigen::Matrix<TypeParam, 4, 4> some_guess = Eigen::Matrix<TypeParam, 4, 4>::Identity();
     x0.setZero();
     // x0[0] = 0.5;
     // x0[1] = 0.5;
@@ -87,9 +89,10 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
     matcher.setMaxNumIterations(25);
     matcher.setMaxNumOptIterations(15);
     matcher.setMaxCorrDistance(5);
-    matcher.match(x0.data());
+    // matcher.match(x0.data());
+    matcher.match(some_guess);
 
-    Eigen::Matrix<TypeParam, 4, 4> final_transform = matcher.getFinalTransform();
+    Eigen::Matrix<TypeParam, 4, 4> final_transform = matcher.getFinalTransformation();
     // std::cout << "x0 = " << x0 << std::endl;
     // std::cout << matcher.getFinalTransform() << std::endl;
     // std::cout << reference_transform_inverse << std::endl;

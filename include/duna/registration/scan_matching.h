@@ -103,9 +103,14 @@ namespace duna
             return logger_;
         }
 
-        inline Matrix4 getFinalTransform() const
+        inline Matrix4 getFinalTransformation() const
         {
             return final_transform_;
+        }
+
+        inline float getFinalOverlap() const
+        {
+            return overlap_;
         }
 
     protected:
@@ -122,5 +127,6 @@ namespace duna
         int max_num_opt_iterations_;
         float max_corr_distance_;
         Matrix4 final_transform_;
+        float overlap_;
     };
 } // namespace
