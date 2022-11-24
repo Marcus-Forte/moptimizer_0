@@ -36,7 +36,7 @@ namespace duna
 
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
-            // logger_.log(duna::L_DEBUG, "[LM] Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
+            logger::log_debug("[LM] Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
 
             Scalar y0 = 0;
             hessian.setZero();
@@ -46,30 +46,24 @@ namespace duna
             {
                 HessianMatrix cost_hessian = HessianMatrix::Zero();
                 ParameterVector cost_b = ParameterVector::Zero();
-                Scalar yi = cost->linearize(x0, cost_hessian.data(), cost_b.data());
-
-                // logger_.log(duna::L_DEBUG, "[LM] Cost(%d) = %f ", cost_i++, yi);
-                y0 += yi;
+                Scalar cost_y = cost->linearize(x0, cost_hessian.data(), cost_b.data());
+                logger::log_debug("[LM] Cost(%d) = %e ", cost_i++, cost_y);
+                y0 += cost_y;
                 hessian += cost_hessian;
                 b += cost_b;
             }
 
-            // std::cout << hessian << std::endl;
-
-            // if (std::abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
-            // {
-            //     return OptimizationStatus::CONVERGED;
-            // }
+            if (isCostSmall(y0))
+                return OptimizationStatus::CONVERGED;
 
             hessian_diagonal = hessian.diagonal().asDiagonal();
-            // hessian_diagonal = HessianMatrix::Identity();
 
             if (m_lm_lambda < 0.0)
                 m_lm_lambda = m_lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
 
             Scalar nu = 2.0;
 
-            // logger_.log(duna::L_DEBUG, "[LM] Internal Iteration --- : it | max | prev_cost | new_cost | rho | lambda| nu");
+            logger::log_debug("[LM] Internal Iteration --- : it | max | prev_cost | new_cost | rho | lambda| nu");
             for (int k = 0; k < m_lm_max_iterations; ++k)
             {
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
@@ -84,18 +78,18 @@ namespace duna
 
                 if (std::isnan(yi))
                 {
-                    // logger_.log(duna::L_ERROR, "[LM] Numeric Error!");
+                    logger::log_error("[LM] Numeric Error!");
                     return OptimizationStatus::NUMERIC_ERROR;
                 }
 
                 Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
-                // logger_.log(duna::L_DEBUG, "[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
+                logger::log_debug("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f", k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda, nu);
 
                 if (rho < 0)
                 {
                     if (isDeltaSmall(delta))
                     {
-                        // logger_.log(duna::L_DEBUG, "## Small delta reached: %e", delta.array().abs().maxCoeff());
+                        logger::log_debug("## Small delta reached: %e", delta.array().abs().maxCoeff());
                         if (isCostSmall(yi))
                             return OptimizationStatus::CONVERGED;
                         else
@@ -120,8 +114,6 @@ namespace duna
     bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isDeltaSmall(ParameterVector &delta)
     {
         Scalar epsilon = delta.array().abs().maxCoeff();
-
-        // if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
         if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
@@ -130,7 +122,7 @@ namespace duna
     template <class Scalar, int N_PARAMETERS>
     bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isCostSmall(Scalar cost_sum)
     {
-        if (std::abs(cost_sum) < sqrt(std::numeric_limits<Scalar>::epsilon()))
+        if (std::abs(cost_sum) < 10*(std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
     }

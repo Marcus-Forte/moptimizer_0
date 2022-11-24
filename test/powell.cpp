@@ -45,8 +45,10 @@ TEST(PowellFunction, InitialCondition0)
     timer.tick();
     double x0[] = {3, -1, 0, 4};
 
+    duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+
     duna::LevenbergMarquadt<double, 4> optimizer;
-    optimizer.setMaximumIterations(50);
+    optimizer.setMaximumIterations(100);
 
     optimizer.addCost(new duna::CostFunctionNumericalDiff<Model, double, 4, 4>(
         new Model,1));

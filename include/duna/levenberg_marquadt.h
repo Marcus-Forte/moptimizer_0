@@ -55,7 +55,6 @@ namespace duna
         using Optimizer<Scalar>::costs_;
         using Optimizer<Scalar>::m_maximum_iterations;
         using Optimizer<Scalar>::m_executed_iterations;
-        // using Optimizer<Scalar>::logger_;
 
         // Delta Convergence
         bool isDeltaSmall(ParameterVector &delta);
