@@ -4,6 +4,7 @@
 #include <duna/cost_function.h>
 #include <duna/logger.h>
 #include <Eigen/Dense>
+#include <memory>
 
 namespace duna
 {
@@ -12,6 +13,8 @@ namespace duna
     {
     public:
         using CostFunctionType = CostFunctionBase<Scalar>;
+        using Ptr = std::shared_ptr<Optimizer>;
+        using ConstPtr = std::shared_ptr<const Optimizer>;
 
         Optimizer() : m_maximum_iterations(15) {}
         Optimizer(const Optimizer &) = delete;
@@ -27,9 +30,15 @@ namespace duna
         inline unsigned int getMaximumIterations() const { return m_maximum_iterations; }
         inline unsigned int getExecutedIterations() const { return m_executed_iterations; }
 
-        void addCost(CostFunctionType *cost)
+        inline void addCost(CostFunctionType *cost)
         {
             costs_.push_back(cost);
+        }
+
+
+        inline void clearCosts()
+        {
+            costs_.clear();
         }
         virtual OptimizationStatus step(Scalar *x0) = 0;
         virtual OptimizationStatus minimize(Scalar *x0) = 0;

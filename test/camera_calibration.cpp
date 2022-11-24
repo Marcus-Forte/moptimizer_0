@@ -101,6 +101,8 @@ public:
             new Model(point_list, pixel_list),
             5, true);
         optimizer.addCost(cost);
+
+        optimizer.getLogger().setVerbosityLevel(duna::L_DEBUG);
     }
 
     ~CameraCalibration()
@@ -154,7 +156,6 @@ TEST_F(CameraCalibration, BadWeather)
 
     optimizer.minimize(x0);
     optimizer.setMaximumIterations(50);
-
     for (int i = 0; i < MODEL_PARAMETERS; ++i)
     {
         EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);

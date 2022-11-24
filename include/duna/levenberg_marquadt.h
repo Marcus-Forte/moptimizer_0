@@ -59,8 +59,7 @@ namespace duna
 
         // Delta Convergence
         bool isDeltaSmall(ParameterVector &delta);
-
-
+        bool isCostSmall(Scalar cost_sum);
     };
 }
 

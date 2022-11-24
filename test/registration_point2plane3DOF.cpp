@@ -65,7 +65,6 @@ public:
 
 protected:
     pcl::IterativeClosestPoint<PointT, PointT, Scalar> pcl_icp;
-    typename pcl::registration::TransformationEstimation<PointT, PointT, Scalar>::Ptr estimation;
     PointCloutT::Ptr source;
     PointCloutT::Ptr target;
     pcl::search::KdTree<PointT>::Ptr target_kdtree;

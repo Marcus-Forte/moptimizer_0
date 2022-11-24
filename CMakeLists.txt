@@ -14,10 +14,10 @@ endif(NOT CMAKE_BUILD_TYPE)
 # set(CMAKE_INSTALL_PREFIX install) # always install locally
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.8 REQUIRED COMPONENTS io common search registration)
+find_package(PCL 1.12 REQUIRED COMPONENTS io common search registration)
 find_package(GTest REQUIRED)
 find_package(OpenMP REQUIRED)
-link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX)
+link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX ${PCL_LIBRARIES})
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
@@ -39,7 +39,8 @@ src/so3.cpp
 src/transformation_estimation6DOF.cpp
 src/transformation_estimation3DOF.cpp
 src/transformation_estimationMAP.cpp
-src/registration.cpp
+src/scan_matching.cpp
+src/scan_matching_3dof.cpp
 src/logger.cpp
 )
 
@@ -76,11 +77,12 @@ if(BUILD_TESTS)
         test/maximum_a_posteriori.cpp
 
         # REG
+        test/scan_matching.cpp
         test/registration_point2plane.cpp
         test/registration_point2point.cpp
         test/registration_point2plane3DOF.cpp
         test/registration_MAP.cpp
-
+        
         # Sequence
         test/sequence_3dof.cpp
         )

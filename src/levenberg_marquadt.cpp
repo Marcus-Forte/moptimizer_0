@@ -56,10 +56,10 @@ namespace duna
 
             // std::cout << hessian << std::endl;
 
-            if (std::abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
-            {
-                return OptimizationStatus::CONVERGED;
-            }
+            // if (std::abs(y0) < std::numeric_limits<Scalar>::epsilon() * 10)
+            // {
+            //     return OptimizationStatus::CONVERGED;
+            // }
 
             hessian_diagonal = hessian.diagonal().asDiagonal();
             // hessian_diagonal = HessianMatrix::Identity();
@@ -96,7 +96,10 @@ namespace duna
                     if (isDeltaSmall(delta))
                     {
                         logger_.log(duna::L_DEBUG, "## Small delta reached: %e", delta.array().abs().maxCoeff());
-                        return OptimizationStatus::SMALL_DELTA;
+                        if (isCostSmall(yi))
+                            return OptimizationStatus::CONVERGED;
+                        else
+                            return OptimizationStatus::SMALL_DELTA;
                     }
 
                     m_lm_lambda = nu * m_lm_lambda;
@@ -119,7 +122,15 @@ namespace duna
         Scalar epsilon = delta.array().abs().maxCoeff();
 
         // if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
-        if (epsilon < std::numeric_limits<Scalar>::epsilon() * 100)
+        if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
+            return true;
+        return false;
+    }
+
+    template <class Scalar, int N_PARAMETERS>
+    bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isCostSmall(Scalar cost_sum)
+    {
+        if (std::abs(cost_sum) < sqrt(std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
     }

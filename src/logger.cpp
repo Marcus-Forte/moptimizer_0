@@ -8,7 +8,7 @@ namespace duna
         if (level > level_)
             return;
 
-        default_stream << levelToString(level) << stream.str() << std::endl;
+        default_stream_ << "[" << logger_name_ << levelToString(level) << "]: " << stream.str() << std::endl;
         
     }
 
@@ -21,7 +21,7 @@ namespace duna
 
         va_start(ap, format);
 
-        fprintf(stdout, "%s", levelToString(level).c_str());
+        fprintf(stdout, "[%s.%s]: ", logger_name_.c_str(), levelToString(level).c_str());
         vfprintf(stdout, format, ap);
         fprintf(stdout, "\n");
 
@@ -33,7 +33,7 @@ namespace duna
         if (level > level_)
             return;
 
-        default_stream << levelToString(level) << message << std::endl;
+        default_stream_ << "[" << logger_name_ << levelToString(level) << "]: " << message << std::endl;
     }
 
     std::string logger::levelToString(VERBOSITY_LEVEL level) const
@@ -42,13 +42,13 @@ namespace duna
         switch (level)
         {
         case (L_INFO):
-            return "[INFO]: ";
+            return "INFO";
         case (L_WARN):
-            return "[WARN]: ";
+            return "WARN";
         case (L_DEBUG):
-            return "[DEBUG]: ";
+            return "DEBUG";
         case (L_ERROR):
-            return "[ERROR]: ";
+            return "ERROR";
         }
 
         return "";
