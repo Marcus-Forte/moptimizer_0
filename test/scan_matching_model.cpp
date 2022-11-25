@@ -8,7 +8,8 @@
 
 #include <duna/map/transformation_estimationMAP.h>
 #include <duna/stopwatch.hpp>
-#include <duna/registration/scan_matching_3dof.h>
+#include <duna/models/scan_matching3dof.h>
+#include <duna/cost_function_analytical.h>
 
 using PointT = pcl::PointNormal;
 using PointCloutT = pcl::PointCloud<PointT>;
@@ -21,6 +22,8 @@ TYPED_TEST_SUITE(DunaRegistration, ScalarTypes);
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
+
+    duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
 
     return RUN_ALL_TESTS();
 }
@@ -61,6 +64,7 @@ protected:
 
 TYPED_TEST(DunaRegistration, TestSimpleRegistration)
 {
+    // Arrange
     Eigen::Matrix<TypeParam, 3, 3> rot;
     rot = Eigen::AngleAxis<TypeParam>(1.5, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
           Eigen::AngleAxis<TypeParam>(1.5, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
@@ -72,34 +76,28 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
 
     pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    duna::ScanMatching3DOF<PointT, PointT, TypeParam> matcher;
+    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher;
+    scan_matcher.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
 
-    Eigen::Matrix<TypeParam, 3, 1> x0;
+    duna::LevenbergMarquadt<TypeParam, 3> optimizer;
+    duna::CostFunctionAnalytical<TypeParam, 3, 1> *cost;
+    cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher, this->source->size());
 
-    Eigen::Matrix<TypeParam, 4, 4> some_guess = Eigen::Matrix<TypeParam, 4, 4>::Identity();
-    x0.setZero();
-    // x0[0] = 0.5;
-    // x0[1] = 0.5;
-    // x0[2] = 0.5;
-    duna::logger log;
-    matcher.getLogger().setVerbosityLevel(duna::L_DEBUG);
-    matcher.setInputSource(this->source);
-    matcher.setInputTarget(this->target);
-    matcher.setTargetSearchTree(this->target_kdtree);
-    matcher.setMaxNumIterations(25);
-    matcher.setMaxNumOptIterations(15);
-    matcher.setMaxCorrDistance(5);
-    // matcher.match(x0.data());
-    matcher.match(some_guess);
+    optimizer.addCost(cost);
 
-    Eigen::Matrix<TypeParam, 4, 4> final_transform = matcher.getFinalTransformation();
-    // std::cout << "x0 = " << x0 << std::endl;
-    // std::cout << matcher.getFinalTransform() << std::endl;
-    // std::cout << reference_transform_inverse << std::endl;
-    // std::cout << this->reference_transform << std::endl;
+    TypeParam x0[3];
+    x0[0] = 0;
+    x0[1] = 0;
+    x0[2] = 0;
+    // Act
+    optimizer.setMaximumIterations(50);
+    optimizer.minimize(x0);
 
-    for (int i = 0; i < reference_transform_inverse.size(); ++i)
-    {
-        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
-    }
+
+    // Assert
+    Eigen::Matrix<TypeParam, 4, 4> final_transform;
+    so3::convert3DOFParameterToMatrix(x0, final_transform);
+
+    std::cout << "Final Transform: " << final_transform << std::endl;
+    std::cout << "Reference Transform: " << reference_transform_inverse << std::endl;
 }

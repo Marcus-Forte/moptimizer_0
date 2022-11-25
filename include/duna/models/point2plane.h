@@ -13,10 +13,10 @@ namespace duna
     {
 
         Point2Plane(const pcl::PointCloud<PointSource> &source_,
-         const pcl::PointCloud<PointSource> &target_,
-          const pcl::Correspondences &corrs_) : source(source_),
-                                                                                                                                                    target(target_),
-                                                                                                                                                    corrs(corrs_)
+                    const pcl::PointCloud<PointSource> &target_,
+                    const pcl::Correspondences &corrs_) : source(source_),
+                                                          target(target_),
+                                                          corrs(corrs_)
         {
         }
         virtual void init(const Scalar *x)

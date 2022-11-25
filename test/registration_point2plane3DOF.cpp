@@ -61,6 +61,7 @@ public:
         pcl_icp.setSearchMethodTarget(target_kdtree);
 
         pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+        duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
     }
 
 protected:

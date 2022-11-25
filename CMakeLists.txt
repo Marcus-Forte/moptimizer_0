@@ -80,6 +80,7 @@ if(BUILD_TESTS)
         test/registration_point2point.cpp
         test/registration_point2plane3DOF.cpp
         test/registration_MAP.cpp
+        test/scan_matching_model.cpp
         
         # Sequence
         test/sequence_3dof.cpp
