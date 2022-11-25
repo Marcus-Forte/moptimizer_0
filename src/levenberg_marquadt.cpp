@@ -12,8 +12,6 @@ namespace duna
     template <class Scalar, int N_PARAMETERS>
     OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
     {
-        // std::cout << " Minimizing...\n";
-
         if (costs_.size() == 0)
         {
             std::cerr << "no cost object!\n";
@@ -52,6 +50,8 @@ namespace duna
                 b += cost_b;
             }
 
+            std::cout << "Hessian: " << hessian << std::endl;
+
             if (isCostSmall(y0))
                 return OptimizationStatus::CONVERGED;
 
@@ -75,7 +75,7 @@ namespace duna
 
                 for (const auto cost : costs_)
                 {
-                    cost->setup(xi.data());
+                    cost->init(xi.data());
                     yi += cost->computeCost(xi.data());
                 }
 

@@ -14,6 +14,7 @@ namespace duna
     class ScanMatching3DOF : public BaseModelJacobian<Scalar>
     {
     public:
+        using Ptr = std::shared_ptr<ScanMatching3DOF>;
         using PointCloudSource = pcl::PointCloud<PointSource>;
         using PointCloudSourcePtr = typename PointCloudSource::Ptr;
         using PointCloudSourceConstPtr = typename PointCloudSource::ConstPtr;
@@ -50,13 +51,14 @@ namespace duna
         virtual void init(const Scalar *x)
         {
             so3::convert3DOFParameterToMatrix(x, transform);
-            // pcl::transformPointCloud(*source_, *transformed_source_, transform);
         }
         virtual void setup(const Scalar *x)
         {
             so3::convert3DOFParameterToMatrix(x, transform);
             pcl::transformPointCloud(*source_, *transformed_source_, transform);
-            duna::logger::log_debug("Computing correspondences...");
+
+            duna::logger::log_debug("Updating correspondences...");
+
             corr_estimator_.setInputSource(transformed_source_);
             corr_estimator_.determineCorrespondences(correspondences_, maximum_corr_dist_);
 
@@ -67,7 +69,7 @@ namespace duna
         {
             if (index >= correspondences_.size())
                 return;
-            const PointSource &src_pt = source_->points[correspondences_[index].index_query];
+            const PointSource &src_pt = transformed_source_->points[correspondences_[index].index_query];
             const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);
@@ -83,7 +85,7 @@ namespace duna
         {
             if (index >= correspondences_.size())
                 return;
-            const PointSource &src_pt = source_->points[correspondences_[index].index_query];
+            const PointSource &src_pt = transformed_source_->points[correspondences_[index].index_query];
             const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);

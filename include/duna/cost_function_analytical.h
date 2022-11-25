@@ -47,7 +47,6 @@ namespace duna
 
         Scalar computeCost(const Scalar *x) override
         {
-
             Scalar sum = 0;
             residuals_.resize(m_num_residuals * N_MODEL_OUTPUTS);
 
@@ -77,7 +76,7 @@ namespace duna
                 (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
                 (*model_).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
-            
+
             // hessian_map.noalias() = jacobian_.transpose() * jacobian_;
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();

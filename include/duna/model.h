@@ -17,7 +17,7 @@ namespace duna
         virtual void init(const Scalar *x) {}
         virtual void setup(const Scalar *x) {}
 
-        // Function
+        // Function (r_i)
         virtual void operator()(const Scalar *x, Scalar *residual, unsigned int index) = 0;
     };
 
@@ -30,7 +30,7 @@ namespace duna
         BaseModelJacobian() = default;
         virtual ~BaseModelJacobian() = default;
 
-        // Jacobian
-        virtual void df(const Scalar *x, Scalar *residual, unsigned int index) = 0;
+        // Jacobian (J_i), row major.
+        virtual void df(const Scalar *x, Scalar *jacobian, unsigned int index) = 0;
     };
 } // namespace

@@ -76,12 +76,13 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
 
     pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher;
-    scan_matcher.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
+    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
+    scan_matcher_model->setMaximumCorrespondenceDistance(10);
 
     duna::LevenbergMarquadt<TypeParam, 3> optimizer;
-    duna::CostFunctionAnalytical<TypeParam, 3, 1> *cost;
-    cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher, this->source->size());
+    // duna::CostFunctionAnalytical<TypeParam, 3, 1> *cost;
+    auto cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
 
     optimizer.addCost(cost);
 
@@ -90,9 +91,8 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
     x0[1] = 0;
     x0[2] = 0;
     // Act
-    optimizer.setMaximumIterations(50);
+    optimizer.setMaximumIterations(200);
     optimizer.minimize(x0);
-
 
     // Assert
     Eigen::Matrix<TypeParam, 4, 4> final_transform;
@@ -100,4 +100,9 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
 
     std::cout << "Final Transform: " << final_transform << std::endl;
     std::cout << "Reference Transform: " << reference_transform_inverse << std::endl;
+
+    for (int i = 0; i < reference_transform_inverse.size(); ++i)
+    {
+        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
+    }
 }
