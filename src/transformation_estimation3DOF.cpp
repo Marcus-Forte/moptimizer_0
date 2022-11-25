@@ -14,17 +14,14 @@ namespace duna
 
         if (m_point2plane)
         {
-            cost = new duna::CostFunctionAnalytical<duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
-                new duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences), true);
+            cost = new duna::CostFunctionNumericalDiff<Scalar, 3, 1>(
+                typename duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>::Ptr(new duna::Point2Plane3DOF<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences)));
         }
         else
         {
-            // cost = new duna::CostFunctionNumericalDiff<duna::Point2Point<PointSource, PointTarget, Scalar>, Scalar, 3, 1>(
-            //     new duna::Point2Point<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences), true);
             throw std::runtime_error("Not implemented.");
         }
 
-        // std::cout << "Duna transform estimator\n";
         optimizer->addCost(cost);
         cost->setNumResiduals(correspondences.size());
 
@@ -35,8 +32,8 @@ namespace duna
 
         so3::convert3DOFParameterToMatrix(x0.data(), transformation_matrix);
 
-        if(overlap_)
-            *overlap_ = (float) correspondences.size() / (float) cloud_src.size();
+        if (overlap_)
+            *overlap_ = (float)correspondences.size() / (float)cloud_src.size();
 
         delete optimizer;
         delete cost;

@@ -35,6 +35,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
 src/cost_function.cpp
+# src/cost_function_analytical.cpp
 src/so3.cpp
 src/transformation_estimation6DOF.cpp
 src/transformation_estimation3DOF.cpp

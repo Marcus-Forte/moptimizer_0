@@ -1,14 +1,14 @@
 #include <gtest/gtest.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
-
+#include <duna/model.h>
 #include <duna/so3.h>
 
 #define MODEL_PARAMETERS 6
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 1e-5
 
-struct Model
+struct Model : public duna::BaseModel<double>
 {
     Model(const std::vector<Eigen::Vector4d> &point_list, const std::vector<Eigen::Vector2i> &pixel_list)
         : point_vector(point_list), pixel_vector(pixel_list)
@@ -22,12 +22,6 @@ struct Model
         if (pixel_list.size() != point_list.size())
             throw std::runtime_error("Different point sizes");
 
-        // for (int i = 0; i < point_list.size(); ++i)
-        // {
-        //     std::cout << point_vector[i] << std::endl;
-        //     std::cout << pixel_vector[i] << std::endl;
-        // }
-
         camera_laser_frame_conversion.setIdentity();
 
         Eigen::Matrix3d rot;
@@ -39,17 +33,20 @@ struct Model
             0, 0, 1, 0;
     }
 
-    // Prepare data
-    inline void setup(const double *x)
+    inline void init(const double *x) override
     {
         so3::convert6DOFParameterToMatrix(x, transform);
     }
 
-    inline void operator()(const double *x, double *residual, unsigned int index)
+    inline void setup(const double *x) override
+    {
+        so3::convert6DOFParameterToMatrix(x, transform);
+    }
+
+    inline void operator()(const double *x, double *residual, unsigned int index) override
     {
         Eigen::Vector3d out_pixel;
         out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];
-
         residual[0] = pixel_vector[index][0] - (out_pixel[0] / out_pixel[2]);
         residual[1] = pixel_vector[index][1] - (out_pixel[1] / out_pixel[2]);
     }
@@ -74,6 +71,8 @@ int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
 
+    duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+
     return RUN_ALL_TESTS();
 }
 
@@ -97,12 +96,10 @@ public:
         pixel_list.push_back(Eigen::Vector2i(559, 282));
         pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-        cost = new duna::CostFunctionNumericalDiff<Model, double, 6, 2>(
-            new Model(point_list, pixel_list),
-            5, true);
+        cost = new duna::CostFunctionNumericalDiff<double, 6, 2>(
+            Model::Ptr(new Model(point_list, pixel_list)),
+            5);
         optimizer.addCost(cost);
-
-        
     }
 
     ~CameraCalibration()
@@ -111,7 +108,7 @@ public:
     }
 
 protected:
-    duna::CostFunctionNumericalDiff<Model, double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+    duna::CostFunctionNumericalDiff<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
     duna::LevenbergMarquadt<double, MODEL_PARAMETERS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;
@@ -153,7 +150,7 @@ TEST_F(CameraCalibration, GoodWeather)
 TEST_F(CameraCalibration, BadWeather)
 {
     double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
-
+ 
     optimizer.minimize(x0);
     optimizer.setMaximumIterations(50);
     for (int i = 0; i < MODEL_PARAMETERS; ++i)

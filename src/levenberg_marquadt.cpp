@@ -30,9 +30,7 @@ namespace duna
 
         // Setup data for costs if applicable.
         for (const auto cost : costs_)
-        {
-            cost->setup(x0);
-        }
+            cost->init(x0);
 
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
@@ -46,6 +44,7 @@ namespace duna
             {
                 HessianMatrix cost_hessian = HessianMatrix::Zero();
                 ParameterVector cost_b = ParameterVector::Zero();
+                cost->setup(x0);
                 Scalar cost_y = cost->linearize(x0, cost_hessian.data(), cost_b.data());
                 logger::log_debug("[LM] Cost(%d) = %e ", cost_i++, cost_y);
                 y0 += cost_y;
@@ -73,8 +72,12 @@ namespace duna
                 xi = x0_map + delta;
 
                 Scalar yi = 0;
+
                 for (const auto cost : costs_)
+                {
+                    cost->setup(xi.data());
                     yi += cost->computeCost(xi.data());
+                }
 
                 if (std::isnan(yi))
                 {
@@ -122,7 +125,7 @@ namespace duna
     template <class Scalar, int N_PARAMETERS>
     bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isCostSmall(Scalar cost_sum)
     {
-        if (std::abs(cost_sum) < 10*(std::numeric_limits<Scalar>::epsilon()))
+        if (std::abs(cost_sum) < 10 * (std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
     }

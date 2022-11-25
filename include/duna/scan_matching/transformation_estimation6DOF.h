@@ -2,8 +2,8 @@
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
 
-#include <duna/scan_matching/models/point2point.h>
-#include <duna/scan_matching/models/point2plane.h>
+#include <duna/models/point2point.h>
+#include <duna/models/point2plane.h>
 #include <duna/logger.h>
 #include <duna/so3.h>
 

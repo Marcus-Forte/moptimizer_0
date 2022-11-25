@@ -22,13 +22,8 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model
+struct Model : public duna::BaseModel<double>
 {
-
-    void setup(const double *x)
-    {
-    }
-
     void operator()(const double *x, double *f_x, unsigned int index)
     {
         f_x[0] = x[0] + 10 * x[1];
@@ -48,19 +43,17 @@ TEST(PowellFunction, InitialCondition0)
     duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
 
     duna::LevenbergMarquadt<double, 4> optimizer;
-    optimizer.setMaximumIterations(100);
+    optimizer.setMaximumIterations(25);
 
-    optimizer.addCost(new duna::CostFunctionNumericalDiff<Model, double, 4, 4>(
-        new Model,1));
+    optimizer.addCost(new duna::CostFunctionNumericalDiff<double, 4, 4>(
+        Model::Ptr(new Model), 1));
 
     optimizer.minimize(x0);
 
     timer.tock("Power Function minimzation");
 
-    for(int i = 0; i < 4; ++i)
+    for (int i = 0; i < 4; ++i)
     {
-        EXPECT_NEAR(x0[i],0.0, 5e-5);
+        EXPECT_NEAR(x0[i], 0.0, 5e-5);
     }
-
-    
 }

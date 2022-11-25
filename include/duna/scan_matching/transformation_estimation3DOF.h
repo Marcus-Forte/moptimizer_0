@@ -3,8 +3,8 @@
 #include <duna/cost_function_analytical.h>
 #include <duna/levenberg_marquadt.h>
 
-#include <duna/scan_matching/models/point2plane3dof.h>
-#include <duna/scan_matching/models/point2point.h>
+#include <duna/models/point2plane3dof.h>
+#include <duna/models/point2point.h>
 #include <duna/logger.h>
 #include <duna/so3.h>
 

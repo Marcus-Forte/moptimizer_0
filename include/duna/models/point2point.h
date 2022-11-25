@@ -1,24 +1,34 @@
 #pragma once
 
-#include <duna/scan_matching/models/base_model.h>
+#include "duna/so3.h"
+#include "duna/model.h"
+#include <pcl/point_cloud.h>
+#include <pcl/correspondence.h>
 
 namespace duna
 {
     template <typename PointSource, typename PointTarget, typename Scalar>
-    struct Point2Point
+    struct Point2Point : public BaseModelJacobian<Scalar>
     {
 
-        Point2Point(const pcl::PointCloud<PointSource> &source_, const pcl::PointCloud<PointSource> &target_, const pcl::Correspondences &corrs_) : source(source_),
-                                                                                                                                                    target(target_),
-                                                                                                                                                    corrs(corrs_)
+        Point2Point(const pcl::PointCloud<PointSource> &source_,
+                    const pcl::PointCloud<PointSource> &target_,
+                    const pcl::Correspondences &corrs_) : source(source_),
+                                                          target(target_),
+                                                          corrs(corrs_)
         {
         }
-        void setup(const Scalar *x)
+
+        void init(const Scalar *x) override
+        {
+            so3::convert6DOFParameterToMatrix(x, transform);
+        }
+        void setup(const Scalar *x) override
         {
             so3::convert6DOFParameterToMatrix(x, transform);
         }
 
-        void operator()(const Scalar *x, Scalar *f_x, unsigned int index)
+        void operator()(const Scalar *x, Scalar *f_x, unsigned int index) override
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
             const PointTarget &tgt_pt = target.points[corrs[index].index_match];
@@ -31,8 +41,8 @@ namespace duna
 
             f_x[0] = (warped_src_ - tgt_).norm();
         }
-    
-        void df(const Scalar *x, Scalar *jacobian, unsigned int index)
+
+        void df(const Scalar *x, Scalar *jacobian, unsigned int index) override
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
             const PointTarget &tgt_pt = target.points[corrs[index].index_match];

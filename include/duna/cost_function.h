@@ -14,7 +14,6 @@ namespace duna
     class CostFunctionBase
     {
     public:
-
         CostFunctionBase() = default;
 
         CostFunctionBase(int num_residuals, int num_model_outputs) : m_num_residuals(num_residuals), m_num_outputs(num_model_outputs)
@@ -26,12 +25,16 @@ namespace duna
         virtual ~CostFunctionBase() = default;
 
         void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
-        
-        virtual void setup(const Scalar *x) {}
-        virtual Scalar computeCost(const Scalar *x, bool setup_data = true) = 0;
-        virtual Scalar linearize(const Scalar *x, Scalar * hessian, Scalar * b) = 0;
 
-    protected:        
+        // Initialize the model (optional). Runs before optimization loop.
+        virtual void init(const Scalar *x) {}
+        // Setup internal state of the model. Runs at the beggining of the optimization loop.
+        virtual void setup(const Scalar *x) {}
+
+        virtual Scalar computeCost(const Scalar *x) = 0;
+        virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
+
+    protected:
         int m_num_residuals;
         int m_num_outputs;
     };

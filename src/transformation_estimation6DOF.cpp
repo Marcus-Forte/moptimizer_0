@@ -14,13 +14,13 @@ namespace duna
 
         if (m_point2plane)
         {
-            cost = new duna::CostFunctionNumericalDiff<duna::Point2Plane<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
-                new duna::Point2Plane<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences), true);
+            cost = new duna::CostFunctionNumericalDiff<Scalar, 6, 1>(
+                typename duna::Point2Plane<PointSource, PointTarget, Scalar>::Ptr(new duna::Point2Plane<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences)));
         }
         else
         {
-            cost = new duna::CostFunctionNumericalDiff<duna::Point2Point<PointSource, PointTarget, Scalar>, Scalar, 6, 1>(
-                new duna::Point2Point<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences), true);
+            cost = new duna::CostFunctionNumericalDiff<Scalar, 6, 1>(
+                typename duna::Point2Plane<PointSource, PointTarget, Scalar>::Ptr(new duna::Point2Point<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences)));
         }
 
         // std::cout << "Duna transform estimator\n";

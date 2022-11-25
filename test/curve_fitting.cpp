@@ -82,21 +82,15 @@ int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc,argv);
 
-
     return RUN_ALL_TESTS();
 }
 
-struct Model 
+struct Model : public duna::BaseModel<double>
 {
-
     Model(const double* dataset) {
         m_dataset = dataset;
     }
-    inline void setup (const double * x)
-    {
-
-    }
-    inline void operator()(const double * x, double* f_x, unsigned int index)
+    inline void operator()(const double * x, double* f_x, unsigned int index) override
     {
         const double &x_ = m_dataset[2*index];
         const double &y_ = m_dataset[2*index + 1];
@@ -106,7 +100,6 @@ struct Model
 
     protected:
     const double* m_dataset;
-
 };
 
 
@@ -116,7 +109,7 @@ TEST(CurveFitting, InitialCondition0)
     utilities::Stopwatch timer;
     timer.tick();
     duna::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations, true);
+    auto cost = new duna::CostFunctionNumericalDiff<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
     optimizer.addCost(cost);
 
     double x0[]= {0.0 , 0.0};
@@ -137,7 +130,7 @@ TEST(CurveFitting, InitialCondition2)
     utilities::Stopwatch timer;
     timer.tick();
     duna::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna::CostFunctionNumericalDiff<Model,double,2,1>(new Model(data),kNumObservations, true);
+    auto cost = new duna::CostFunctionNumericalDiff<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
     optimizer.setMaximumIterations(50);
     optimizer.addCost(cost);
 

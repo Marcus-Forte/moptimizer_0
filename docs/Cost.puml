@@ -1,0 +1,26 @@
+@startuml Cost
+
+
+optimizer -> cost: minimize(x)
+activate optimizer
+activate cost
+
+cost -> model: init
+activate model
+note right
+only once
+end note
+loop optimization
+cost -> model: setup
+note right
+setup can be i.e nearest neighboor search on data
+end note
+cost -> cost: linearize
+cost -> cost: computeCost
+end
+
+box "User interface to optimizer"
+participant model
+end box
+
+@enduml

@@ -2,14 +2,16 @@
 
 #include <duna/cost_function_analytical.h>
 #include <duna/cost_function_numerical.h>
+#include <duna/model.h>
 #include <duna/levenberg_marquadt.h>
 #include <duna/so3.h>
 #include <pcl/point_types.h>
 
-#include <duna/scan_matching/models/point2point.h>
-#include <duna/scan_matching/models/point2plane.h>
+#include <duna/models/point2point.h>
+#include <duna/models/point2plane.h>
 
-/* We compare with numerical diff for resonable results. It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
+/* We compare with numerical diff for resonable results. 
+It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
 
 int main(int argc, char **argv)
 {
@@ -19,13 +21,10 @@ int main(int argc, char **argv)
 }
 
 template <typename Scalar = double>
-struct SimpleModel
+struct SimpleModel : duna::BaseModelJacobian<Scalar>
 {
     SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
 
-    void setup(const Scalar *x)
-    {
-    }
     void operator()(const Scalar *x, Scalar *residual, unsigned int index)
     {
         residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
@@ -36,7 +35,7 @@ struct SimpleModel
     {
         Scalar denominator = (x[1] + data_x[index]);
 
-        // Col Major
+        // Row major
         jacobian[0] = -data_x[index] / denominator;
         jacobian[1] = (x[0] * data_x[index]) / (denominator * denominator);
     }
@@ -50,7 +49,6 @@ template <typename Scalar>
 class Differentiation : public ::testing::Test
 {
 
-protected:
 };
 
 using ScalarTypes = ::testing::Types<float, double>;
@@ -63,10 +61,10 @@ TYPED_TEST(Differentiation, SimpleModel)
     TypeParam y_data[] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317, 0.2, 0};
     int m_residuals = sizeof(x_data) / sizeof(TypeParam);
 
-    SimpleModel<TypeParam> model(x_data, y_data);
+    typename SimpleModel<TypeParam>::Ptr model(new SimpleModel<TypeParam>(x_data, y_data));
 
-    duna::CostFunctionAnalytical<SimpleModel<TypeParam>, TypeParam, 2, 1> cost_ana(&model, m_residuals);
-    duna::CostFunctionNumericalDiff<SimpleModel<TypeParam>, TypeParam, 2, 1> cost_num(&model, m_residuals);
+    duna::CostFunctionAnalytical<TypeParam, 2, 1> cost_ana(model, m_residuals);
+    duna::CostFunctionNumericalDiff<TypeParam, 2, 1> cost_num(model, m_residuals);
 
     Eigen::Matrix<TypeParam, 2, 2> Hessian;
     Eigen::Matrix<TypeParam, 2, 2> HessianNum;
@@ -86,12 +84,8 @@ TYPED_TEST(Differentiation, SimpleModel)
     std::cerr << HessianNum << std::endl;
 }
 
-struct Powell
+struct Powell : duna::BaseModelJacobian<double>
 {
-
-    void setup(const double *x)
-    {
-    }
 
     void operator()(const double *x, double *f_x, unsigned int index)
     {
@@ -113,7 +107,8 @@ struct Powell
                     .
                     .
                     .
-    */ /* ROW MAJOR*/
+    */
+    /* ROW MAJOR*/
     void df(const double *x, double *jacobian, unsigned int index)
     {
 
@@ -145,13 +140,12 @@ struct Powell
 
 TEST(Differentiation, PowellModel)
 {
-
     const int m_residuals = 1;
 
-    Powell powell;
+    Powell::Ptr powell(new Powell);
 
-    duna::CostFunctionAnalytical<Powell, double, 4, 4> cost_ana(&powell, m_residuals);
-    duna::CostFunctionNumericalDiff<Powell, double, 4, 4> cost_num(&powell, m_residuals);
+    duna::CostFunctionAnalytical<double, 4, 4> cost_ana(powell, m_residuals);
+    duna::CostFunctionNumericalDiff<double, 4, 4> cost_num(powell, m_residuals);
 
     Eigen::Matrix<double, 4, 4> Hessian;
     Eigen::Matrix<double, 4, 4> HessianNum;
@@ -169,7 +163,6 @@ TEST(Differentiation, PowellModel)
     std::cerr << Hessian << std::endl;
     std::cerr << HessianNum << std::endl;
 }
-
 
 TYPED_TEST(Differentiation, Poin2PointDistance)
 {
@@ -189,10 +182,10 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
     corr.index_match = 0;
     corrs.push_back(corr);
 
-    duna::Point2Point<PointT, PointT, TypeParam> model(source, target, corrs);
+    typename duna::Point2Point<PointT, PointT, TypeParam>::Ptr model(new duna::Point2Point<PointT, PointT, TypeParam>(source, target, corrs));
 
-    duna::CostFunctionNumericalDiff<duna::Point2Point<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_num(&model);
-    duna::CostFunctionAnalytical<duna::Point2Point<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_ana(&model);
+    duna::CostFunctionNumericalDiff<TypeParam, 6, 1> cost_num(model);
+    duna::CostFunctionAnalytical<TypeParam, 6, 1> cost_ana(model);
 
     Eigen::Matrix<TypeParam, 6, 6> HessianNum;
     Eigen::Matrix<TypeParam, 6, 6> Hessian;
@@ -213,10 +206,10 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
 
     for (int i = 0; i < Hessian.size(); ++i)
     {
-         if (std::is_same<TypeParam, float>::value)
-          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
+        if (std::is_same<TypeParam, float>::value)
+            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
         else // double
-          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
+            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
 
     std::cerr << "Hessian:\n"
@@ -255,11 +248,10 @@ TYPED_TEST(Differentiation, Poin2PlaneDistance)
     corr.index_match = 0;
     corrs.push_back(corr);
 
-    duna::Point2Plane<PointT, PointT, TypeParam> model(source, target, corrs);
-    
+    typename duna::Point2Plane<PointT, PointT, TypeParam>::Ptr model(new duna::Point2Plane<PointT, PointT, TypeParam>(source, target, corrs));
 
-    duna::CostFunctionNumericalDiff<duna::Point2Plane<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_num(&model);
-    duna::CostFunctionAnalytical<duna::Point2Plane<PointT, PointT, TypeParam>, TypeParam, 6, 1> cost_ana(&model);
+    duna::CostFunctionNumericalDiff<TypeParam, 6, 1> cost_num(model);
+    duna::CostFunctionAnalytical<TypeParam, 6, 1> cost_ana(model);
 
     Eigen::Matrix<TypeParam, 6, 6> HessianNum;
     Eigen::Matrix<TypeParam, 6, 6> Hessian;
@@ -281,9 +273,9 @@ TYPED_TEST(Differentiation, Poin2PlaneDistance)
     for (int i = 0; i < Hessian.size(); ++i)
     {
         if (std::is_same<TypeParam, float>::value)
-          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
+            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
         else // double
-          EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
+            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
     }
 
     std::cerr << "Hessian:\n"

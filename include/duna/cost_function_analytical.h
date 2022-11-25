@@ -1,29 +1,33 @@
 #pragma once
 
 #include <duna/cost_function.h>
+#include <duna/model.h>
 #include <duna/logger.h>
+#include <memory>
 
 namespace duna
 {
     // NOTE. We are using Model as a template to be able to call its copy constructors and enable numercial diff.
-    template <typename Model, class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
+    template <class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
     class CostFunctionAnalytical : public CostFunctionBase<Scalar>
     {
     public:
+        using Model = BaseModelJacobian<Scalar>;
+        using ModelPtr = typename Model::Ptr;
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
         using JacobianMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, N_PARAMETERS, Eigen::RowMajor>;
         using ResidualVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
         // TODO change pointer to smartpointer
-        CostFunctionAnalytical(Model *model, int num_residuals, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
-                                                                                             CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
+        CostFunctionAnalytical(ModelPtr model, int num_residuals) : model_(model),
+                                                                    CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
         {
             init();
         }
 
-        CostFunctionAnalytical(Model *model, bool delete_model = false) : m_model(model), m_delete_model(delete_model),
-                                                                          CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
+        CostFunctionAnalytical(ModelPtr model) : model_(model),
+                                                 CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
         {
             init();
         }
@@ -31,24 +35,25 @@ namespace duna
         CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
         CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
 
-        ~CostFunctionAnalytical()
+        void init(const Scalar *x) override
         {
-            if (m_delete_model)
-                delete m_model;
+            model_->init(x);
         }
 
-        Scalar computeCost(const Scalar *x, bool setup_data) override
+        void setup(const Scalar *x) override
         {
+            model_->setup(x);
+        }
+
+        Scalar computeCost(const Scalar *x) override
+        {
+
             Scalar sum = 0;
             residuals_.resize(m_num_residuals * N_MODEL_OUTPUTS);
 
-            // TODO make dirty variables?
-            if (setup_data)
-                m_model->setup(x);
-
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
             sum = 2 * residuals_.transpose() * residuals_;
             return sum;
@@ -67,11 +72,10 @@ namespace duna
 
             Scalar sum = 0.0;
 
-            (*m_model).setup(x);
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*m_model)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
-                (*m_model).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                (*model_).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
             // hessian_map.noalias() = jacobian_.transpose() * jacobian_;
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
@@ -82,7 +86,7 @@ namespace duna
         }
 
     protected:
-        Model *m_model;
+        ModelPtr model_;
         // Holds results for cost computations
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;

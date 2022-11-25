@@ -41,7 +41,7 @@ namespace duna
             x_k_ = x_map;
         }
 
-        Scalar computeCost(const Scalar *x, bool setup_data = true) override
+        Scalar computeCost(const Scalar *x) override
         {
             Eigen::Map<const StateVector> x_map(x);
 

@@ -39,14 +39,15 @@ namespace duna
                 delete m_model;
         }
 
-        Scalar computeCost(const Scalar *x, bool setup_data) override
+        void setup(const Scalar *x) override
+        {
+            m_model->setup(x);
+        }
+
+        Scalar computeCost(const Scalar *x) override
         {
             Scalar sum = 0;
             residuals_.resize(m_num_residuals * N_MODEL_OUTPUTS);
-
-            // TODO make dirty variables?
-            if (setup_data)
-                m_model->setup(x);
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
@@ -76,7 +77,7 @@ namespace duna
                 (*m_model).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
             }
             hessian_map.noalias() = jacobian_.transpose() * covariance_inverse_ * jacobian_;
-            hessian_ = hessian_map;// coppies hessian locally
+            hessian_ = hessian_map; // coppies hessian locally
             // hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
             // hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
             b_map.noalias() = jacobian_.transpose() * covariance_inverse_ * residuals_;
@@ -121,7 +122,7 @@ namespace duna
         // Computes K = (H^T * R^(-1) * H + P^(-1) )^-1 H^T * R^(-1) with a given state covariance P.
         //      Hessian <---------------|   |
         //      State Cov                <--|
-        //         
+        //
         HessianMatrix computeUpdatedKalmanGain(const HessianMatrix &P) const
         {
             return (hessian_ + P.inverse()).inverse() * jacobian_.transpose() * covariance_inverse_;
