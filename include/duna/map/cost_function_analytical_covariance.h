@@ -39,9 +39,9 @@ namespace duna
                 delete m_model;
         }
 
-        void setup(const Scalar *x) override
+        void update(const Scalar *x) override
         {
-            m_model->setup(x);
+            m_model->update(x);
         }
 
         Scalar computeCost(const Scalar *x) override

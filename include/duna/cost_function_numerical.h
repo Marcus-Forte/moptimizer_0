@@ -12,21 +12,19 @@ namespace duna
     class CostFunctionNumericalDiff : public CostFunctionBase<Scalar>
     {
     public:
-        using Model = BaseModel<Scalar>;
-        using ModelPtr = typename Model::Ptr;
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
         using JacobianMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, N_PARAMETERS, Eigen::RowMajor>;
         using ResidualVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
-        // TODO change pointer to smartpointer
-        CostFunctionNumericalDiff(ModelPtr model, int num_residuals) : model_(model),
-                                                                       CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
+        using typename CostFunctionBase<Scalar>::Model;
+        using typename CostFunctionBase<Scalar>::ModelPtr;
+
+        CostFunctionNumericalDiff(ModelPtr model, int num_residuals) : CostFunctionBase<Scalar>(model, num_residuals, N_MODEL_OUTPUTS)
         {
             init();
         }
 
-        CostFunctionNumericalDiff(ModelPtr model) : model_(model),
-                                                    CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
+        CostFunctionNumericalDiff(ModelPtr model) : CostFunctionBase<Scalar>(model, 1, N_MODEL_OUTPUTS)
         {
             init();
         }
@@ -34,20 +32,17 @@ namespace duna
         CostFunctionNumericalDiff(const CostFunctionNumericalDiff &) = delete;
         CostFunctionNumericalDiff &operator=(const CostFunctionNumericalDiff &) = delete;
 
-        void init(const Scalar *x) override
+        void update(const Scalar *x) override
         {
-            model_->init(x);
-        }
-
-        void setup(const Scalar *x) override
-        {
-            model_->setup(x);
+            model_->update(x);
         }
 
         Scalar computeCost(const Scalar *x) override
         {
             Scalar sum = 0;
             residuals_.resize(m_num_residuals * N_MODEL_OUTPUTS);
+
+            model_->setup(x);
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
@@ -82,7 +77,7 @@ namespace duna
             // Step size
             std::vector<Scalar> h(x_map.size());
 
-            model_->init(x_map.data());
+            model_->setup(x_map.data());
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
@@ -101,7 +96,7 @@ namespace duna
                 x_plus[j][j] += h[j];
                 // x_minus[j][j] -= h[j];
 
-                model_->init((x_plus[j]).data());
+                model_->setup((x_plus[j]).data());
 
                 for (int i = 0; i < m_num_residuals; ++i)
                 {
@@ -118,9 +113,9 @@ namespace duna
         }
 
     private:
-        ModelPtr model_;
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
+        using CostFunctionBase<Scalar>::model_;
         JacobianMatrix jacobian_;
         ResidualVector residuals_;
         ResidualVector residuals_plus_;

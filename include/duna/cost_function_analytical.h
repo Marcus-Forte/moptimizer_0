@@ -12,22 +12,20 @@ namespace duna
     class CostFunctionAnalytical : public CostFunctionBase<Scalar>
     {
     public:
-        using Model = BaseModelJacobian<Scalar>;
-        using ModelPtr = typename Model::Ptr;
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
         using JacobianMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, N_PARAMETERS, Eigen::RowMajor>;
         using ResidualVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+        using Model = BaseModelJacobian<Scalar>;
+        using ModelPtr = typename BaseModelJacobian<Scalar>::Ptr;
 
         // TODO change pointer to smartpointer
-        CostFunctionAnalytical(ModelPtr model, int num_residuals) : model_(model),
-                                                                    CostFunctionBase<Scalar>(num_residuals, N_MODEL_OUTPUTS)
+        CostFunctionAnalytical(ModelPtr model, int num_residuals) : CostFunctionBase<Scalar>(model, num_residuals, N_MODEL_OUTPUTS)
         {
             init();
         }
 
-        CostFunctionAnalytical(ModelPtr model) : model_(model),
-                                                 CostFunctionBase<Scalar>(1, N_MODEL_OUTPUTS)
+        CostFunctionAnalytical(ModelPtr model) : CostFunctionBase<Scalar>(model, 1, N_MODEL_OUTPUTS)
         {
             init();
         }
@@ -35,20 +33,17 @@ namespace duna
         CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
         CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
 
-        void init(const Scalar *x) override
+        void update(const Scalar *x) override
         {
-            model_->init(x);
-        }
-
-        void setup(const Scalar *x) override
-        {
-            model_->setup(x);
+            model_->update(x);
         }
 
         Scalar computeCost(const Scalar *x) override
         {
             Scalar sum = 0;
             residuals_.resize(m_num_residuals * N_MODEL_OUTPUTS);
+
+            model_->setup(x);
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
@@ -71,6 +66,8 @@ namespace duna
 
             Scalar sum = 0.0;
 
+            model_->setup(x);
+
             for (int i = 0; i < m_num_residuals; ++i)
             {
                 (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
@@ -86,10 +83,11 @@ namespace duna
         }
 
     protected:
-        ModelPtr model_;
+        // ModelPtr model_;
         // Holds results for cost computations
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
+        using CostFunctionBase<Scalar>::model_;
         JacobianMatrix jacobian_;
         ResidualVector residuals_;
 

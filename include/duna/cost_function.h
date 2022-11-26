@@ -4,6 +4,7 @@
 #include <exception>
 #include <Eigen/Dense>
 #include "duna/types.h"
+#include "duna/model.h"
 
 namespace duna
 {
@@ -14,9 +15,14 @@ namespace duna
     class CostFunctionBase
     {
     public:
+        using Model = IBaseModel<Scalar>;
+        using ModelPtr = typename Model::Ptr;
+        using ModelConstPtr = typename Model::ConstPtr;
         CostFunctionBase() = default;
 
-        CostFunctionBase(int num_residuals, int num_model_outputs) : m_num_residuals(num_residuals), m_num_outputs(num_model_outputs)
+        CostFunctionBase(ModelPtr model, int num_residuals, int num_model_outputs) : model_(model),
+                                                                                     m_num_residuals(num_residuals),
+                                                                                     m_num_outputs(num_model_outputs)
         {
         }
 
@@ -26,10 +32,11 @@ namespace duna
 
         void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
 
-        // Initialize the model (optional). Runs before optimization loop.
-        virtual void init(const Scalar *x) {}
         // Setup internal state of the model. Runs at the beggining of the optimization loop.
-        virtual void setup(const Scalar *x) {}
+        virtual void update(const Scalar *x)
+        {
+            model_->update(x);
+        }
 
         virtual Scalar computeCost(const Scalar *x) = 0;
         virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
@@ -37,6 +44,9 @@ namespace duna
     protected:
         int m_num_residuals;
         int m_num_outputs;
+
+        // Model interface;
+        ModelPtr model_;
     };
 }
 

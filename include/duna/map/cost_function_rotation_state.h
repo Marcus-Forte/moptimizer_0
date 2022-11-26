@@ -32,14 +32,14 @@ namespace duna
         };
 
         // Initialize states and rotations at the beggining of the optimization. See Eq (15) from FASTLIO
-        void setup(const Scalar *x) override
-        {
-            R_k_.setIdentity();
-            RotationVector x_(x[0], x[1], x[2]);
-            so3::convert3DOFParameterToMatrix3<Scalar>(x_.data(), R_k_);
-            Eigen::Map<const StateVector> x_map(x);
-            x_k_ = x_map;
-        }
+        // void setup(const Scalar *x) override
+        // {
+        //     R_k_.setIdentity();
+        //     RotationVector x_(x[0], x[1], x[2]);
+        //     so3::convert3DOFParameterToMatrix3<Scalar>(x_.data(), R_k_);
+        //     Eigen::Map<const StateVector> x_map(x);
+        //     x_k_ = x_map;
+        // }
 
         Scalar computeCost(const Scalar *x) override
         {

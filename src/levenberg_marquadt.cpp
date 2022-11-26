@@ -26,10 +26,6 @@ namespace duna
         ParameterVector b;
         ParameterVector xi;
 
-        // Setup data for costs if applicable.
-        for (const auto cost : costs_)
-            cost->init(x0);
-
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
             logger::log_debug("[LM] Levenberg-Marquadt Iteration: %d/%d", m_executed_iterations, m_maximum_iterations);
@@ -42,7 +38,7 @@ namespace duna
             {
                 HessianMatrix cost_hessian = HessianMatrix::Zero();
                 ParameterVector cost_b = ParameterVector::Zero();
-                cost->setup(x0);
+                cost->update(x0);
                 Scalar cost_y = cost->linearize(x0, cost_hessian.data(), cost_b.data());
                 logger::log_debug("[LM] Cost(%d) = %e ", cost_i++, cost_y);
                 y0 += cost_y;
@@ -50,7 +46,7 @@ namespace duna
                 b += cost_b;
             }
 
-            std::cout << "Hessian: " << hessian << std::endl;
+            // std::cout << "Hessian: " << hessian << std::endl;
 
             if (isCostSmall(y0))
                 return OptimizationStatus::CONVERGED;
@@ -74,10 +70,7 @@ namespace duna
                 Scalar yi = 0;
 
                 for (const auto cost : costs_)
-                {
-                    cost->init(xi.data());
                     yi += cost->computeCost(xi.data());
-                }
 
                 if (std::isnan(yi))
                 {
@@ -125,7 +118,7 @@ namespace duna
     template <class Scalar, int N_PARAMETERS>
     bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isCostSmall(Scalar cost_sum)
     {
-        if (std::abs(cost_sum) < 10 * (std::numeric_limits<Scalar>::epsilon()))
+        if (std::abs(cost_sum) < 16 * (std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
     }

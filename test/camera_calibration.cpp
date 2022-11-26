@@ -33,11 +33,6 @@ struct Model : public duna::BaseModel<double>
             0, 0, 1, 0;
     }
 
-    inline void init(const double *x) override
-    {
-        so3::convert6DOFParameterToMatrix(x, transform);
-    }
-
     inline void setup(const double *x) override
     {
         so3::convert6DOFParameterToMatrix(x, transform);

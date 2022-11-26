@@ -27,6 +27,37 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
+class BaseClass
+{
+public:
+    virtual void fun()
+    {
+        std::cout << "Base\n";
+    }
+};
+
+class ChildClass : public BaseClass
+{
+public:
+    virtual void fun() override = 0;
+};
+
+class GrandChildClass : public ChildClass
+{
+public:
+    void fun() override
+    {
+        std::cout << "GrandChild\n";
+    }
+};
+
+TEST(BaseOverrideZerom, BaseOverrideZerom)
+{
+    BaseClass *obj = new BaseClass;
+    obj->fun();
+    obj = new GrandChildClass;
+    obj->fun();
+}
 
 TEST(Drafts, Logging)
 {
@@ -48,10 +79,10 @@ TEST(Drafts, Logging)
     somestream << some_matrix;
     logger.log(duna::L_WARN, somestream);
 
-    logger.log(duna::L_WARN, "Hello world %d + %d = %d\n", 20, 30, 20+30);
+    logger.log(duna::L_WARN, "Hello world %d + %d = %d\n", 20, 30, 20 + 30);
 }
 
-TEST(Drafts, Draft1)
+TEST(Drafts, DISABLED_Draft1)
 {
     Eigen::MatrixXd bigJacobian(num_res, num_param);
     bigJacobian.setRandom();

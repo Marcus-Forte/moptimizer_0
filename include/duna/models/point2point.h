@@ -19,10 +19,6 @@ namespace duna
         {
         }
 
-        void init(const Scalar *x) override
-        {
-            so3::convert6DOFParameterToMatrix(x, transform);
-        }
         void setup(const Scalar *x) override
         {
             so3::convert6DOFParameterToMatrix(x, transform);

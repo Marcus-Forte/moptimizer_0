@@ -91,7 +91,7 @@ TYPED_TEST(DunaRegistration, TestSimpleRegistration)
     x0[1] = 0;
     x0[2] = 0;
     // Act
-    optimizer.setMaximumIterations(200);
+    optimizer.setMaximumIterations(50);
     optimizer.minimize(x0);
 
     // Assert

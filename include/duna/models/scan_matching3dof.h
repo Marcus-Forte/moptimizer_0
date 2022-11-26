@@ -48,14 +48,16 @@ namespace duna
         }
 
         virtual ~ScanMatching3DOF() = default;
-        virtual void init(const Scalar *x)
+
+        virtual void setup(const Scalar *x) override
         {
-            so3::convert3DOFParameterToMatrix(x, transform);
+            so3::convert3DOFParameterToMatrix(x, transform_);
         }
-        virtual void setup(const Scalar *x)
+
+        virtual void update(const Scalar *x) override
         {
-            so3::convert3DOFParameterToMatrix(x, transform);
-            pcl::transformPointCloud(*source_, *transformed_source_, transform);
+            so3::convert3DOFParameterToMatrix(x, transform_);
+            pcl::transformPointCloud(*source_, *transformed_source_, transform_);
 
             duna::logger::log_debug("Updating correspondences...");
 
@@ -70,13 +72,13 @@ namespace duna
             if (index >= correspondences_.size())
                 return;
             const PointSource &src_pt = transformed_source_->points[correspondences_[index].index_query];
-            const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
+            const PointTarget &tgt_pt = target_->points[correspondences_[index].index_query];
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);
             Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
             Eigen::Matrix<Scalar, 4, 1> tgt_normal_(static_cast<Scalar>(tgt_pt.normal_x), static_cast<Scalar>(tgt_pt.normal_y), static_cast<Scalar>(tgt_pt.normal_z), 0.0);
 
-            Eigen::Matrix<Scalar, 4, 1> &&warped_src_ = transform * src_;
+            Eigen::Matrix<Scalar, 4, 1> &&warped_src_ = transform_ * src_;
 
             f_x[0] = (warped_src_ - tgt_).dot(tgt_normal_);
         }
@@ -109,7 +111,7 @@ namespace duna
         KdTreePtr kdtree_target_;
         PointCloudSourcePtr transformed_source_;
         pcl::Correspondences correspondences_;
-        Eigen::Matrix<Scalar, 4, 4> transform;
+        Eigen::Matrix<Scalar, 4, 4> transform_;
         pcl::registration::CorrespondenceEstimation<PointSource, PointTarget, Scalar> corr_estimator_;
 
         // Parameters
