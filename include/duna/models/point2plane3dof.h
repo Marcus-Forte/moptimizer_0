@@ -30,7 +30,7 @@ namespace duna
             // Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
             Eigen::Matrix<Scalar, 3, 1> tgt_normal_(static_cast<Scalar>(tgt_pt.normal_x), static_cast<Scalar>(tgt_pt.normal_y), static_cast<Scalar>(tgt_pt.normal_z));
 
-            // Not sure why we multiply by two. Numerical Diff comparison suggested that.
+            // Not sure why we multiply by two. Numerical Diff comparison suggested that. Assume small rotations!!!
             jacobian[0] = 2 * (tgt_normal_[2] * src_[1] - tgt_normal_[1] * src_[2]);
             jacobian[1] = 2 * (tgt_normal_[0] * src_[2] - tgt_normal_[2] * src_[0]);
             jacobian[2] = 2 * (tgt_normal_[1] * src_[0] - tgt_normal_[0] * src_[1]);

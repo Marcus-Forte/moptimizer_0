@@ -28,7 +28,7 @@ namespace duna
             so3::convert6DOFParameterToMatrix(x, transform);
         }
 
-        void operator()(const Scalar *x, Scalar *f_x, unsigned int index)
+        bool operator()(const Scalar *x, Scalar *f_x, unsigned int index)
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
             const PointTarget &tgt_pt = target.points[corrs[index].index_match];
@@ -40,6 +40,7 @@ namespace duna
             Eigen::Matrix<Scalar, 4, 1> &&warped_src_ = transform * src_;
 
             f_x[0] = (warped_src_ - tgt_).dot(tgt_normal_);
+            return true;
         }
 
         virtual void df(const Scalar *x, Scalar *jacobian, unsigned int index)

@@ -10,12 +10,13 @@
 #include <duna/stopwatch.hpp>
 #include <duna/models/scan_matching3dof.h>
 #include <duna/cost_function_analytical.h>
+#include <duna/cost_function_numerical.h>
 
 using PointT = pcl::PointNormal;
 using PointCloutT = pcl::PointCloud<PointT>;
 
 using ScalarTypes = ::testing::Types<float, double>;
-TYPED_TEST_SUITE(DunaRegistration, ScalarTypes);
+TYPED_TEST_SUITE(ScanMatching, ScalarTypes);
 
 #define TOLERANCE 1e-2
 
@@ -29,10 +30,10 @@ int main(int argc, char **argv)
 }
 
 template <typename Scalar>
-class DunaRegistration : public ::testing::Test
+class ScanMatching : public ::testing::Test
 {
 public:
-    DunaRegistration()
+    ScanMatching()
     {
         source.reset(new PointCloutT);
         target.reset(new PointCloutT);
@@ -53,6 +54,20 @@ public:
         ne.setSearchMethod(target_kdtree);
         ne.setKSearch(10);
         ne.compute(*target);
+
+        // Arrange
+        Eigen::Matrix<Scalar, 3, 3> rot;
+        rot = Eigen::AngleAxis<Scalar>(1.5, Eigen::Matrix<Scalar, 3, 1>::UnitX()) *
+              Eigen::AngleAxis<Scalar>(1.5, Eigen::Matrix<Scalar, 3, 1>::UnitY()) *
+              Eigen::AngleAxis<Scalar>(3.4, Eigen::Matrix<Scalar, 3, 1>::UnitZ());
+
+        reference_transform.topLeftCorner(3, 3) = rot;
+
+        reference_transform_inverse = reference_transform.inverse();
+
+        pcl::transformPointCloud(*target, *source, reference_transform);
+
+        optimizer.setMaximumIterations(20);
     }
 
 protected:
@@ -60,49 +75,105 @@ protected:
     PointCloutT::Ptr target;
     pcl::search::KdTree<PointT>::Ptr target_kdtree;
     Eigen::Matrix<Scalar, 4, 4> reference_transform;
+    Eigen::Matrix<Scalar, 4, 4> reference_transform_inverse;
+    duna::LevenbergMarquadt<Scalar, 3> optimizer;
 };
 
-TYPED_TEST(DunaRegistration, TestSimpleRegistration)
+TYPED_TEST(ScanMatching, TestSimpleRegistrationNumericalCost)
 {
-    // Arrange
-    Eigen::Matrix<TypeParam, 3, 3> rot;
-    rot = Eigen::AngleAxis<TypeParam>(1.5, Eigen::Matrix<TypeParam, 3, 1>::UnitX()) *
-          Eigen::AngleAxis<TypeParam>(1.5, Eigen::Matrix<TypeParam, 3, 1>::UnitY()) *
-          Eigen::AngleAxis<TypeParam>(3.4, Eigen::Matrix<TypeParam, 3, 1>::UnitZ());
-
-    this->reference_transform.topLeftCorner(3, 3) = rot;
-
-    Eigen::Matrix<TypeParam, 4, 4> reference_transform_inverse = this->reference_transform.inverse();
-
-    pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
     typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
-    scan_matcher_model->setMaximumCorrespondenceDistance(10);
+    // scan_matcher_model->setMaximumCorrespondenceDistance(0.1);
 
-    duna::LevenbergMarquadt<TypeParam, 3> optimizer;
     // duna::CostFunctionAnalytical<TypeParam, 3, 1> *cost;
-    auto cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
+    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
 
-    optimizer.addCost(cost);
+    this->optimizer.addCost(cost);
 
     TypeParam x0[3];
     x0[0] = 0;
     x0[1] = 0;
     x0[2] = 0;
     // Act
-    optimizer.setMaximumIterations(50);
-    optimizer.minimize(x0);
+    this->optimizer.minimize(x0);
 
     // Assert
     Eigen::Matrix<TypeParam, 4, 4> final_transform;
     so3::convert3DOFParameterToMatrix(x0, final_transform);
 
+    std::cout << "Final X " << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;
     std::cout << "Final Transform: " << final_transform << std::endl;
-    std::cout << "Reference Transform: " << reference_transform_inverse << std::endl;
+    std::cout << "Reference Transform: " << this->reference_transform_inverse << std::endl;
 
-    for (int i = 0; i < reference_transform_inverse.size(); ++i)
+    for (int i = 0; i < this->reference_transform_inverse.size(); ++i)
     {
-        EXPECT_NEAR(final_transform(i), reference_transform_inverse(i), TOLERANCE);
+        EXPECT_NEAR(final_transform(i), this->reference_transform_inverse(i), TOLERANCE);
+    }
+}
+
+TYPED_TEST(ScanMatching, TestSimpleRegistrationAnalyticalCost)
+{
+
+    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
+    // scan_matcher_model->setMaximumCorrespondenceDistance(0.1);
+
+    // duna::CostFunctionAnalytical<TypeParam, 3, 1> *cost;
+    auto cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
+
+    this->optimizer.addCost(cost);
+
+    TypeParam x0[3];
+    x0[0] = 0;
+    x0[1] = 0;
+    x0[2] = 0;
+    // Act
+
+    this->optimizer.minimize(x0);
+
+    // Assert
+    Eigen::Matrix<TypeParam, 4, 4> final_transform;
+    so3::convert3DOFParameterToMatrix(x0, final_transform);
+
+    std::cout << "Final X " << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;
+    std::cout << "Final Transform: " << final_transform << std::endl;
+    std::cout << "Reference Transform: " << this->reference_transform_inverse << std::endl;
+
+    for (int i = 0; i < this->reference_transform_inverse.size(); ++i)
+    {
+        EXPECT_NEAR(final_transform(i), this->reference_transform_inverse(i), TOLERANCE);
+    }
+}
+
+TYPED_TEST(ScanMatching, DISABLED_TestSimpleRegistrationWithInitialCondition)
+{
+    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
+
+    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
+
+    this->optimizer.addCost(cost);
+
+    TypeParam x0[3];
+    x0[0] = 1.02742;
+    x0[1] = -1.33427;
+    x0[2] = 1.12462;
+
+    // Act
+    this->optimizer.minimize(x0);
+
+    // Assert
+    Eigen::Matrix<TypeParam, 4, 4> final_transform;
+    so3::convert3DOFParameterToMatrix(x0, final_transform);
+
+    std::cout << "Final X:\n"
+              << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;
+    std::cout << "Final Transform: " << final_transform << std::endl;
+    std::cout << "Reference Transform: " << this->reference_transform_inverse << std::endl;
+
+    for (int i = 0; i < this->reference_transform_inverse.size(); ++i)
+    {
+        EXPECT_NEAR(final_transform(i), this->reference_transform_inverse(i), TOLERANCE);
     }
 }

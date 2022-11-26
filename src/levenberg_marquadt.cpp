@@ -33,20 +33,22 @@ namespace duna
             Scalar y0 = 0;
             hessian.setZero();
             b.setZero();
-            int cost_i = 0;
-            for (const auto cost : costs_)
+
+            for (int cost_i = 0; cost_i < costs_.size(); cost_i++)
             {
+                const auto& cost = costs_[cost_i];
                 HessianMatrix cost_hessian = HessianMatrix::Zero();
                 ParameterVector cost_b = ParameterVector::Zero();
                 cost->update(x0);
                 Scalar cost_y = cost->linearize(x0, cost_hessian.data(), cost_b.data());
-                logger::log_debug("[LM] Cost(%d) = %e ", cost_i++, cost_y);
+                logger::log_debug("[LM] Cost(%d) = %e ", cost_i, cost_y);
                 y0 += cost_y;
                 hessian += cost_hessian;
                 b += cost_b;
             }
 
-            // std::cout << "Hessian: " << hessian << std::endl;
+            std::cout << "Hessian: " << hessian << std::endl;
+            std::cout << "b: " << b << std::endl;
 
             if (isCostSmall(y0))
                 return OptimizationStatus::CONVERGED;
@@ -66,6 +68,8 @@ namespace duna
 
                 // TODO Manifold operation
                 xi = x0_map + delta;
+
+                // std::cout << xi << std::endl;
 
                 Scalar yi = 0;
 

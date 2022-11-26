@@ -45,11 +45,17 @@ namespace duna
 
             model_->setup(x);
 
+            int valid_errors = 0;
+
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                if ((*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
+                    valid_errors++;
             }
-            sum = 2 * residuals_.transpose() * residuals_;
+
+            ResidualVector valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
+
+            sum = 2 * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
@@ -68,17 +74,27 @@ namespace duna
 
             model_->setup(x);
 
+            int valid_errors = 0;
+
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
-                (*model_).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                if ((*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
+                {
+                    (*model_).df(x, jacobian_.template block<N_MODEL_OUTPUTS, N_PARAMETERS>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i);
+                    valid_errors++;
+                }
             }
 
-            // hessian_map.noalias() = jacobian_.transpose() * jacobian_;
-            hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
+            // Select only valid residues.
+            JacobianMatrix &&valid_jacobian = jacobian_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, N_PARAMETERS);
+            ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
+
+            // std::cout << valid_jacobian << std::endl;
+
+            hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
-            b_map.noalias() = jacobian_.transpose() * residuals_;
-            sum = 2 * residuals_.transpose() * residuals_;
+            b_map.noalias() = valid_jacobian.transpose() * valid_residuals;
+            sum = 2 * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 

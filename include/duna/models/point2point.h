@@ -24,7 +24,7 @@ namespace duna
             so3::convert6DOFParameterToMatrix(x, transform);
         }
 
-        void operator()(const Scalar *x, Scalar *f_x, unsigned int index) override
+        bool operator()(const Scalar *x, Scalar *f_x, unsigned int index) override
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
             const PointTarget &tgt_pt = target.points[corrs[index].index_match];
@@ -36,6 +36,7 @@ namespace duna
             warped_src_[3] = 0;
 
             f_x[0] = (warped_src_ - tgt_).norm();
+            return true;
         }
 
         void df(const Scalar *x, Scalar *jacobian, unsigned int index) override

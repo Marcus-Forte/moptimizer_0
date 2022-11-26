@@ -24,12 +24,13 @@ int main(int argc, char **argv)
 
 struct Model : public duna::BaseModel<double>
 {
-    void operator()(const double *x, double *f_x, unsigned int index)
+    bool operator()(const double *x, double *f_x, unsigned int index)
     {
         f_x[0] = x[0] + 10 * x[1];
         f_x[1] = sqrt(5) * (x[2] - x[3]);
         f_x[2] = (x[1] - 2 * x[2]) * (x[1] - 2 * x[2]);
         f_x[3] = sqrt(10) * (x[0] - x[3]) * (x[0] - x[3]);
+        return true;
     }
 };
 

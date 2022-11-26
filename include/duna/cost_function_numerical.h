@@ -44,11 +44,17 @@ namespace duna
 
             model_->setup(x);
 
+            int valid_errors = 0;
+
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                if ((*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
+                    valid_errors++;
             }
-            sum = 2 * residuals_.transpose() * residuals_;
+
+            ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
+
+            sum = 2 * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
@@ -79,10 +85,15 @@ namespace duna
 
             model_->setup(x_map.data());
 
+            int valid_errors = 0;
+
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                (*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                if ((*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
+                    valid_errors++;
             }
+
+            int valid_jacobians_rows;
 
             for (int j = 0; j < x_map.size(); ++j)
             {
@@ -98,17 +109,29 @@ namespace duna
 
                 model_->setup((x_plus[j]).data());
 
+                valid_jacobians_rows = 0;
+
                 for (int i = 0; i < m_num_residuals; ++i)
                 {
-                    (*model_)(x_plus[j].data(), residuals_plus_.template block<N_MODEL_OUTPUTS, 1>(i * N_MODEL_OUTPUTS, 0).data(), i);
+                    if ((*model_)(x_plus[j].data(), residuals_plus_.template block<N_MODEL_OUTPUTS, 1>(valid_jacobians_rows * N_MODEL_OUTPUTS, 0).data(), i))
+                        valid_jacobians_rows++;
                 }
                 jacobian_.col(j) = (residuals_plus_ - residuals_) / h[j];
             }
 
-            hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
+                   if (valid_errors != valid_jacobians_rows)
+                throw std::runtime_error("valid_errors != valid_jacobians_rows! ");
+
+            // Select only valid residues.
+            JacobianMatrix &&valid_jacobian = jacobian_.block(0, 0, valid_jacobians_rows * N_MODEL_OUTPUTS, N_PARAMETERS);
+            ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
+
+            // std::cout << valid_jacobian << std::endl;
+
+            hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
-            b_map.noalias() = jacobian_.transpose() * residuals_;
-            sum = 2 * residuals_.transpose() * residuals_;
+            b_map.noalias() = valid_jacobian.transpose() * valid_residuals;
+            sum = 2 * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 

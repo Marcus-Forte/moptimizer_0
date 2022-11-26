@@ -22,7 +22,7 @@ namespace duna
         virtual void update(const Scalar *x) = 0;
 
         // Function (r_i)
-        virtual void operator()(const Scalar *x, Scalar *residual, unsigned int index) = 0;
+        virtual bool operator()(const Scalar *x, Scalar *residual, unsigned int index) = 0;
 
         // Jacobian (J_i), row major.
         virtual void df(const Scalar *x, Scalar *jacobian, unsigned int index) = 0;
@@ -42,8 +42,8 @@ namespace duna
         // Update internal states of the model. (i.e registration correspondences)
         virtual void update(const Scalar *x) override {}
 
-        // Function (r_i)
-        virtual void operator()(const Scalar *x, Scalar *residual, unsigned int index) override = 0;
+        // Function (r_i). Must return true if result if valid.
+        virtual bool operator()(const Scalar *x, Scalar *residual, unsigned int index) override = 0;
 
         // No jacobian definition.
         void df(const Scalar *x, Scalar *jacobian, unsigned int index) override {}

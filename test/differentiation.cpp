@@ -25,9 +25,10 @@ struct SimpleModel : duna::BaseModelJacobian<Scalar>
 {
     SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
 
-    void operator()(const Scalar *x, Scalar *residual, unsigned int index)
+    bool operator()(const Scalar *x, Scalar *residual, unsigned int index)
     {
         residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
+        return true;
     }
 
     // Jacobian
@@ -87,12 +88,13 @@ TYPED_TEST(Differentiation, SimpleModel)
 struct Powell : duna::BaseModelJacobian<double>
 {
 
-    void operator()(const double *x, double *f_x, unsigned int index)
+    bool operator()(const double *x, double *f_x, unsigned int index)
     {
         f_x[0] = x[0] + 10 * x[1];
         f_x[1] = sqrt(5) * (x[2] - x[3]);
         f_x[2] = (x[1] - 2 * x[2]) * (x[1] - 2 * x[2]);
         f_x[3] = sqrt(10) * (x[0] - x[3]) * (x[0] - x[3]);
+        return true;
     }
 
     // Should be 4 x 4 = 16. Eigen stores column major order, so we fill indices accordingly.

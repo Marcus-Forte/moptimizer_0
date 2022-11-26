@@ -14,6 +14,8 @@
 #include <duna/stopwatch.hpp>
 #include <duna/scan_matching/transformation_estimation3DOF.h>
 #include <duna/map/transformation_estimationMAP.h>
+#include <duna/models/scan_matching3dof.h>
+#include <duna/cost_function_numerical.h>
 #include <pcl/registration/icp.h>
 
 #define N_MAP 20
@@ -175,7 +177,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
         timer.tick();
         pcl::VoxelGrid<PointT> voxel;
         voxel.setInputCloud(this->source_vector_[i]);
-        voxel.setLeafSize(0.25, 0.25, 0.25);
+        voxel.setLeafSize(0.1, 0.1, 0.1);
         voxel.filter(*subsampled_input);
         timer.tock("Voxel grid.");
 
@@ -223,6 +225,122 @@ TYPED_TEST(SequenceRegistration, Indoor)
     EXPECT_NEAR(diff, 0.0, 1e-2);
 
     std::string final_cloud_filename = "sequence_3dof";
+    if (std::is_same<TypeParam, float>::value)
+        final_cloud_filename += "_float";
+    else
+        final_cloud_filename += "_double";
+
+    final_cloud_filename += ".pcd";
+    std::cout << "Saving final pointcloud to " << final_cloud_filename << std::endl;
+    pcl::io::savePCDFileBinary(final_cloud_filename, *HD_cloud);
+    pcl::io::savePCDFileBinary("ss_" + final_cloud_filename, *this->target_);
+}
+
+TYPED_TEST(SequenceRegistration, PureOptimizerIndoor)
+{
+
+    std::cout << "Map size: " << this->target_->size() << std::endl;
+    std::cout << "#Scans: " << this->source_vector_.size() << std::endl;
+
+    duna::LevenbergMarquadt<TypeParam, 3> optimizer;
+    optimizer.setMaximumIterations(50);
+
+    Eigen::Matrix<TypeParam, 4, 4> transform;
+    transform.setIdentity();
+
+    PointCloudT aligned;
+    PointCloudT::Ptr subsampled_input(new PointCloudT);
+
+    utilities::Stopwatch timer;
+    PointCloudT::Ptr HD_cloud(new PointCloudT);
+
+    pcl::NormalEstimation<PointT, PointT> ne;
+    timer.tick();
+    ne.setInputCloud(this->target_);
+    ne.setSearchMethod(this->target_kdtree_);
+    ne.setKSearch(15);
+    ne.compute(*this->target_);
+    timer.tock("Normal computation ");
+
+    PointCloudT::Ptr output(new PointCloudT);
+
+    duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+
+    // Copy full map cloud
+    *HD_cloud = *this->target_;
+    double total_reg_time = 0.0;
+    TypeParam x0[3];
+    x0[0] = 0;
+    x0[1] = 0;
+    x0[2] = 0;
+    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    for (int i = 0; i < this->source_vector_.size(); ++i)
+    // for (int i = 0; i < 2; ++i)
+    {
+        std::cout << "Registering " << i << ": " << this->source_vector_[i]->size() << std::endl;
+
+        pcl::UniformSampling<PointT> uniform_sampler;
+        uniform_sampler.setInputCloud(this->target_);
+        uniform_sampler.setRadiusSearch(0.1);
+        uniform_sampler.filter(*this->target_);
+
+        timer.tick();
+        this->target_kdtree_->setInputCloud(this->target_);
+        timer.tock("KDTree recomputation");
+
+        timer.tick();
+        pcl::VoxelGrid<PointT> voxel;
+        voxel.setInputCloud(this->source_vector_[i]);
+        voxel.setLeafSize(0.1, 0.1, 0.1);
+        voxel.filter(*subsampled_input);
+        timer.tock("Voxel grid.");
+
+        std::cout << "Subsampled # points: " << subsampled_input->size() << std::endl;
+
+        timer.tick();
+
+        scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
+        scan_matcher_model->setMaximumCorrespondenceDistance(0.15);
+        auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 1>(scan_matcher_model, subsampled_input->size());
+
+        optimizer.addCost(cost);
+        optimizer.minimize(x0);
+        optimizer.clearCosts();
+        total_reg_time += timer.tock("Registration");
+        delete cost;
+
+        // std::cout << "x = " << x0[0] << "," << x0[1] << "," << x0[2] << std::endl;
+
+        so3::convert3DOFParameterToMatrix(x0, transform);
+        pcl::transformPointCloud(*subsampled_input, *output, transform);
+
+        timer.tick();
+
+        ne.setInputCloud(output);
+        ne.setSearchSurface(this->target_);
+        ne.setSearchMethod(this->target_kdtree_);
+        ne.setKSearch(5);
+        ne.compute(*output);
+        *this->target_ += *output;
+
+        timer.tock("Accumulation and normal recomputation");
+
+        pcl::transformPointCloud(*this->source_vector_[i], *output, transform);
+
+        *HD_cloud = *HD_cloud + *output;
+    }
+    std::cout << "All registration took: " << total_reg_time << std::endl;
+
+    PointCloudT::Ptr reference_map(new PointCloudT);
+    pcl::io::loadPCDFile(TEST_DATA_DIR "/0_sequence_map_reference.pcd", *reference_map);
+
+    double diff = this->compareClouds(reference_map, HD_cloud);
+
+    std::cout << "Diff =  " << diff << std::endl;
+
+    EXPECT_NEAR(diff, 0.0, 1e-2);
+
+    std::string final_cloud_filename = "sequence_3dof_pure_optim";
     if (std::is_same<TypeParam, float>::value)
         final_cloud_filename += "_float";
     else

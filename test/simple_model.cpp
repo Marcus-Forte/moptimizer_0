@@ -11,9 +11,10 @@ struct Model : public duna::BaseModel<Scalar>
     Model(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
     // API simply has to override this method
 
-    void operator()(const Scalar *x, Scalar *residual, unsigned int index)
+    bool operator()(const Scalar *x, Scalar *residual, unsigned int index)
     {
         residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
+        return true;
     }
 
 private:
