@@ -92,8 +92,8 @@ namespace duna
                 }
             }
 
-            // duna::logger::log_debug("rejected: %d / %d", correspondences_.size(), source_->size());
-
+            if (correspondences_.size() < 4)
+                duna::logger::log_debug("Too few correspondences! (%d / %d) ", correspondences_.size(), source_->size());
             overlap = (float)correspondences_.size() / (float)source_->size();
         }
 
