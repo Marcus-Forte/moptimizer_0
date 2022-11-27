@@ -43,7 +43,7 @@ namespace duna
                 duna::logger::log_error("No target Kdtree!");
 
             corr_estimator_.setInputTarget(target_);
-            corr_estimator_.setSearchMethodTarget(kdtree_target_);
+            corr_estimator_.setSearchMethodTarget(kdtree_target_, true); // Never recompute.
             transformed_source_.reset(new PointCloudSource);
         }
 
@@ -68,12 +68,33 @@ namespace duna
             so3::convert3DOFParameterToMatrix(x, transform_);
             pcl::transformPointCloud(*source_, *transformed_source_, transform_);
 
-            duna::logger::log_debug("Updating correspondences...");
+            duna::logger::log_debug("Updating correspondences... @", maximum_corr_dist_);
 
             corr_estimator_.setInputSource(transformed_source_);
             corr_estimator_.determineCorrespondences(correspondences_, maximum_corr_dist_);
 
             duna::logger::log_debug("found: %d / %d", correspondences_.size(), source_->size());
+
+            // copy
+            if (corr_rejectors.size())
+            {
+                pcl::CorrespondencesPtr tmp_corrs(new pcl::Correspondences(correspondences_));
+                for (int i = 0; i < corr_rejectors.size(); ++i)
+                {
+                    duna::logger::log_debug("Using rejector: %s", corr_rejectors[i]->getClassName().c_str());
+                    corr_rejectors[i]->setInputCorrespondences(tmp_corrs);
+                    corr_rejectors[i]->getCorrespondences(correspondences_);
+
+                    duna::logger::log_debug("rejected: %d / %d", correspondences_.size(), tmp_corrs->size());
+                    // Modify input for the next iteration
+                    if (i < corr_rejectors.size() - 1)
+                        *tmp_corrs = correspondences_;
+                }
+            }
+
+            // duna::logger::log_debug("rejected: %d / %d", correspondences_.size(), source_->size());
+
+            overlap = (float)correspondences_.size() / (float)source_->size();
         }
 
         bool operator()(const Scalar *x, Scalar *f_x, unsigned int index)
@@ -118,15 +139,30 @@ namespace duna
             jacobian[2] = ((-s_gamma_ * c_beta_) * src_[0] + (-c_gamma_ * c_alpha_ - s_gamma_ * s_beta_ * s_alpha_) * src_[1] + (c_gamma_ * s_alpha_ - s_gamma_ * s_beta_ * c_alpha_) * src_[2]) * tgt_normal_[0] +
                           ((c_gamma_ * c_beta_) * src_[0] + (-s_gamma_ * c_alpha_ + c_gamma_ * s_beta_ * s_alpha_) * src_[1] + (s_gamma_ * s_alpha_ + c_gamma_ * s_beta_ * c_alpha_) * src_[2]) * tgt_normal_[1];
 
+            // ??
             jacobian[0] /= 2;
             jacobian[1] /= 2;
             jacobian[2] /= 2;
-
         }
 
         inline void setMaximumCorrespondenceDistance(double distance)
         {
             maximum_corr_dist_ = distance;
+        }
+
+        inline float getOverlap() const
+        {
+            return overlap;
+        }
+
+        inline void addCorrespondenceRejector(pcl::registration::CorrespondenceRejector::Ptr rejector)
+        {
+            corr_rejectors.push_back(rejector);
+        }
+
+        inline void clearCorrespondenceRejectors()
+        {
+            corr_rejectors.clear();
         }
 
     protected:
@@ -137,6 +173,7 @@ namespace duna
         pcl::Correspondences correspondences_;
         Eigen::Matrix<Scalar, 4, 4> transform_;
         pcl::registration::CorrespondenceEstimation<PointSource, PointTarget, Scalar> corr_estimator_;
+        std::vector<pcl::registration::CorrespondenceRejector::Ptr> corr_rejectors;
 
         // Angles
         Scalar s_alpha_;
@@ -147,6 +184,8 @@ namespace duna
 
         Scalar s_gamma_;
         Scalar c_gamma_;
+
+        float overlap;
 
         // Parameters
         double maximum_corr_dist_;

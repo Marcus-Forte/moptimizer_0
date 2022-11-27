@@ -118,7 +118,6 @@ namespace duna
                 }
                 jacobian_.col(j) = (residuals_plus_ - residuals_) / h[j];
             }
-
                    if (valid_errors != valid_jacobians_rows)
                 throw std::runtime_error("valid_errors != valid_jacobians_rows! ");
 

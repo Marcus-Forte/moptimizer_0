@@ -5,6 +5,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
+#include <pcl/registration/correspondence_rejection_trimmed.h>
 
 #include <duna/map/transformation_estimationMAP.h>
 #include <duna/stopwatch.hpp>
@@ -102,6 +103,8 @@ TYPED_TEST(ScanMatching, TestSimpleRegistrationNumericalCost)
     Eigen::Matrix<TypeParam, 4, 4> final_transform;
     so3::convert3DOFParameterToMatrix(x0, final_transform);
 
+    delete cost;
+
     std::cout << "Final X " << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;
     std::cout << "Final Transform: " << final_transform << std::endl;
     std::cout << "Reference Transform: " << this->reference_transform_inverse << std::endl;
@@ -118,7 +121,7 @@ TYPED_TEST(ScanMatching, TestSimpleRegistrationAnalyticalCost)
     typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
     // scan_matcher_model->setMaximumCorrespondenceDistance(0.1);
-
+    
     // duna::CostFunctionAnalytical<TypeParam, 3, 1> *cost;
     auto cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
 
@@ -136,6 +139,8 @@ TYPED_TEST(ScanMatching, TestSimpleRegistrationAnalyticalCost)
     Eigen::Matrix<TypeParam, 4, 4> final_transform;
     so3::convert3DOFParameterToMatrix(x0, final_transform);
 
+    delete cost;
+
     std::cout << "Final X " << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;
     std::cout << "Final Transform: " << final_transform << std::endl;
     std::cout << "Reference Transform: " << this->reference_transform_inverse << std::endl;
@@ -146,7 +151,7 @@ TYPED_TEST(ScanMatching, TestSimpleRegistrationAnalyticalCost)
     }
 }
 
-TYPED_TEST(ScanMatching, DISABLED_TestSimpleRegistrationWithInitialCondition)
+TYPED_TEST(ScanMatching, TestSimpleRegistrationWithInitialCondition)
 {
     typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
@@ -166,6 +171,8 @@ TYPED_TEST(ScanMatching, DISABLED_TestSimpleRegistrationWithInitialCondition)
     // Assert
     Eigen::Matrix<TypeParam, 4, 4> final_transform;
     so3::convert3DOFParameterToMatrix(x0, final_transform);
+
+    delete cost;
 
     std::cout << "Final X:\n"
               << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;

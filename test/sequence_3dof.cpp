@@ -104,12 +104,14 @@ public:
             }
         }
         target_kdtree_.reset(new pcl::search::KdTree<PointT>);
+        subsample = 0.1;
     }
 
 protected:
     PointCloudT::Ptr target_;
     std::vector<PointCloudT::Ptr> source_vector_;
     pcl::search::KdTree<PointT>::Ptr target_kdtree_;
+    float subsample;
 };
 
 using ScalarTypes = ::testing::Types<double, float>;
@@ -127,7 +129,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
     typename duna::TransformationEstimator3DOF<PointT, PointT, TypeParam>::Ptr duna_3dof_estimator(new duna::TransformationEstimator3DOF<PointT, PointT, TypeParam>(true));
     icp.setTransformationEstimation(duna_3dof_estimator);
 
-    icp.setMaximumIterations(50);
+    icp.setMaximumIterations(15);
     icp.setMaxCorrespondenceDistance(0.15);
     icp.setTransformationEpsilon(1e-6);
     // icp.setTransformationRotationEpsilon(1e-12);
@@ -177,7 +179,7 @@ TYPED_TEST(SequenceRegistration, Indoor)
         timer.tick();
         pcl::VoxelGrid<PointT> voxel;
         voxel.setInputCloud(this->source_vector_[i]);
-        voxel.setLeafSize(0.1, 0.1, 0.1);
+        voxel.setLeafSize(this->subsample, this->subsample, this->subsample);
         voxel.filter(*subsampled_input);
         timer.tock("Voxel grid.");
 
@@ -243,7 +245,7 @@ TYPED_TEST(SequenceRegistration, PureOptimizerIndoor)
     std::cout << "#Scans: " << this->source_vector_.size() << std::endl;
 
     duna::LevenbergMarquadt<TypeParam, 3> optimizer;
-    optimizer.setMaximumIterations(50);
+    optimizer.setMaximumIterations(15);
 
     Eigen::Matrix<TypeParam, 4, 4> transform;
     transform.setIdentity();
@@ -265,6 +267,9 @@ TYPED_TEST(SequenceRegistration, PureOptimizerIndoor)
     PointCloudT::Ptr output(new PointCloudT);
 
     duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+
+    pcl::registration::CorrespondenceRejectorTrimmed::Ptr rejector0(new pcl::registration::CorrespondenceRejectorTrimmed);
+    rejector0->setOverlapRatio(0.8);
 
     // Copy full map cloud
     *HD_cloud = *this->target_;
@@ -291,7 +296,7 @@ TYPED_TEST(SequenceRegistration, PureOptimizerIndoor)
         timer.tick();
         pcl::VoxelGrid<PointT> voxel;
         voxel.setInputCloud(this->source_vector_[i]);
-        voxel.setLeafSize(0.1, 0.1, 0.1);
+        voxel.setLeafSize(this->subsample, this->subsample, this->subsample);
         voxel.filter(*subsampled_input);
         timer.tock("Voxel grid.");
 
@@ -301,6 +306,7 @@ TYPED_TEST(SequenceRegistration, PureOptimizerIndoor)
 
         scan_matcher_model.reset(new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
         scan_matcher_model->setMaximumCorrespondenceDistance(0.15);
+        scan_matcher_model->addCorrespondenceRejector(rejector0);
         auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 1>(scan_matcher_model, subsampled_input->size());
 
         optimizer.addCost(cost);

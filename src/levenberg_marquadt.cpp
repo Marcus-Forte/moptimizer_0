@@ -47,8 +47,8 @@ namespace duna
                 b += cost_b;
             }
 
-            std::cout << "Hessian: " << hessian << std::endl;
-            std::cout << "b: " << b << std::endl;
+            // std::cout << "Hessian: " << hessian << std::endl;
+            // std::cout << "b: " << b << std::endl;
 
             if (isCostSmall(y0))
                 return OptimizationStatus::CONVERGED;
