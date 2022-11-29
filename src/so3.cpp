@@ -7,14 +7,13 @@ namespace so3
     template <typename Scalar>
     inline void convert6DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {
-        transform_matrix_.setZero();
+        transform_matrix_.setIdentity();
         transform_matrix_(0, 3) = x[0];
         transform_matrix_(1, 3) = x[1];
         transform_matrix_(2, 3) = x[2];
         transform_matrix_(3, 3) = 1;
         // EXP
         Eigen::Matrix<Scalar, 3, 1> delta(x[3], x[4], x[5]);
-        delta = 2 * delta; // TODO why ?
         Eigen::Matrix<Scalar, 3, 3> rot;
         Exp<Scalar>(delta, rot);
         transform_matrix_.topLeftCorner(3, 3) = rot;
@@ -23,11 +22,10 @@ namespace so3
     template <typename Scalar>
     inline void convert3DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {
-        transform_matrix_.setZero();
+        transform_matrix_.setIdentity();
         transform_matrix_(3, 3) = 1;
 
         Eigen::Matrix<Scalar, 3, 1> delta(x[0], x[1], x[2]);
-        delta = 1 * delta; // TODO why ?
         Eigen::Matrix<Scalar, 3, 3> rot;
         Exp<Scalar>(delta, rot);
         transform_matrix_.topLeftCorner(3, 3) = rot;
@@ -36,9 +34,8 @@ namespace so3
     template <typename Scalar>
     inline void convert3DOFParameterToMatrix3(const Scalar *x, Eigen::Matrix<Scalar, 3, 3> &transform_matrix_)
     {
-        transform_matrix_.setZero();
+        transform_matrix_.setIdentity();
         Eigen::Matrix<Scalar, 3, 1> delta(x[0], x[1], x[2]);
-        delta = 1 * delta; // TODO why ?
         Eigen::Matrix<Scalar, 3, 3> rot;
         Exp<Scalar>(delta, transform_matrix_);
     }
@@ -72,30 +69,20 @@ namespace so3
     template <typename Scalar>
     inline void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
     {
-        Eigen::Vector3d delta_conv(static_cast<double>(delta[0]), static_cast<double>(delta[1]), static_cast<double>(delta[2]));
+        Scalar delta_norm = delta.norm();
 
-        double theta_sq = delta_conv.dot(delta_conv);
-
-        double theta;
-        double imag_factor;
-        double real_factor;
-        if (theta_sq < 1e-3)
+        // Rodrigues Tranformation
+        if (delta_norm > 10.0 * (std::numeric_limits<Scalar>::epsilon()))
         {
-            theta = 0;
-            double theta_quad = theta_sq * theta_sq;
-            imag_factor = 0.5 - 1.0 / 48.0 * theta_sq + 1.0 / 3840.0 * theta_quad;
-            real_factor = 1.0 - 1.0 / 8.0 * theta_sq + 1.0 / 384.0 * theta_quad;
+            Eigen::Matrix<Scalar, 3, 1> r_axis = delta / delta_norm;
+            Eigen::Matrix<Scalar, 3, 3> K;
+            K << SKEW_SYMMETRIC_FROM(r_axis);
+            R.noalias() = Eigen::Matrix<Scalar, 3, 3>::Identity() + std::sin(delta_norm) * K + (1.0 - std::cos(delta_norm)) * K * K;
         }
         else
         {
-            theta = std::sqrt(theta_sq);
-            double half_theta = 0.5 * theta;
-            imag_factor = std::sin(half_theta) / theta;
-            real_factor = std::cos(half_theta);
+            R.noalias() = Eigen::Matrix<Scalar, 3, 3>::Identity();
         }
-
-        Eigen::Quaterniond q(real_factor, imag_factor * delta_conv[0], imag_factor * delta_conv[1], imag_factor * delta_conv[2]);
-        R = q.toRotationMatrix().template cast<Scalar>();
     }
 
     template <typename Scalar>

@@ -11,6 +11,8 @@
 #include <pcl/registration/transformation_estimation_point_to_plane.h>
 
 #include <duna/scan_matching/transformation_estimation6DOF.h>
+#include <duna/models/scan_matching3dof.h>
+#include <duna/models/scan_matching6dof.h>
 #include <duna/stopwatch.hpp>
 
 using PointT = pcl::PointNormal;
@@ -74,7 +76,7 @@ protected:
 };
 
 // PCL fails this one
-TYPED_TEST(RegistrationPoint2Plane, Trannslation)
+TYPED_TEST(RegistrationPoint2Plane, Translation)
 {
     this->reference_transform(0, 3) = 0.5;
     this->reference_transform(1, 3) = 0.2;
@@ -99,16 +101,27 @@ TYPED_TEST(RegistrationPoint2Plane, Trannslation)
 
     std::cerr << "PCL ICP: \n";
     std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+    duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+    duna::LevenbergMarquadt<TypeParam, 6> optimizer;
+    typename duna::ScanMatching6DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    scan_matcher_model.reset(new duna::ScanMatching6DOF<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
+    scan_matcher_model->setMaximumCorrespondenceDistance(10);
 
-    this->pcl_icp.setTransformationEstimation(duna_transform);
-    timer.tick();
-    this->pcl_icp.align(output);
-    Eigen::Matrix<TypeParam, 4, 4> final_transform_duna = this->pcl_icp.getFinalTransformation();
-    timer.tock("DUNA LM");
+    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 6, 1>(scan_matcher_model, this->source->size());
+
+    optimizer.addCost(cost);
+
+    TypeParam x0[6] = {0,0,0,0,0,0};
+    // Act
+    optimizer.minimize(x0);
+
+    Eigen::Matrix<TypeParam, 4, 4> final_transform_duna;
+    so3::convert6DOFParameterToMatrix(x0, final_transform_duna);
+
 
     std::cerr
         << "PCL/DUNA ICP: \n";
-    std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+    std::cerr << final_transform_duna << std::endl;
 
     for (int i = 0; i < reference_transform_inverse.size(); ++i)
     {

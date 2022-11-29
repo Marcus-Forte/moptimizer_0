@@ -137,7 +137,7 @@ TEST_F(CameraCalibration, GoodWeather)
 
     for (int i = 0; i < MODEL_PARAMETERS; ++i)
     {
-        EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
+        EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);
     }
 
     std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);

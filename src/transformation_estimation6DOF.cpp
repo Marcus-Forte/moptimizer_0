@@ -1,5 +1,5 @@
 #include <duna/scan_matching/transformation_estimation6DOF.h>
-
+#include <duna/cost_function_analytical.h>
 namespace duna
 {
     template <typename PointSource, typename PointTarget, typename Scalar>
@@ -14,13 +14,13 @@ namespace duna
 
         if (m_point2plane)
         {
-            cost = new duna::CostFunctionNumericalDiff<Scalar, 6, 1>(
+            cost = new duna::CostFunctionAnalytical<Scalar, 6, 1>(
                 typename duna::Point2Plane<PointSource, PointTarget, Scalar>::Ptr(new duna::Point2Plane<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences)));
         }
         else
         {
-            cost = new duna::CostFunctionNumericalDiff<Scalar, 6, 1>(
-                typename duna::Point2Plane<PointSource, PointTarget, Scalar>::Ptr(new duna::Point2Point<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences)));
+            cost = new duna::CostFunctionAnalytical<Scalar, 6, 1>(
+                typename duna::Point2Point<PointSource, PointTarget, Scalar>::Ptr(new duna::Point2Point<PointSource, PointTarget, Scalar>(cloud_src, cloud_tgt, correspondences)));
         }
 
         // std::cout << "Duna transform estimator\n";

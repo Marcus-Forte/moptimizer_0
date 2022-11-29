@@ -56,9 +56,9 @@ namespace duna
             jacobian[1] = tgt_normal_[1];
             jacobian[2] = tgt_normal_[2];
             // Not sure why we multiply by two. Numerical Diff comparison suggested that.
-            jacobian[3] = 2 * (tgt_normal_[2] * src_[1] - tgt_normal_[1] * src_[2]);
-            jacobian[4] = 2 * (tgt_normal_[0] * src_[2] - tgt_normal_[2] * src_[0]);
-            jacobian[5] = 2 * (tgt_normal_[1] * src_[0] - tgt_normal_[0] * src_[1]);
+            jacobian[3] = (tgt_normal_[2] * src_[1] - tgt_normal_[1] * src_[2]);
+            jacobian[4] = (tgt_normal_[0] * src_[2] - tgt_normal_[2] * src_[0]);
+            jacobian[5] = (tgt_normal_[1] * src_[0] - tgt_normal_[0] * src_[1]);
         }
 
     protected:
