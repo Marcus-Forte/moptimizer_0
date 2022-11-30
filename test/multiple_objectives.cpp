@@ -93,7 +93,7 @@ struct Model : public duna::BaseModel<double>
         m_dataset = dataset;
     }
 
-    inline bool operator()(const double * x, double* f_x, unsigned int index)
+    inline bool f(const double * x, double* f_x, unsigned int index) override
     {
         const double &x_ = m_dataset[2*index];
         const double &y_ = m_dataset[2*index + 1];

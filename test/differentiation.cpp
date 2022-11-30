@@ -9,8 +9,9 @@
 
 #include <duna/models/point2point.h>
 #include <duna/models/point2plane.h>
+#include <duna/models/scan_matching3dof.h>
 
-/* We compare with numerical diff for resonable results. 
+/* We compare with numerical diff for resonable results.
 It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
 
 int main(int argc, char **argv)
@@ -23,22 +24,26 @@ int main(int argc, char **argv)
 template <typename Scalar = double>
 struct SimpleModel : duna::BaseModelJacobian<Scalar>
 {
-    SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
+    SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y){};
 
-    bool operator()(const Scalar *x, Scalar *residual, unsigned int index)
+    // Defining operator for comparison.
+    bool f(const Scalar *x, Scalar *f_x, unsigned int index) override
     {
-        residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
+        f_x[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
         return true;
     }
 
     // Jacobian
-    void df(const Scalar *x, Scalar *jacobian, unsigned int index)
+    bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override
     {
         Scalar denominator = (x[1] + data_x[index]);
+
+        f_x[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
 
         // Row major
         jacobian[0] = -data_x[index] / denominator;
         jacobian[1] = (x[0] * data_x[index]) / (denominator * denominator);
+        return true;
     }
 
 private:
@@ -49,7 +54,6 @@ private:
 template <typename Scalar>
 class Differentiation : public ::testing::Test
 {
-
 };
 
 using ScalarTypes = ::testing::Types<float, double>;
@@ -88,15 +92,6 @@ TYPED_TEST(Differentiation, SimpleModel)
 struct Powell : duna::BaseModelJacobian<double>
 {
 
-    bool operator()(const double *x, double *f_x, unsigned int index)
-    {
-        f_x[0] = x[0] + 10 * x[1];
-        f_x[1] = sqrt(5) * (x[2] - x[3]);
-        f_x[2] = (x[1] - 2 * x[2]) * (x[1] - 2 * x[2]);
-        f_x[3] = sqrt(10) * (x[0] - x[3]) * (x[0] - x[3]);
-        return true;
-    }
-
     // Should be 4 x 4 = 16. Eigen stores column major order, so we fill indices accordingly.
 
     /*      [ df0/dx0 df0/dx1 df0/dx2 df0/dx3 ]
@@ -110,9 +105,20 @@ struct Powell : duna::BaseModelJacobian<double>
                     .
                     .
     */
-    /* ROW MAJOR*/
-    void df(const double *x, double *jacobian, unsigned int index)
+    bool f(const double *x, double *f_x, unsigned int index) override
     {
+        f_x[0] = x[0] + 10 * x[1];
+        f_x[1] = sqrt(5) * (x[2] - x[3]);
+        f_x[2] = (x[1] - 2 * x[2]) * (x[1] - 2 * x[2]);
+        f_x[3] = sqrt(10) * (x[0] - x[3]) * (x[0] - x[3]);
+        return true;
+    }
+
+    /* ROW MAJOR*/
+    bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override
+    {
+
+        this->f(x,f_x,index);
 
         // Df / dx0
         jacobian[0] = 1;
@@ -137,6 +143,8 @@ struct Powell : duna::BaseModelJacobian<double>
         jacobian[7] = -sqrt(5);
         jacobian[11] = 0;
         jacobian[15] = sqrt(10) * 2 * (x[0] - x[3]) * (-1);
+
+        return true;
     }
 };
 
@@ -220,7 +228,7 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
               << HessianNum << std::endl;
 }
 
-TYPED_TEST(Differentiation, Poin2PlaneDistance)
+TYPED_TEST(Differentiation, Poin2PlaneDistanceSmallAngles)
 {
     using PointT = pcl::PointNormal;
 
@@ -285,3 +293,68 @@ TYPED_TEST(Differentiation, Poin2PlaneDistance)
     std::cerr << "Hessian Numerical:\n"
               << HessianNum << std::endl;
 }
+
+TYPED_TEST(Differentiation, ScanMatching3DOF)
+{
+    using PointT = pcl::PointNormal;
+
+    pcl::PointCloud<PointT>::Ptr source(new pcl::PointCloud<PointT>);
+    pcl::PointCloud<PointT>::Ptr target(new pcl::PointCloud<PointT>);
+
+    PointT src_pt;
+    src_pt.x = 10;
+    src_pt.y = 11;
+    src_pt.z = 12;
+
+    PointT tgt_pt;
+    tgt_pt.x = 14;
+    tgt_pt.y = 26;
+    tgt_pt.z = 3;
+
+    tgt_pt.normal_x = 1.0;
+    tgt_pt.normal_y = 2.0;
+    tgt_pt.normal_z = 3.0;
+    tgt_pt.getNormalVector3fMap().normalize();
+
+    source->push_back(src_pt);
+    target->push_back(tgt_pt);
+
+    pcl::search::KdTree<PointT>::Ptr target_kdtree(new pcl::search::KdTree<PointT>);
+    target_kdtree->setInputCloud(target);
+
+    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr model (new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(source, target, target_kdtree));
+    
+    // Currently only works close to 0
+    TypeParam x0[3];
+    x0[0] = 0.1;
+    x0[1] = 0.1;
+    x0[2] = 0.1;
+
+    model->update(x0);
+    
+    duna::CostFunctionNumericalDiff<TypeParam, 3, 1> cost_num(model);
+    duna::CostFunctionAnalytical<TypeParam, 3, 1> cost_ana(model);
+
+    Eigen::Matrix<TypeParam, 3, 3> HessianNum;
+    Eigen::Matrix<TypeParam, 3, 3> Hessian;
+    Eigen::Matrix<TypeParam, 3, 1> Residuals;
+
+  
+    cost_num.linearize(x0, HessianNum.data(), Residuals.data());
+    cost_ana.linearize(x0, Hessian.data(), Residuals.data());
+
+    for (int i = 0; i < Hessian.size(); ++i)
+    {
+        if (std::is_same<TypeParam, float>::value)
+            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
+        else // double
+            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
+    }
+
+    std::cerr << "Hessian:\n"
+              << Hessian << std::endl;
+    std::cerr << "Hessian Numerical:\n"
+              << HessianNum << std::endl;
+}
+
+

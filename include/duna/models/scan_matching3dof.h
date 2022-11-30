@@ -5,7 +5,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/correspondence.h>
 #include <pcl/registration/correspondence_estimation.h>
-
+#include <pcl/registration/correspondence_rejection.h>
+#include <pcl/common/transforms.h>
 /* Unified point to plane 3DOF registration model. */
 namespace duna
 {
@@ -97,7 +98,7 @@ namespace duna
             overlap = (float)correspondences_.size() / (float)source_->size();
         }
 
-        bool operator()(const Scalar *x, Scalar *f_x, unsigned int index)
+        virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) override
         {
 
             if (index >= correspondences_.size())
@@ -116,18 +117,46 @@ namespace duna
             return true;
         }
 
-        virtual void df(const Scalar *x, Scalar *jacobian, unsigned int index)
+        virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override
         {
             if (index >= correspondences_.size())
-                return;
+                return false;
+
             const PointSource &src_pt = source_->points[correspondences_[index].index_query];
             const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);
-            // Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
-            Eigen::Matrix<Scalar, 3, 1> tgt_normal_(static_cast<Scalar>(tgt_pt.normal_x), static_cast<Scalar>(tgt_pt.normal_y), static_cast<Scalar>(tgt_pt.normal_z));
+            Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
+            Eigen::Matrix<Scalar, 4, 1> tgt_normal_(static_cast<Scalar>(tgt_pt.normal_x), static_cast<Scalar>(tgt_pt.normal_y), static_cast<Scalar>(tgt_pt.normal_z), 0.0);
 
-            // Not sure why we multiply by two. Numerical Diff comparison suggested that.
+            Eigen::Matrix<Scalar, 4, 1> &&warped_src_ = transform_ * src_;
+
+            f_x[0] = (warped_src_ - tgt_).dot(tgt_normal_);
+
+            // df/dx = R(theta) * skew(src) * RightJaco(theta)?
+
+            // Eigen::Map<const Eigen::Matrix<Scalar, 3, 1>> x_map(x);
+            // Eigen::Map<Eigen::Matrix<Scalar, 3, 1>> jacobian_(jacobian);
+            // Eigen::Matrix<Scalar, 3, 3> right_jacobian;
+            // Eigen::Matrix<Scalar, 3, 3> src_skew;
+            // src_skew << SKEW_SYMMETRIC_FROM(src_);
+
+            // so3::rightJacobian<Scalar>(x_map, right_jacobian);
+            // so3::Exp()
+
+            // jacobian_ = -transform_ * src_skew * right_jacobian;
+
+            // Old
+
+            // Scalar s_alpha_ = std::sin(x[0]);
+            // Scalar c_alpha_ = std::cos(x[0]);
+
+            // Scalar s_beta_ = std::sin(x[1]);
+            // Scalar c_beta_ = std::cos(x[1]);
+
+            // Scalar s_gamma_ = std::sin(x[2]);
+            // Scalar c_gamma_ = std::cos(x[2]);
+
             jacobian[0] = ((s_gamma_ * s_alpha_ + c_gamma_ * s_beta_ * c_alpha_) * src_[1] + (s_gamma_ * c_alpha_ - c_gamma_ * s_beta_ * s_alpha_) * src_[2]) * tgt_normal_[0] +
                           ((-c_gamma_ * s_alpha_ + s_gamma_ * s_beta_ * c_alpha_) * src_[1] + (-c_gamma_ * c_alpha_ - s_gamma_ * s_beta_ * s_alpha_) * src_[2]) * tgt_normal_[1] +
                           ((c_beta_ * c_alpha_) * src_[1] + (-c_beta_ * s_alpha_) * src_[2]) * tgt_normal_[2];
@@ -139,10 +168,8 @@ namespace duna
             jacobian[2] = ((-s_gamma_ * c_beta_) * src_[0] + (-c_gamma_ * c_alpha_ - s_gamma_ * s_beta_ * s_alpha_) * src_[1] + (c_gamma_ * s_alpha_ - s_gamma_ * s_beta_ * c_alpha_) * src_[2]) * tgt_normal_[0] +
                           ((c_gamma_ * c_beta_) * src_[0] + (-s_gamma_ * c_alpha_ + c_gamma_ * s_beta_ * s_alpha_) * src_[1] + (s_gamma_ * s_alpha_ + c_gamma_ * s_beta_ * c_alpha_) * src_[2]) * tgt_normal_[1];
 
-            // ??
-            jacobian[0] /= 2;
-            jacobian[1] /= 2;
-            jacobian[2] /= 2;
+          
+            return true;
         }
 
         inline void setMaximumCorrespondenceDistance(double distance)
@@ -175,7 +202,6 @@ namespace duna
         pcl::registration::CorrespondenceEstimation<PointSource, PointTarget, Scalar> corr_estimator_;
         std::vector<pcl::registration::CorrespondenceRejector::Ptr> corr_rejectors;
 
-        // Angles
         Scalar s_alpha_;
         Scalar c_alpha_;
 

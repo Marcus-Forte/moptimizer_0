@@ -88,7 +88,7 @@ namespace duna
             overlap = (float)correspondences_.size() / (float)source_->size();
         }
 
-        bool operator()(const Scalar *x, Scalar *f_x, unsigned int index)
+        bool f(const Scalar *x, Scalar *f_x, unsigned int index) override
         {
 
             if (index >= correspondences_.size())

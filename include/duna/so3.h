@@ -36,4 +36,7 @@ namespace so3
 
     template <typename Scalar>
     void inverseRightJacobian(const Eigen::Matrix<Scalar, 3, 1> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> inv_jacobian);
+
+    template <typename Scalar>
+    void rightJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> jacobian);
 }

@@ -48,7 +48,7 @@ namespace duna
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                if ((*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
+                if (model_->f(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
                     valid_errors++;
             }
 
@@ -89,7 +89,7 @@ namespace duna
 
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                if ((*model_)(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
+                if (model_->f(x, residuals_.template block<N_MODEL_OUTPUTS, 1>(valid_errors * N_MODEL_OUTPUTS, 0).data(), i))
                     valid_errors++;
             }
 
@@ -113,7 +113,7 @@ namespace duna
 
                 for (int i = 0; i < m_num_residuals; ++i)
                 {
-                    if ((*model_)(x_plus[j].data(), residuals_plus_.template block<N_MODEL_OUTPUTS, 1>(valid_jacobians_rows * N_MODEL_OUTPUTS, 0).data(), i))
+                    if (model_->f(x_plus[j].data(), residuals_plus_.template block<N_MODEL_OUTPUTS, 1>(valid_jacobians_rows * N_MODEL_OUTPUTS, 0).data(), i))
                         valid_jacobians_rows++;
                 }
                 jacobian_.col(j) = (residuals_plus_ - residuals_) / h[j];

@@ -24,7 +24,7 @@ namespace duna
             so3::convert6DOFParameterToMatrix(x, transform);
         }
 
-        bool operator()(const Scalar *x, Scalar *f_x, unsigned int index) override
+        bool f(const Scalar *x, Scalar *f_x, unsigned int index) override
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
             const PointTarget &tgt_pt = target.points[corrs[index].index_match];
@@ -34,12 +34,11 @@ namespace duna
 
             Eigen::Matrix<Scalar, 4, 1> warped_src_ = transform * src_;
             warped_src_[3] = 0;
-
             f_x[0] = (warped_src_ - tgt_).norm();
             return true;
         }
 
-        void df(const Scalar *x, Scalar *jacobian, unsigned int index) override
+        bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override
         {
             const PointSource &src_pt = source.points[corrs[index].index_query];
             const PointTarget &tgt_pt = target.points[corrs[index].index_match];
@@ -48,6 +47,8 @@ namespace duna
             Eigen::Matrix<Scalar, 4, 1> tgt_(tgt_pt.x, tgt_pt.y, tgt_pt.z, 0);
 
             Eigen::Matrix<Scalar, 4, 1> warped_src_ = transform * src_;
+            warped_src_[3] = 0;
+            f_x[0] = (warped_src_ - tgt_).norm();
 
             Eigen::Matrix<Scalar, 4, 1> error = warped_src_ - tgt_;
 
@@ -66,6 +67,7 @@ namespace duna
             jacobian[3] = rho * (src_[1] * dz - src_[2] * dy);
             jacobian[4] = rho * (src_[2] * dx - src_[0] * dz);
             jacobian[5] = rho * (src_[0] * dy - src_[1] * dx);
+            return true;
         }
 
     protected:

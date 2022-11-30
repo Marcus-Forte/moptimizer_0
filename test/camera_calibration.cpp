@@ -38,7 +38,7 @@ struct Model : public duna::BaseModel<double>
         so3::convert6DOFParameterToMatrix(x, transform);
     }
 
-    inline bool operator()(const double *x, double *residual, unsigned int index) override
+    inline bool f(const double *x, double *residual, unsigned int index) override
     {
         Eigen::Vector3d out_pixel;
         out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];

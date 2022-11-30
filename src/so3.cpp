@@ -161,6 +161,24 @@ namespace so3
         inv_jacobian = Eigen::Matrix<Scalar, 3, 3>::Identity() + 0.5 * r_skew + factor * r_skew * r_skew;
     }
 
+    template <typename Scalar>
+    void rightJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> right_jacobian)
+    {
+        double theta_sq = r.dot(r);
+
+        if (theta_sq < 1e-5)
+        {
+            right_jacobian = Eigen::Matrix<Scalar, 3, 3>::Identity();
+            return;
+        }
+
+        Eigen::Matrix<Scalar, 3, 3> r_skew;
+        r_skew << SKEW_SYMMETRIC_FROM(r);
+
+        Scalar factor = (1.0 - cos(r.norm())) / theta_sq;
+        right_jacobian = Eigen::Matrix<Scalar, 3, 3>::Identity() - factor * r_skew;
+    }
+
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
     template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
@@ -184,6 +202,9 @@ namespace so3
 
     template void DUNA_OPTIMIZER_EXPORT inverseRightJacobian<float>(const Eigen::Matrix<float, 3, 1> &r, Eigen::Ref<Eigen::Matrix<float, 3, 3>> inv_jacobian);
     template void DUNA_OPTIMIZER_EXPORT inverseRightJacobian<double>(const Eigen::Matrix<double, 3, 1> &r, Eigen::Ref<Eigen::Matrix<double, 3, 3>> inv_jacobian);
+
+    template void DUNA_OPTIMIZER_EXPORT rightJacobian<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<float, 3, 3>> jacobian);
+    template void DUNA_OPTIMIZER_EXPORT rightJacobian<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<double, 3, 3>> jacobian);
 
     template void DUNA_OPTIMIZER_EXPORT convertMatrixTo3DOFParameter<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 3, 1> &x);
     template void DUNA_OPTIMIZER_EXPORT convertMatrixTo3DOFParameter<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 3, 1> &x);

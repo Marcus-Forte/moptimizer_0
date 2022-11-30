@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
 struct Model : public duna::BaseModel<double>
 {
-    bool operator()(const double *x, double *f_x, unsigned int index)
+    bool f(const double *x, double *f_x, unsigned int index) override
     {
         f_x[0] = x[0] + 10 * x[1];
         f_x[1] = sqrt(5) * (x[2] - x[3]);

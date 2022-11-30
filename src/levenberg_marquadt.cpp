@@ -122,7 +122,7 @@ namespace duna
     template <class Scalar, int N_PARAMETERS>
     bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isCostSmall(Scalar cost_sum)
     {
-        if (std::abs(cost_sum) < 1000 * (std::numeric_limits<Scalar>::epsilon()))
+        if (std::abs(cost_sum) < 10 * (std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
     }
