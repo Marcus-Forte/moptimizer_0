@@ -120,7 +120,7 @@ namespace duna
             JacobianMatrix &&valid_jacobian = jacobian_.block(0, 0, valid_jacobians_rows * N_MODEL_OUTPUTS, N_PARAMETERS);
             ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
-            std::cout << "Jacobian: \n" << valid_jacobian << std::endl;
+            std::cout << "Num Jacobian: \n" << valid_jacobian << std::endl;
 
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();

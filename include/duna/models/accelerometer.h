@@ -9,7 +9,7 @@ namespace duna
     class Accelerometer : public BaseModelJacobian<double>
     {
     public:
-        Accelerometer() : gravity_(0, 0, 1)
+        Accelerometer(const double * measurements) : measurements_(measurements), gravity_(0, 0, 1)
         {
             transform_.setIdentity();
         }
@@ -27,16 +27,32 @@ namespace duna
             Eigen::Vector3d rotated_gravity = transform_ * gravity_;
 
             // f_x should be the difference between what was measured by ACC and estimated state!
-            f_x[0] = rotated_gravity[0];
-            f_x[1] = rotated_gravity[1];
-            f_x[2] = rotated_gravity[2];
+            f_x[0] = measurements_[0] - rotated_gravity[0];
+            f_x[1] = measurements_[1] - rotated_gravity[1];
+            f_x[2] = measurements_[2] - rotated_gravity[2];
 
             return true;
         }
 
         bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override
         {
+            // fill residue
             f(x,f_x, index);
+
+            Eigen::Map<const Eigen::Vector3d> x_map(x);
+            Eigen::Map<Eigen::Matrix3d> jacobian_map(jacobian);
+            Eigen::Matrix3d skew;
+            Eigen::Matrix3d r_jac;
+            skew << SKEW_SYMMETRIC_FROM(gravity_);
+
+            so3::rightJacobian<double>(x_map,r_jac);
+            jacobian_map = so3::Exp<double>(x_map) * skew *  r_jac;
+
+            
+
+            // jacobian_map = skew;
+
+            std::cout << "An Jacobian:\n" << jacobian_map << std::endl;
 
             // Fill jacobian (3x3)
             return true;
@@ -45,5 +61,7 @@ namespace duna
     private:
         Eigen::Matrix3d transform_;
         Eigen::Vector3d gravity_;
+
+        const double* measurements_;
     };
 } // namespace
