@@ -33,11 +33,6 @@ namespace duna
         CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
         CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
 
-        void update(const Scalar *x) override
-        {
-            model_->update(x);
-        }
-
         Scalar computeCost(const Scalar *x) override
         {
             Scalar sum = 0;

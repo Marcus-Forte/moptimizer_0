@@ -115,7 +115,7 @@ TYPED_TEST(ScanMatching, TestSimpleRegistrationNumericalCost)
     }
 }
 
-TYPED_TEST(ScanMatching, TestSimpleRegistrationAnalyticalCost)
+TYPED_TEST(ScanMatching, DISABLED_TestSimpleRegistrationAnalyticalCost)
 {
 
     typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr scan_matcher_model;

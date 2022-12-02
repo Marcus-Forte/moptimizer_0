@@ -10,6 +10,7 @@
 #include <duna/models/point2point.h>
 #include <duna/models/point2plane.h>
 #include <duna/models/scan_matching3dof.h>
+#include <duna/models/accelerometer.h>
 
 /* We compare with numerical diff for resonable results.
 It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
@@ -294,7 +295,7 @@ TYPED_TEST(Differentiation, Poin2PlaneDistanceSmallAngles)
               << HessianNum << std::endl;
 }
 
-TYPED_TEST(Differentiation, ScanMatching3DOF)
+TYPED_TEST(Differentiation, DISABLED_ScanMatching3DOF)
 {
     using PointT = pcl::PointNormal;
 
@@ -357,4 +358,25 @@ TYPED_TEST(Differentiation, ScanMatching3DOF)
               << HessianNum << std::endl;
 }
 
+TEST(Differentiation, Accelerometer)
+{
+    typename duna::IBaseModel<double>::Ptr acc(new duna::Accelerometer());
+    double x[3];
+    double f_x[3];
+    x[0] = 1;
+    x[1] = 1;
+    x[2] = 1;
+    
+    acc->setup(x);
+    acc->f_df(x,f_x,nullptr,0);
+
+    duna::CostFunctionNumericalDiff<double,3,3> cost(acc,1);
+    Eigen::Matrix3d hessian;
+    Eigen::Vector3d b;
+    cost.linearize(x,hessian.data(),b.data());
+
+    std::cout << "H = " << hessian << std::endl;
+
+    std::cout << f_x[0] << "," << f_x[1] << "," << f_x[2] << std::endl;
+}
 

@@ -4,7 +4,7 @@
 #include <duna/stopwatch.hpp>
 #include <duna/logger.h>
 #include <omp.h>
-
+#include <duna/so3.h>
 #include <memory>
 /* Draft space for testing quick stuff */
 int num_param = 100;
@@ -50,6 +50,19 @@ public:
         std::cout << "GrandChild\n";
     }
 };
+
+TEST(Rotate, Rotate)
+{
+    Eigen::Vector3f point(1,0,0);
+    Eigen::Vector3f delta(M_PI_2,M_PI_2,0);
+    Eigen::Matrix3f R;
+    so3::Exp<float>(delta,R);
+
+    std::cout << R << std::endl;
+
+    point = R * point;
+    std::cout << point << std::endl;
+}
 
 TEST(BaseOverrideZerom, BaseOverrideZerom)
 {

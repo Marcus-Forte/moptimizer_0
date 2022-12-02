@@ -6,7 +6,7 @@
 
 #define MODEL_PARAMETERS 6
 #define MODEL_OUTPUTS 2
-#define TOLERANCE 1e-5
+#define TOLERANCE 5e-5
 
 struct Model : public duna::BaseModel<double>
 {
@@ -121,12 +121,12 @@ protected:
 
     const double ceres_solution[MODEL_PARAMETERS] =
         {
-            -0.0101065,
+            -0.0101064,
             0.0206767,
             -0.0582803,
-            0.00917777,
-            -0.000653687,
-            0.0137064};
+            0.0183564,
+            -0.00130745,
+            0.027414};
 };
 
 TEST_F(CameraCalibration, GoodWeather)
@@ -146,12 +146,12 @@ TEST_F(CameraCalibration, GoodWeather)
 TEST_F(CameraCalibration, BadWeather)
 {
     double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
- 
+
     optimizer.minimize(x0);
     optimizer.setMaximumIterations(50);
     for (int i = 0; i < MODEL_PARAMETERS; ++i)
     {
-        EXPECT_NEAR(x0[i], matlab_solution[i], TOLERANCE);
+        EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);
     }
 
     std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);

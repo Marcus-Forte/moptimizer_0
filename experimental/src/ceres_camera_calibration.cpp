@@ -6,27 +6,28 @@ using namespace ceres;
 template <typename Scalar>
 inline void convert6DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
 {
-    transform_matrix_.setZero();
-    transform_matrix_(0, 3) = x[0];
-    transform_matrix_(1, 3) = x[1];
-    transform_matrix_(2, 3) = x[2];
-    transform_matrix_(3, 3) = 1;
+    
+    // transform_matrix_.setZero();
+    // transform_matrix_(0, 3) = x[0];
+    // transform_matrix_(1, 3) = x[1];
+    // transform_matrix_(2, 3) = x[2];
+    // transform_matrix_(3, 3) = 1;
 
-    // Compute w from the unit quaternion
-    Eigen::Quaternion<Scalar> q(0, x[3], x[4], x[5]);
+    // // Compute w from the unit quaternion
+    // Eigen::Quaternion<Scalar> q(0, x[3], x[4], x[5]);
 
-    Scalar &&q_dot_q = q.dot(q);
+    // Scalar &&q_dot_q = q.dot(q);
 
-    // if (q_dot_q > 1)
-    // {
-    //     q = q.normalized().coeffs() * 0.1;
-    //     q_dot_q = q.dot(q);
-    //     // std::cerr << "adjusting...\n";
-    // }
+    // // if (q_dot_q > 1)
+    // // {
+    // //     q = q.normalized().coeffs() * 0.1;
+    // //     q_dot_q = q.dot(q);
+    // //     // std::cerr << "adjusting...\n";
+    // // }
 
-    q.w() = static_cast<Scalar>(std::sqrt(1 - q_dot_q));
-    q.normalize();
-    transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
+    // q.w() = static_cast<Scalar>(std::sqrt(1 - q_dot_q));
+    // q.normalize();
+    // transform_matrix_.topLeftCorner(3, 3) = q.toRotationMatrix();
 }
 
 struct Model
@@ -48,7 +49,7 @@ struct Model
 
         Eigen::Vector3d out_pixel;
         Eigen::Matrix<T, 4, 4> transform;
-        convert6DOFParameterToMatrix(x, transform);
+        so3::convert6DOFParameterToMatrix(x, transform);
 
         out_pixel = camera_model * transform * camera_laser_conversion * point;
 
