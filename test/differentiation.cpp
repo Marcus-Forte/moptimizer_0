@@ -6,11 +6,15 @@
 #include <duna/levenberg_marquadt.h>
 #include <duna/so3.h>
 #include <pcl/point_types.h>
+#include <duna/logger.h>
 
 #include <duna/models/point2point.h>
 #include <duna/models/point2plane.h>
 #include <duna/models/scan_matching3dof.h>
 #include <duna/models/accelerometer.h>
+
+// extern duna::logger::s_level_;
+duna::VERBOSITY_LEVEL duna::logger::s_level_;
 
 /* We compare with numerical diff for resonable results.
 It is very difficult that both yield the same results if something is wrong with either Numerical or Analytical Diff */
@@ -360,23 +364,31 @@ TYPED_TEST(Differentiation, DISABLED_ScanMatching3DOF)
 
 TEST(Differentiation, Accelerometer)
 {
-    typename duna::IBaseModel<double>::Ptr acc(new duna::Accelerometer());
+    double measurement[3];
+    measurement[0] = 0;
+    measurement[1] = 0;
+    measurement[2] = 0;
+    typename duna::IBaseModel<double>::Ptr acc(new duna::Accelerometer(measurement));
     double x[3];
     double f_x[3];
-    x[0] = 1;
-    x[1] = 1;
-    x[2] = 1;
+    x[0] = 0.0;
+    x[1] = 0.0;
+    x[2] = 1.0;
     
-    acc->setup(x);
-    acc->f_df(x,f_x,nullptr,0);
+    // acc->setup(x);
+    // acc->f_df(x,f_x,nullptr,0);
 
     duna::CostFunctionNumericalDiff<double,3,3> cost(acc,1);
+    duna::CostFunctionAnalytical<double,3,3> cost_a(acc,1);
     Eigen::Matrix3d hessian;
+    Eigen::Matrix3d hessian_a;
     Eigen::Vector3d b;
     cost.linearize(x,hessian.data(),b.data());
+    cost_a.linearize(x,hessian_a.data(),b.data());
 
-    std::cout << "H = " << hessian << std::endl;
+    std::cout << "H = \n" << hessian << std::endl;
+    std::cout << "H_a = \n" << hessian_a << std::endl;
 
-    std::cout << f_x[0] << "," << f_x[1] << "," << f_x[2] << std::endl;
+    std::cout << "f(x) = " << f_x[0] << "," << f_x[1] << "," << f_x[2] << std::endl;
 }
 
