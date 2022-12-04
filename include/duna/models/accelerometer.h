@@ -42,12 +42,17 @@ namespace duna
             Eigen::Map<const Eigen::Vector3d> x_map(x);
             Eigen::Map<Eigen::Matrix3d> jacobian_map(jacobian);
             Eigen::Matrix3d skew;
-            Eigen::Matrix3d r_jac;
+            Eigen::Matrix3d l_jac;
             skew << SKEW_SYMMETRIC_FROM(gravity_);
 
-            so3::rightJacobian<double>(x_map,r_jac);
-            jacobian_map = so3::Exp<double>(x_map) * skew *  r_jac;
+            so3::Exp<double>(x_map, transform_);
+            so3::leftJacobian<double>(x_map,l_jac);
 
+            Eigen::Vector3d rotated_gravity = transform_ * gravity_;
+
+            skew << SKEW_SYMMETRIC_FROM(rotated_gravity);
+            
+            jacobian_map = -skew * l_jac;
             
 
             // jacobian_map = skew;

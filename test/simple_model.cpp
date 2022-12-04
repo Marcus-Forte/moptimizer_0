@@ -65,7 +65,7 @@ TEST_F(SimpleModel, InitialCondition0)
 
 TEST_F(SimpleModel, InitialCondition1)
 {
-    Scalar x0[] = {1.9, 4.2};
+    Scalar x0[] = {1.9, 1.5};
     optimizer.minimize(x0);
 
     EXPECT_NEAR(x0[0], 0.362, 0.01);

@@ -371,15 +371,12 @@ TEST(Differentiation, Accelerometer)
     typename duna::IBaseModel<double>::Ptr acc(new duna::Accelerometer(measurement));
     double x[3];
     double f_x[3];
-    x[0] = 0.0;
+    x[0] = 0.1;
     x[1] = 0.0;
-    x[2] = 1.0;
-    
-    // acc->setup(x);
-    // acc->f_df(x,f_x,nullptr,0);
+    x[2] = 0.0;
 
-    duna::CostFunctionNumericalDiff<double,3,3> cost(acc,1);
-    duna::CostFunctionAnalytical<double,3,3> cost_a(acc,1);
+    duna::CostFunctionNumericalDiff<double,3,3> cost(acc);
+    duna::CostFunctionAnalytical<double,3,3> cost_a(acc);
     Eigen::Matrix3d hessian;
     Eigen::Matrix3d hessian_a;
     Eigen::Vector3d b;

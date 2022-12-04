@@ -1,53 +1,48 @@
 @startuml Optimizer
-
-
-Class Dataset <<Interface>>{
-# elements
+skinparam linetype ortho
+interface Parameter <<interface>> {
+    +plus(Parameter)
+    +minus(Parameter) 
 }
 
+class Euclidean
+class Spherical
 
-
-Class CostFunction <<Interface>>{
-+ virtual f()
-+ virtual df()
-Dataset* m_dataset;
-int m_data_size;
+interface Optimizer <<interface>> {
+    + minimize(in: x)
+    + step(in: x)
+    + addCost(in: cost)
+    - List<Cost> costs
 }
 
-Class CostFunctionImpl{
+interface Cost <<interface>> {
+    + computeCost(in: x): sum
+    + computeJacobian(in: x, out: jacobian): sum
+    + linearize(in:x, out: hessian, out: b)
 }
 
+class NumericalDiffCost {
 
-
-
-Class Optimizator <<interface>> {
-    +virtual minimize(x) = 0
-    #virtual preprocess() = 0
 }
 
-
-class GenericOptimizator {
-#virtual preprocess()
+class AnalyticalDiffCost {
+    
 }
 
-Class Registration {
-KDTree
-update_correspondences()
+class LevenbergMarquadt {
+
 }
 
-Dataset -* CostFunction 
-CostFunction -* Optimizator  
-CostFunction <|.. CostFunctionImpl
-Optimizator <|.. GenericOptimizator
-' Optimizator <|.. GPUOptimizator
+Parameter <|.. Euclidean
+Parameter <|.. Spherical
 
 
-' note "These classes utilize the dataset and function methods\n to run an optimization algorithm" as N2
-' note "The user must implement this class\nand pass it to optimizator" as N1
+Parameter <.. Optimizer
+Parameter <.. Cost
+Optimizer "1" o- "   1..*  " Cost
 
-' N1 .. CostFunctionImpl
-' GenericOptimizator . N2
-' GPUOptimizator .. N2
-GenericOptimizator <-- Registration 
+Cost <|.. AnalyticalDiffCost
+Cost <|.. NumericalDiffCost
 
+Optimizer <|.. LevenbergMarquadt
 @enduml

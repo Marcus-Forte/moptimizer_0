@@ -50,7 +50,7 @@ namespace duna
 
             ResidualVector valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
-            sum = 2 * valid_residuals.transpose() * valid_residuals;
+            sum = valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
@@ -91,20 +91,16 @@ namespace duna
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
             b_map.noalias() = valid_jacobian.transpose() * valid_residuals;
-            sum = 2 * valid_residuals.transpose() * valid_residuals;
+            sum =  valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
     protected:
-        // ModelPtr model_;
-        // Holds results for cost computations
         using CostFunctionBase<Scalar>::m_num_outputs;
         using CostFunctionBase<Scalar>::m_num_residuals;
         using CostFunctionBase<Scalar>::model_;
         JacobianMatrix jacobian_;
         ResidualVector residuals_;
-
-        bool m_delete_model;
 
         void init()
         {

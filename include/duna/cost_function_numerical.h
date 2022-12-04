@@ -49,7 +49,7 @@ namespace duna
 
             ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
-            sum = 2 * valid_residuals.transpose() * valid_residuals;
+            sum =  valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
@@ -70,10 +70,7 @@ namespace duna
 
             const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
 
-            // std::vector<Model> diff_minus(x_map.size(), *m_model);
-
             std::vector<ParameterVector> x_plus(x_map.size(), x_map);
-            // std::vector<ParameterVector> x_minus(x_map.size(), x_map);
 
             // Step size
             std::vector<Scalar> h(x_map.size());
@@ -100,7 +97,6 @@ namespace duna
 
                 // TODO Manifold operation
                 x_plus[j][j] += h[j];
-                // x_minus[j][j] -= h[j];
 
                 model_->setup((x_plus[j]).data());
 
@@ -120,12 +116,10 @@ namespace duna
             JacobianMatrix &&valid_jacobian = jacobian_.block(0, 0, valid_jacobians_rows * N_MODEL_OUTPUTS, N_PARAMETERS);
             ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
-            std::cout << "Num Jacobian: \n" << valid_jacobian << std::endl;
-
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
             b_map.noalias() = valid_jacobian.transpose() * valid_residuals;
-            sum = 2 * valid_residuals.transpose() * valid_residuals;
+            sum = valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
