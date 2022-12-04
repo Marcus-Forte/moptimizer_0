@@ -8,9 +8,9 @@
 #include <pcl/point_types.h>
 #include <duna/logger.h>
 
-#include <duna/models/point2point.h>
-#include <duna/models/point2plane.h>
-#include <duna/models/scan_matching3dof.h>
+#include <duna/models/scan_matching_point2plane_6dof.h>
+#include <duna/models/scan_matching_point2plane_3dof.h>
+#include <duna/models/scan_matching_point2point_6dof.h>
 #include <duna/models/accelerometer.h>
 
 // extern duna::logger::s_level_;
@@ -123,7 +123,7 @@ struct Powell : duna::BaseModelJacobian<double>
     bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override
     {
 
-        this->f(x,f_x,index);
+        this->f(x, f_x, index);
 
         // Df / dx0
         jacobian[0] = 1;
@@ -179,34 +179,33 @@ TEST(Differentiation, PowellModel)
     std::cerr << HessianNum << std::endl;
 }
 
-TYPED_TEST(Differentiation, Poin2PointDistance)
+TEST(Differentiation, DISABLED_ScanMatchingPoint2Point)
 {
     using PointT = pcl::PointXYZ;
+    using Scalar = double;
 
-    pcl::PointCloud<PointT> source;
-    pcl::PointCloud<PointT> target;
+    pcl::PointCloud<PointT>::Ptr source(new pcl::PointCloud<PointT>);
+    pcl::PointCloud<PointT>::Ptr target(new pcl::PointCloud<PointT>);
 
     PointT src_pt(10, 11, 12);
     PointT tgt_pt(14, 26, 3);
 
-    source.push_back(src_pt);
-    target.push_back(tgt_pt);
-    pcl::Correspondences corrs;
-    pcl::Correspondence corr;
-    corr.index_query = 0;
-    corr.index_match = 0;
-    corrs.push_back(corr);
+    source->push_back(src_pt);
+    target->push_back(tgt_pt);
 
-    typename duna::Point2Point<PointT, PointT, TypeParam>::Ptr model(new duna::Point2Point<PointT, PointT, TypeParam>(source, target, corrs));
+    pcl::search::KdTree<PointT>::Ptr kdtree_target(new pcl::search::KdTree<PointT>);
+    kdtree_target->setInputCloud(target);
 
-    duna::CostFunctionNumericalDiff<TypeParam, 6, 1> cost_num(model);
-    duna::CostFunctionAnalytical<TypeParam, 6, 1> cost_ana(model);
+    typename duna::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(new duna::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
 
-    Eigen::Matrix<TypeParam, 6, 6> HessianNum;
-    Eigen::Matrix<TypeParam, 6, 6> Hessian;
-    Eigen::Matrix<TypeParam, 6, 1> Residuals;
+    duna::CostFunctionNumericalDiff<Scalar, 6, 1> cost_num(model);
+    duna::CostFunctionAnalytical<Scalar, 6, 1> cost_ana(model);
 
-    Eigen::Matrix<TypeParam, 6, 1> x0;
+    Eigen::Matrix<Scalar, 6, 6> HessianNum;
+    Eigen::Matrix<Scalar, 6, 6> Hessian;
+    Eigen::Matrix<Scalar, 6, 1> Residuals;
+
+    Eigen::Matrix<Scalar, 6, 1> x0;
     x0.setZero();
     x0[0] = 0;
     x0[1] = 0;
@@ -220,12 +219,7 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
     cost_ana.linearize(x0.data(), Hessian.data(), Residuals.data());
 
     for (int i = 0; i < Hessian.size(); ++i)
-    {
-        if (std::is_same<TypeParam, float>::value)
-            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
-        else // double
-            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
-    }
+        EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
 
     std::cerr << "Hessian:\n"
               << Hessian << std::endl;
@@ -233,73 +227,7 @@ TYPED_TEST(Differentiation, Poin2PointDistance)
               << HessianNum << std::endl;
 }
 
-TYPED_TEST(Differentiation, Poin2PlaneDistanceSmallAngles)
-{
-    using PointT = pcl::PointNormal;
-
-    pcl::PointCloud<PointT> source;
-    pcl::PointCloud<PointT> target;
-
-    PointT src_pt;
-    src_pt.x = 10;
-    src_pt.y = 11;
-    src_pt.z = 12;
-
-    PointT tgt_pt;
-    tgt_pt.x = 14;
-    tgt_pt.y = 26;
-    tgt_pt.z = 3;
-
-    tgt_pt.normal_x = 1.0;
-    tgt_pt.normal_y = 2.0;
-    tgt_pt.normal_z = 3.0;
-    tgt_pt.getNormalVector3fMap().normalize();
-
-    source.push_back(src_pt);
-    target.push_back(tgt_pt);
-    pcl::Correspondences corrs;
-    pcl::Correspondence corr;
-    corr.index_query = 0;
-    corr.index_match = 0;
-    corrs.push_back(corr);
-
-    typename duna::Point2Plane<PointT, PointT, TypeParam>::Ptr model(new duna::Point2Plane<PointT, PointT, TypeParam>(source, target, corrs));
-
-    duna::CostFunctionNumericalDiff<TypeParam, 6, 1> cost_num(model);
-    duna::CostFunctionAnalytical<TypeParam, 6, 1> cost_ana(model);
-
-    Eigen::Matrix<TypeParam, 6, 6> HessianNum;
-    Eigen::Matrix<TypeParam, 6, 6> Hessian;
-    Eigen::Matrix<TypeParam, 6, 1> Residuals;
-
-    Eigen::Matrix<TypeParam, 6, 1> x0;
-    x0.setZero();
-    x0[0] = 0;
-    x0[1] = 0;
-    x0[2] = 0;
-    // Test Small angles
-    x0[3] = 0.0;
-    x0[4] = 0.0;
-    x0[5] = 0.0;
-
-    cost_num.linearize(x0.data(), HessianNum.data(), Residuals.data());
-    cost_ana.linearize(x0.data(), Hessian.data(), Residuals.data());
-
-    for (int i = 0; i < Hessian.size(); ++i)
-    {
-        if (std::is_same<TypeParam, float>::value)
-            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
-        else // double
-            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
-    }
-
-    std::cerr << "Hessian:\n"
-              << Hessian << std::endl;
-    std::cerr << "Hessian Numerical:\n"
-              << HessianNum << std::endl;
-}
-
-TYPED_TEST(Differentiation, DISABLED_ScanMatching3DOF)
+TEST(Differentiation, ScanMatchingPoint2Plane)
 {
     using PointT = pcl::PointNormal;
 
@@ -327,34 +255,28 @@ TYPED_TEST(Differentiation, DISABLED_ScanMatching3DOF)
     pcl::search::KdTree<PointT>::Ptr target_kdtree(new pcl::search::KdTree<PointT>);
     target_kdtree->setInputCloud(target);
 
-    typename duna::ScanMatching3DOF<PointT, PointT, TypeParam>::Ptr model (new duna::ScanMatching3DOF<PointT, PointT, TypeParam>(source, target, target_kdtree));
-    
+    typename duna::ScanMatching3DOFPoint2Plane<PointT, PointT, double>::Ptr model(new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, double>(source, target, target_kdtree));
+
     // Currently only works close to 0
-    TypeParam x0[3];
+    double x0[3];
     x0[0] = 0.1;
     x0[1] = 0.1;
     x0[2] = 0.1;
 
     model->update(x0);
-    
-    duna::CostFunctionNumericalDiff<TypeParam, 3, 1> cost_num(model);
-    duna::CostFunctionAnalytical<TypeParam, 3, 1> cost_ana(model);
 
-    Eigen::Matrix<TypeParam, 3, 3> HessianNum;
-    Eigen::Matrix<TypeParam, 3, 3> Hessian;
-    Eigen::Matrix<TypeParam, 3, 1> Residuals;
+    duna::CostFunctionNumericalDiff<double, 3, 1> cost_num(model);
+    duna::CostFunctionAnalytical<double, 3, 1> cost_ana(model);
 
-  
+    Eigen::Matrix<double, 3, 3> HessianNum;
+    Eigen::Matrix<double, 3, 3> Hessian;
+    Eigen::Matrix<double, 3, 1> Residuals;
+
     cost_num.linearize(x0, HessianNum.data(), Residuals.data());
     cost_ana.linearize(x0, Hessian.data(), Residuals.data());
 
     for (int i = 0; i < Hessian.size(); ++i)
-    {
-        if (std::is_same<TypeParam, float>::value)
-            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-1);
-        else // double
-            EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
-    }
+        EXPECT_NEAR(Hessian(i), HessianNum(i), 5e-3);
 
     std::cerr << "Hessian:\n"
               << Hessian << std::endl;
@@ -375,17 +297,18 @@ TEST(Differentiation, Accelerometer)
     x[1] = 0.0;
     x[2] = 0.0;
 
-    duna::CostFunctionNumericalDiff<double,3,3> cost(acc);
-    duna::CostFunctionAnalytical<double,3,3> cost_a(acc);
+    duna::CostFunctionNumericalDiff<double, 3, 3> cost(acc);
+    duna::CostFunctionAnalytical<double, 3, 3> cost_a(acc);
     Eigen::Matrix3d hessian;
     Eigen::Matrix3d hessian_a;
     Eigen::Vector3d b;
-    cost.linearize(x,hessian.data(),b.data());
-    cost_a.linearize(x,hessian_a.data(),b.data());
+    cost.linearize(x, hessian.data(), b.data());
+    cost_a.linearize(x, hessian_a.data(), b.data());
 
-    std::cout << "H = \n" << hessian << std::endl;
-    std::cout << "H_a = \n" << hessian_a << std::endl;
+    std::cout << "H = \n"
+              << hessian << std::endl;
+    std::cout << "H_a = \n"
+              << hessian_a << std::endl;
 
     std::cout << "f(x) = " << f_x[0] << "," << f_x[1] << "," << f_x[2] << std::endl;
 }
-

@@ -2,13 +2,13 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/search/kdtree.h>
-#include <pcl/registration/icp.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
-#include <pcl/registration/transformation_estimation.h>
-#include <pcl/registration/transformation_estimation_lm.h>
+#include <pcl/common/transforms.h>
 
-#include <duna/scan_matching/transformation_estimation6DOF.h>
+#include <duna/cost_function_numerical.h>
+#include <duna/levenberg_marquadt.h>
+#include <duna/models/scan_matching_point2point_6dof.h>
 #include <duna/stopwatch.hpp>
 
 using PointT = pcl::PointNormal;
@@ -26,8 +26,6 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
-/* This class tests the use of Duna optimizer as a transform estimator */
-
 template <typename Scalar>
 class RegistrationPoint2Point : public ::testing::Test
 {
@@ -41,32 +39,31 @@ public:
 
         if (pcl::io::loadPCDFile(TEST_DATA_DIR "/bunny.pcd", *target) != 0)
         {
-            throw std::runtime_error("Unable to laod test data 'bunny.pcd'");
+            throw std::runtime_error("Unable to load test data 'bunny.pcd'");
         }
 
         std::cout << "Loaded : " << target->size() << " points\n";
 
         target_kdtree->setInputCloud(target);
 
-        pcl_icp.setInputTarget(this->target);
-        pcl_icp.setMaxCorrespondenceDistance(10);
-        pcl_icp.setMaximumIterations(100);
-        pcl_icp.setSearchMethodTarget(this->target_kdtree);
+        this->optimizer.setMaximumIterations(150);
 
-        pcl::console::setVerbosityLevel(pcl::console::L_DEBUG);
+        duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
     }
 
 protected:
-    pcl::IterativeClosestPoint<PointT, PointT, Scalar> pcl_icp;
     PointCloutT::Ptr source;
     PointCloutT::Ptr target;
     pcl::search::KdTree<PointT>::Ptr target_kdtree;
     Eigen::Matrix<Scalar, 4, 4> reference_transform;
+    Eigen::Matrix<Scalar, 4, 4> result_transform;
+    duna::LevenbergMarquadt<Scalar, 6> optimizer;
 };
 
 // PCL fails this one
 TYPED_TEST(RegistrationPoint2Point, Translation)
 {
+    // Arrange
     this->reference_transform(0, 3) = 0.1;
     this->reference_transform(1, 3) = 0.2;
     this->reference_transform(2, 3) = 0.3;
@@ -75,36 +72,30 @@ TYPED_TEST(RegistrationPoint2Point, Translation)
 
     pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    // Instantiate estimators
-    typename pcl::registration::TransformationEstimationSVD<PointT, PointT, TypeParam>::Ptr pcl_transform(new pcl::registration::TransformationEstimationSVD<PointT, PointT, TypeParam>);
-    typename duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>::Ptr duna_transform(new duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>);
-    PointCloutT output;
+    typename duna::ScanMatching6DOFPoint2Point<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    scan_matcher_model.reset(new duna::ScanMatching6DOFPoint2Point<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
 
-    this->pcl_icp.setInputSource(this->source);
+    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 6, 3>(scan_matcher_model, this->source->size());
 
-    utilities::Stopwatch timer;
-    timer.tick();
-    this->pcl_icp.align(output);
-    Eigen::Matrix<TypeParam, 4, 4> final_transform_pcl = this->pcl_icp.getFinalTransformation();
-    timer.tock("PCL SVD");
+    this->optimizer.addCost(cost);
 
-    std::cerr << "PCL ICP: \n";
-    std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+    TypeParam x0[6] = {0};
+    // Act
+    this->optimizer.minimize(x0);
+    so3::convert6DOFParameterToMatrix(x0, this->result_transform);
 
-    timer.tick();
-    this->pcl_icp.align(output);
-    Eigen::Matrix<TypeParam, 4, 4> final_transform_duna = this->pcl_icp.getFinalTransformation();
-    timer.tock("DUNA LM");
+    // Assert
 
-    std::cerr
-        << "PCL/DUNA ICP: \n";
-    std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+    std::cout << "Final X " << Eigen::Map<Eigen::Matrix<TypeParam, 6, 1>>(x0) << std::endl;
+    std::cout << "Final Transform: " << this->result_transform << std::endl;
+    std::cout << "Reference Transform: " << reference_transform_inverse << std::endl;
 
     for (int i = 0; i < reference_transform_inverse.size(); ++i)
     {
-        // EXPECT_NEAR(final_transform_pcl(i), reference_transform_inverse(i), TOLERANCE);
-        EXPECT_NEAR(final_transform_duna(i), reference_transform_inverse(i), TOLERANCE);
+        EXPECT_NEAR(this->result_transform(i), reference_transform_inverse(i), TOLERANCE);
     }
+
+    delete cost;
 }
 
 TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslation)
@@ -123,35 +114,25 @@ TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslation)
 
     pcl::transformPointCloud(*this->target, *this->source, this->reference_transform);
 
-    // Instantiate estimators
-    typename pcl::registration::TransformationEstimationSVD<PointT, PointT, TypeParam>::Ptr pcl_transform(new pcl::registration::TransformationEstimationSVD<PointT, PointT, TypeParam>);
-    typename duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>::Ptr duna_transform(new duna::TransformationEstimator6DOF<PointT, PointT, TypeParam>);
-    PointCloutT output;
+    typename duna::ScanMatching6DOFPoint2Point<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    scan_matcher_model.reset(new duna::ScanMatching6DOFPoint2Point<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
 
-    this->pcl_icp.setInputSource(this->source);
-    this->pcl_icp.setTransformationEstimation(pcl_transform);
-    utilities::Stopwatch timer;
-    timer.tick();
-    this->pcl_icp.align(output);
-    Eigen::Matrix<TypeParam, 4, 4> final_transform_pcl = this->pcl_icp.getFinalTransformation();
-    timer.tock("PCL SVD");
+    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 6, 3>(scan_matcher_model, this->source->size());
 
-    std::cerr << "PCL ICP: \n";
-    std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+    this->optimizer.addCost(cost);
 
-    this->pcl_icp.setTransformationEstimation(duna_transform);
-    timer.tick();
-    this->pcl_icp.align(output);
-    Eigen::Matrix<TypeParam, 4, 4> final_transform_duna = this->pcl_icp.getFinalTransformation();
-    timer.tock("DUNA LM");
+    TypeParam x0[6] = {0};
+    // Act
+    this->optimizer.minimize(x0);
+    so3::convert6DOFParameterToMatrix(x0, this->result_transform);
 
-    std::cerr
-        << "PCL/DUNA ICP: \n";
-    std::cerr << this->pcl_icp.getFinalTransformation() << std::endl;
+    // Assert
+    std::cout << "Final x: \n" << Eigen::Map<Eigen::Matrix<TypeParam, 6, 1>>(x0) << std::endl;
+    std::cout << "Final Transform: \n" << this->result_transform << std::endl;
+    std::cout << "Reference Transform: \n" << reference_transform_inverse << std::endl;
 
     for (int i = 0; i < reference_transform_inverse.size(); ++i)
-    {
-        // EXPECT_NEAR(final_transform_pcl(i), reference_transform_inverse(i), TOLERANCE);
-        EXPECT_NEAR(final_transform_duna(i), reference_transform_inverse(i), TOLERANCE);
-    }
+        EXPECT_NEAR(this->result_transform(i), reference_transform_inverse(i), TOLERANCE);
+
+    delete cost;
 }
