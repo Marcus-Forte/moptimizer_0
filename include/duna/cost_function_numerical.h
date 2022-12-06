@@ -31,7 +31,7 @@ namespace duna
 
         CostFunctionNumericalDiff(const CostFunctionNumericalDiff &) = delete;
         CostFunctionNumericalDiff &operator=(const CostFunctionNumericalDiff &) = delete;
-  
+
         Scalar computeCost(const Scalar *x) override
         {
             Scalar sum = 0;
@@ -49,7 +49,7 @@ namespace duna
 
             ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
-            sum =  valid_residuals.transpose() * valid_residuals;
+            sum = model_->getScalarCovariance() * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
@@ -109,7 +109,7 @@ namespace duna
                 }
                 jacobian_.col(j) = (residuals_plus_ - residuals_) / h[j];
             }
-                   if (valid_errors != valid_jacobians_rows)
+            if (valid_errors != valid_jacobians_rows)
                 throw std::runtime_error("valid_errors != valid_jacobians_rows! ");
 
             // Select only valid residues.
@@ -118,8 +118,10 @@ namespace duna
 
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
-            b_map.noalias() = valid_jacobian.transpose() * valid_residuals;
-            sum = valid_residuals.transpose() * valid_residuals;
+            hessian_map.noalias() = model_->getScalarCovariance() * hessian_map;
+            b_map.noalias() = model_->getScalarCovariance() * valid_jacobian.transpose() * valid_residuals;
+            sum = model_->getScalarCovariance() * valid_residuals.transpose() * valid_residuals;
+
             return sum;
         }
 

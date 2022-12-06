@@ -50,7 +50,7 @@ namespace duna
 
             ResidualVector valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
-            sum = valid_residuals.transpose() * valid_residuals;
+            sum = model_->getScalarCovariance() * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 
@@ -87,11 +87,11 @@ namespace duna
             ResidualVector &&valid_residuals = residuals_.block(0, 0, valid_errors * N_MODEL_OUTPUTS, 1);
 
             // std::cout << valid_jacobian << std::endl;
-
             hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(valid_jacobian.transpose()); // H = J^T * J
             hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
-            b_map.noalias() = valid_jacobian.transpose() * valid_residuals;
-            sum =  valid_residuals.transpose() * valid_residuals;
+            hessian_map.noalias() = model_->getScalarCovariance() * hessian_map;
+            b_map.noalias() = model_->getScalarCovariance() * valid_jacobian.transpose() * valid_residuals;
+            sum = model_->getScalarCovariance() * valid_residuals.transpose() * valid_residuals;
             return sum;
         }
 

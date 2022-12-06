@@ -6,6 +6,7 @@
 namespace duna
 {
     /* Interface definitions for user models.*/
+    /* "W can be set to the inverse of the measurement error covariance matrix, in the unusual case that it is known."" */
 
     template <typename Scalar>
     class IBaseModel
@@ -27,6 +28,19 @@ namespace duna
 
         // Computes both jacobian and function at same time. Usually they depend on commons functions.
         virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) = 0;
+
+        // This will be treat as a constant weight matrix to be multiplied by the jacobians.
+        inline virtual void setScalarCovariance(Scalar covariance)
+        {
+            covariance_ = covariance;
+        }
+        virtual Scalar getScalarCovariance() const
+        {
+            return covariance_;
+        }
+
+    protected:
+        Scalar covariance_ = 1.0;
     };
 
     /* For non-jacobian defined models. */

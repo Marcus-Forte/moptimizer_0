@@ -36,8 +36,15 @@ namespace duna
         }
 
 
-        inline void clearCosts()
+        // Clear costs from list. Optionally delete them from memory.
+        inline void clearCosts(bool delete_costs = false)
         {
+            if(delete_costs)
+            {
+                for(int i=0; i < costs_.size(); ++i)
+                    delete costs_[i];
+            }
+
             costs_.clear();
         }
         virtual OptimizationStatus step(Scalar *x0) = 0;

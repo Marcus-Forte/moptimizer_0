@@ -124,6 +124,8 @@ namespace duna
         pcl::registration::CorrespondenceEstimation<PointSource, PointTarget, Scalar> corr_estimator_;
         std::vector<pcl::registration::CorrespondenceRejector::Ptr> corr_rejectors;
 
+        using BaseModelJacobian<Scalar>::covariance_;
+
         float overlap_;
 
         // Parameters

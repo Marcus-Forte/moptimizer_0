@@ -9,15 +9,15 @@ namespace duna
     class Accelerometer : public BaseModelJacobian<double>
     {
     public:
-        Accelerometer(const double * measurements) : measurements_(measurements), gravity_(0, 0, 1)
+        Accelerometer(const double * measurements) : measurements_(measurements[0],measurements[1],measurements[2]), gravity_(0, 0, 9.81)
         {
             transform_.setIdentity();
+            // measurements_.normalize();
         }
 
         void setup(const double *x) override
         {
             Eigen::Map<const Eigen::Vector3d> x_map(x);
-
             so3::Exp<double>(x_map, transform_);
         }
 
@@ -30,6 +30,12 @@ namespace duna
             f_x[0] = measurements_[0] - rotated_gravity[0];
             f_x[1] = measurements_[1] - rotated_gravity[1];
             f_x[2] = measurements_[2] - rotated_gravity[2];
+            
+            // std::cout << "m , e1:" << measurements_[0] << ":" <<  rotated_gravity[0] << std::endl;
+            // std::cout << "m , e2:" << measurements_[1] << ":" <<  rotated_gravity[1] << std::endl;
+            // std::cout << "m , e3:" << measurements_[2] << ":" <<  rotated_gravity[2] << std::endl;
+            
+            // // std::cout << "f = " << f_x[0] << "," << f_x[1] << "," << f_x[2] << std::endl;
 
             return true;
         }
@@ -66,7 +72,6 @@ namespace duna
     private:
         Eigen::Matrix3d transform_;
         Eigen::Vector3d gravity_;
-
-        const double* measurements_;
+        Eigen::Vector3d measurements_;
     };
 } // namespace
