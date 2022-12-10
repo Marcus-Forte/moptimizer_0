@@ -36,7 +36,7 @@ namespace duna
 
             for (int cost_i = 0; cost_i < costs_.size(); cost_i++)
             {
-                const auto& cost = costs_[cost_i];
+                const auto &cost = costs_[cost_i];
                 HessianMatrix cost_hessian = HessianMatrix::Zero();
                 ParameterVector cost_b = ParameterVector::Zero();
                 cost->update(x0);
@@ -128,16 +128,13 @@ namespace duna
     }
 
     // Instantiations
-    template class LevenbergMarquadt<double, 2>;
     template class LevenbergMarquadt<float, 2>;
-
-    template class LevenbergMarquadt<double, 4>; // powell
-
-    // Registration
-    template class LevenbergMarquadt<double, 6>;
-    template class LevenbergMarquadt<double, 3>; // 3DOF
-
     template class LevenbergMarquadt<float, 6>;
     template class LevenbergMarquadt<float, 3>; // 3DOF
+
+    template class LevenbergMarquadt<double, 4>; // powell
+    template class LevenbergMarquadt<double, 2>;
+    template class LevenbergMarquadt<double, 6>;
+    template class LevenbergMarquadt<double, 3>; // 3DOF
 
 } // namespace duna

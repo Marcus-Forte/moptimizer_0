@@ -8,9 +8,7 @@
 #include <pcl/point_types.h>
 #include <duna/logger.h>
 
-#include <duna/models/scan_matching_point2plane_6dof.h>
-#include <duna/models/scan_matching_point2plane_3dof.h>
-#include <duna/models/scan_matching_point2point_6dof.h>
+#include <duna/models/scan_matching.h>
 #include <duna/models/accelerometer.h>
 
 // extern duna::logger::s_level_;

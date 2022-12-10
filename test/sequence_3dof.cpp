@@ -11,7 +11,7 @@
 #include <pcl/features/normal_3d.h>
 
 #include <duna/stopwatch.hpp>
-#include <duna/models/scan_matching_point2plane_3dof.h>
+#include <duna/models/scan_matching.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
 
@@ -114,7 +114,7 @@ protected:
 using ScalarTypes = ::testing::Types<double, float>;
 TYPED_TEST_SUITE(SequenceRegistration, ScalarTypes);
 
-TYPED_TEST(SequenceRegistration, PureOptimizerIndoor)
+TYPED_TEST(SequenceRegistration, OptimizerIndoor)
 {
 
     std::cout << "Map size: " << this->target_->size() << std::endl;

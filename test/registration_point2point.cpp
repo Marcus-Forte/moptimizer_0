@@ -2,13 +2,13 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/search/kdtree.h>
+#include <pcl/registration/icp.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
-#include <pcl/common/transforms.h>
 
-#include <duna/cost_function_numerical.h>
+#include <duna/models/scan_matching.h>
 #include <duna/levenberg_marquadt.h>
-#include <duna/models/scan_matching_point2point_6dof.h>
+#include <duna/cost_function_numerical.h>
 #include <duna/stopwatch.hpp>
 
 using PointT = pcl::PointNormal;
@@ -22,7 +22,6 @@ TYPED_TEST_SUITE(RegistrationPoint2Point, ScalarTypes);
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
-
     return RUN_ALL_TESTS();
 }
 
@@ -127,9 +126,12 @@ TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslation)
     so3::convert6DOFParameterToMatrix(x0, this->result_transform);
 
     // Assert
-    std::cout << "Final x: \n" << Eigen::Map<Eigen::Matrix<TypeParam, 6, 1>>(x0) << std::endl;
-    std::cout << "Final Transform: \n" << this->result_transform << std::endl;
-    std::cout << "Reference Transform: \n" << reference_transform_inverse << std::endl;
+    std::cout << "Final x: \n"
+              << Eigen::Map<Eigen::Matrix<TypeParam, 6, 1>>(x0) << std::endl;
+    std::cout << "Final Transform: \n"
+              << this->result_transform << std::endl;
+    std::cout << "Reference Transform: \n"
+              << reference_transform_inverse << std::endl;
 
     for (int i = 0; i < reference_transform_inverse.size(); ++i)
         EXPECT_NEAR(this->result_transform(i), reference_transform_inverse(i), TOLERANCE);

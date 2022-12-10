@@ -6,7 +6,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/features/normal_3d.h>
 
-#include <duna/models/scan_matching_point2plane_6dof.h>
+#include <duna/models/scan_matching.h>
 #include <duna/levenberg_marquadt.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/stopwatch.hpp>

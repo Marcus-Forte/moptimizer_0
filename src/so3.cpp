@@ -41,32 +41,6 @@ namespace so3
     }
 
     template <typename Scalar>
-    inline void convertMatrixTo3DOFParameter(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 3, 1> &x)
-    {
-        Eigen::Matrix<Scalar, 3, 1> ea;
-        Eigen::Matrix<Scalar, 3, 3> rot = transform_matrix_.topLeftCorner(3, 3);
-        ea = rot.eulerAngles(2, 1, 0);
-        x[0] = ea[0];
-        x[1] = ea[1]; //;ea[1];
-        x[2] = ea[2]; // ea[2];
-    }
-
-    template <typename Scalar>
-    inline void convertMatrixTo6DOFParameter(const Eigen::Matrix<Scalar, 4, 4> &transform_matrix_, Eigen::Matrix<Scalar, 6, 1> &x)
-    {
-        x[0] = transform_matrix_(0, 3);
-        x[1] = transform_matrix_(1, 3);
-        x[2] = transform_matrix_(2, 3);
-
-        Eigen::Matrix<Scalar, 3, 1> ea;
-        Eigen::Matrix<Scalar, 3, 3> rot = transform_matrix_.topLeftCorner(3, 3);
-        ea = rot.eulerAngles(2, 1, 0);
-        x[3] = ea[0];
-        x[4] = ea[1]; //;ea[1];
-        x[5] = ea[2]; // ea[2];
-    }
-
-    template <typename Scalar>
     inline void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R)
     {
         Scalar delta_norm = delta.norm();
@@ -226,7 +200,4 @@ namespace so3
 
     template void DUNA_OPTIMIZER_EXPORT leftJacobian<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<float, 3, 3>> jacobian);
     template void DUNA_OPTIMIZER_EXPORT leftJacobian<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<double, 3, 3>> jacobian);
-
-    template void DUNA_OPTIMIZER_EXPORT convertMatrixTo3DOFParameter<float>(const Eigen::Matrix<float, 4, 4> &transform_matrix_, Eigen::Matrix<float, 3, 1> &x);
-    template void DUNA_OPTIMIZER_EXPORT convertMatrixTo3DOFParameter<double>(const Eigen::Matrix<double, 4, 4> &transform_matrix_, Eigen::Matrix<double, 3, 1> &x);
 }
