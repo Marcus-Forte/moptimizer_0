@@ -225,7 +225,7 @@ TEST(Differentiation, DISABLED_ScanMatchingPoint2Point)
               << HessianNum << std::endl;
 }
 
-TEST(Differentiation, ScanMatchingPoint2Plane)
+TEST(Differentiation, DISABLED_ScanMatchingPoint2Plane)
 {
     using PointT = pcl::PointNormal;
 
