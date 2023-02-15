@@ -28,19 +28,6 @@ namespace duna
 
         // Computes both jacobian and function at same time. Usually they depend on commons functions.
         virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) = 0;
-
-        // This will be treat as a constant weight matrix to be multiplied by the jacobians.
-        inline virtual void setScalarCovariance(Scalar covariance)
-        {
-            covariance_ = covariance;
-        }
-        virtual Scalar getScalarCovariance() const
-        {
-            return covariance_;
-        }
-
-    protected:
-        Scalar covariance_ = 1.0;
     };
 
     /* For non-jacobian defined models. */

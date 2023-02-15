@@ -73,7 +73,7 @@ namespace duna
                     corr_rejectors[i]->setInputCorrespondences(tmp_corrs);
                     corr_rejectors[i]->getCorrespondences(correspondences_);
 
-                    duna::logger::log_debug("rejected: %d / %d", correspondences_.size(), tmp_corrs->size());
+                    duna::logger::log_debug("Remaining: %d / %d", correspondences_.size(), tmp_corrs->size());
                     // Modify input for the next iteration
                     if (i < corr_rejectors.size() - 1)
                         *tmp_corrs = correspondences_;
@@ -123,8 +123,6 @@ namespace duna
         Eigen::Matrix<Scalar, 4, 4> transform_;
         pcl::registration::CorrespondenceEstimation<PointSource, PointTarget, Scalar> corr_estimator_;
         std::vector<pcl::registration::CorrespondenceRejector::Ptr> corr_rejectors;
-
-        using BaseModelJacobian<Scalar>::covariance_;
 
         float overlap_;
 

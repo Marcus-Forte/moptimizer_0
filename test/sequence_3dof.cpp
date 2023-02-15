@@ -14,6 +14,7 @@
 #include <duna/models/scan_matching.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/loss_function/geman_mcclure.h>
 
 #define N_MAP 20
 #define N_SOURCE 85
@@ -154,7 +155,7 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor)
     x0[0] = 0;
     x0[1] = 0;
     x0[2] = 0;
-    typename duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+    typename duna::ScanMatchingBase<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     for (int i = 0; i < this->source_vector_.size(); ++i)
     // for (int i = 0; i < 2; ++i)
     {
@@ -181,10 +182,12 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor)
         timer.tick();
 
         scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
+        // scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Point<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
         scan_matcher_model->setMaximumCorrespondenceDistance(0.15);
         scan_matcher_model->addCorrespondenceRejector(rejector0);
-        auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 1>(scan_matcher_model, subsampled_input->size());
-
+        auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 3>(scan_matcher_model, subsampled_input->size());
+        cost->setLossFunction(typename duna::loss::GemmanMCClure<TypeParam>::Ptr(new duna::loss::GemmanMCClure<TypeParam>(0.1)));
+        
         optimizer.addCost(cost);
         optimizer.minimize(x0);
         optimizer.clearCosts();
