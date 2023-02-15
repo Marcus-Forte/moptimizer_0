@@ -43,13 +43,13 @@ namespace duna
         switch (level)
         {
         case (L_INFO):
-            return "INFO";
+            return "duna::opt::INFO";
         case (L_WARN):
-            return "WARN";
+            return "duna::opt::WARN";
         case (L_DEBUG):
-            return "DEBUG";
+            return "duna::opt::DEBUG";
         case (L_ERROR):
-            return "ERROR";
+            return "duna::opt::ERROR";
         }
 
         return "";

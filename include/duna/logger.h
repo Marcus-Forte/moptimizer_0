@@ -45,7 +45,7 @@ namespace duna
             if (L_INFO > s_level_)
                 return;
 
-            _PRINT_MESSAGE("[INFO]");
+            _PRINT_MESSAGE("[duna::opt::INFO]");
         }
 
         static void log_warn(const char *format, ...)
@@ -53,21 +53,21 @@ namespace duna
             if (L_WARN > s_level_)
                 return;
 
-            _PRINT_MESSAGE("[WARN]");
+            _PRINT_MESSAGE("[duna::opt::WARN]");
         }
         static void log_error(const char *format, ...)
         {
             if (L_ERROR > s_level_)
                 return;
 
-            _PRINT_MESSAGE("[ERROR]");
+            _PRINT_MESSAGE("[duna::opt::ERROR]");
         }
         static void log_debug(const char *format, ...)
         {
             if (L_DEBUG > s_level_)
                 return;
 
-            _PRINT_MESSAGE("[DEBUG]");
+            _PRINT_MESSAGE("[duna::opt::DEBUG]");
         }
         // static void log(const std::string &message);
         // static void log(const std::stringstream &stream);
