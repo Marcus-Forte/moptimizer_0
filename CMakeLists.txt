@@ -21,12 +21,14 @@ link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX ${PCL_LIBRARIES})
 include_directories(include gtest ${PCL_INCLUDE_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-add_compile_options(-march=native)
-# add_compile_options(-msse -msse2 -mavx -mfma -msse4)
-
 if(UNIX)
 # GTest required pthread in UNIX Os
         link_libraries(pthread)
+        add_compile_options(-march=native)
+        # add_compile_options(-msse -msse2 -mavx -mfma -msse4)
+elseif(MSVC)
+        add_compile_options(/bigobj)
+        add_compile_definitions(_USE_MATH_DEFINES)
 endif()
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)

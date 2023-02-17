@@ -2,11 +2,12 @@
 #define LEVENBERG_MARQUADT_H
 
 #include "duna/optimizer.h"
+#include "duna_exports.h"
 
 namespace duna
 {
     template <class Scalar = double, int N_PARAMETERS = duna::Dynamic>
-    class LevenbergMarquadt : public Optimizer<Scalar>
+    class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public Optimizer<Scalar>
     {
     public:
     using HessianMatrix = Eigen::Matrix<Scalar,N_PARAMETERS,N_PARAMETERS>;

@@ -2,6 +2,7 @@
 #include <cstdarg> // for va_list, va_start, va_end
 #include <sstream>
 #include <iostream>
+#include "duna_exports.h"
 
 #define _PRINT_MESSAGE(LEVEL)     \
     va_list ap;                   \
@@ -22,7 +23,7 @@ namespace duna
     };
 
     /* Basic logging class. Also provides static methods for `global` logging. */
-    class logger
+    class DUNA_OPTIMIZER_EXPORT logger
     {
     public:
         logger() : default_stream_(std::cout), level_(L_ERROR), logger_name_("LOG")

@@ -51,8 +51,6 @@ namespace duna
         case (L_ERROR):
             return "duna::opt::ERROR";
         }
-
         return "";
     }
-
 } // namespace
