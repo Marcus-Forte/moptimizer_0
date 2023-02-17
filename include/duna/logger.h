@@ -2,7 +2,7 @@
 #include <cstdarg> // for va_list, va_start, va_end
 #include <sstream>
 #include <iostream>
-#include "duna_exports.h"
+#include "duna/duna_exports.h"
 
 #define _PRINT_MESSAGE(LEVEL)     \
     va_list ap;                   \
