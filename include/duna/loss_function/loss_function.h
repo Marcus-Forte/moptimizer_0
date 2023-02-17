@@ -15,7 +15,7 @@ namespace duna::loss
         ILossFunction() = default;
         virtual ~ILossFunction() = default;
 
-        inline virtual T weight(T errorSquaredNorm) = 0;
+        virtual T weight(T errorSquaredNorm) = 0;
     };
 
     

@@ -170,7 +170,7 @@ namespace duna
             f_x[2] = error[2];
 
             Eigen::Map<JacobianType> jacobian_map(jacobian);
-            Eigen::Matrix3<Scalar> skew;
+            Eigen::Matrix<Scalar, 3, 3> skew;
             skew << SKEW_SYMMETRIC_FROM(src_);
             jacobian_map = -1.0 * skew;
 
@@ -262,9 +262,9 @@ namespace duna
             f_x[2] = error[2];
 
             Eigen::Map<JacobianType> jacobian_map(jacobian);
-            Eigen::Matrix3<Scalar> skew;
+            Eigen::Matrix<Scalar, 3, 3> skew;
             skew << SKEW_SYMMETRIC_FROM(src_);
-            jacobian_map.template block<3, 3>(0, 0) = Eigen::Matrix3<Scalar>::Identity();
+            jacobian_map.template block<3, 3>(0, 0) = Eigen::Matrix<Scalar, 3, 3>::Identity();
             jacobian_map.template block<3, 3>(0, 3) = -1.0 * skew;
 
             return true;
