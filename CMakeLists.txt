@@ -45,8 +45,8 @@ src/logger.cpp
 
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
-EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/exports/duna_exports.h)
-include_directories(${CMAKE_BINARY_DIR}/exports)
+EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/duna/duna_exports.h)
+# include_directories(${CMAKE_BINARY_DIR}/exports)
 
 # target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 if(BUILD_EXPERIMENTAL)
@@ -74,6 +74,7 @@ if(BUILD_TESTS)
         test/curve_fitting.cpp
         test/multiple_objectives.cpp
         test/loss_function.cpp
+        test/logging.cpp
         # test/maximum_a_posteriori.cpp
 
         # REG

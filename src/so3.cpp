@@ -1,9 +1,8 @@
 #include "duna/so3.h"
-#include "duna_exports.h"
+#include "duna/duna_exports.h"
 #include <iostream>
 namespace so3
 {
-
     template <typename Scalar>
     inline void convert6DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_)
     {

@@ -111,6 +111,7 @@ namespace duna
         // TODO test if dynamic
         void init()
         {
+            // TODO do more assertions
             static_assert(N_PARAMETERS != -1, "Dynamic Cost Function not yet implemented");
         }
     };
