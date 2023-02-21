@@ -55,12 +55,8 @@ private:
 };
 
 template <typename Scalar>
-class Differentiation : public ::testing::Test
-{
-};
-
+class Differentiation : public ::testing::Test{};
 using ScalarTypes = ::testing::Types<float, double>;
-
 TYPED_TEST_SUITE(Differentiation, ScalarTypes);
 
 TYPED_TEST(Differentiation, SimpleModel)
@@ -73,7 +69,7 @@ TYPED_TEST(Differentiation, SimpleModel)
     typename SimpleModel<TypeParam>::Ptr model(new SimpleModel<TypeParam>(x_data, y_data));
 
     duna::CostFunctionAnalytical<TypeParam, 2, 1> cost_ana(model, m_residuals);
-    duna::CostFunctionNumericalDiff<TypeParam, 2, 1> cost_num(model, m_residuals);
+    duna::CostFunctionNumerical<TypeParam, 2, 1> cost_num(model, m_residuals);
 
     Eigen::Matrix<TypeParam, 2, 2> Hessian;
     Eigen::Matrix<TypeParam, 2, 2> HessianNum;
@@ -160,7 +156,7 @@ TEST(Differentiation, PowellModel)
     Powell::Ptr powell(new Powell);
 
     duna::CostFunctionAnalytical<double, 4, 4> cost_ana(powell, m_residuals);
-    duna::CostFunctionNumericalDiff<double, 4, 4> cost_num(powell, m_residuals);
+    duna::CostFunctionNumerical<double, 4, 4> cost_num(powell, m_residuals);
 
     Eigen::Matrix<double, 4, 4> Hessian;
     Eigen::Matrix<double, 4, 4> HessianNum;
@@ -200,7 +196,7 @@ TEST(Differentiation, ScanMatching3DOFPoint2Point)
 
     typename duna::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(new duna::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
 
-    duna::CostFunctionNumericalDiff<Scalar, 3, 3> cost_num(model);
+    duna::CostFunctionNumerical<Scalar, 3, 3> cost_num(model);
     duna::CostFunctionAnalytical<Scalar, 3, 3> cost_ana(model);
 
     Eigen::Matrix<Scalar, 3, 3> HessianNum;
@@ -241,7 +237,7 @@ TEST(Differentiation, ScanMatching6DOFPoint2Point)
 
     typename duna::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(new duna::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
 
-    duna::CostFunctionNumericalDiff<Scalar, 6, 3> cost_num(model);
+    duna::CostFunctionNumerical<Scalar, 6, 3> cost_num(model);
     duna::CostFunctionAnalytical<Scalar, 6, 3> cost_ana(model);
 
     Eigen::Matrix<Scalar, 6, 6> HessianNum;
@@ -299,7 +295,7 @@ TEST(Differentiation, ScanMatchingPoint2Plane)
 
     model->update(x0.data());
 
-    duna::CostFunctionNumericalDiff<double, 3, 1> cost_num(model);
+    duna::CostFunctionNumerical<double, 3, 1> cost_num(model);
     duna::CostFunctionAnalytical<double, 3, 1> cost_ana(model);
 
     Eigen::Matrix<double, 3, 3> HessianNum;
@@ -331,7 +327,7 @@ TEST(Differentiation, Accelerometer)
     x[1] = 0.0;
     x[2] = 0.0;
 
-    duna::CostFunctionNumericalDiff<double, 3, 3> cost(acc);
+    duna::CostFunctionNumerical<double, 3, 3> cost(acc);
     duna::CostFunctionAnalytical<double, 3, 3> cost_a(acc);
     Eigen::Matrix3d hessian;
     Eigen::Matrix3d hessian_a;

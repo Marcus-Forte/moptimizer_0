@@ -1,35 +1,40 @@
-#include <duna/levenberg_marquadt.h>
+#include "duna/levenberg_marquadt_dynamic.h"
 
 namespace duna
 {
-    template <class Scalar, int N_PARAMETERS>
-    bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isDeltaSmall(Scalar *x0)
+    template <class Scalar>
+    bool LevenbergMarquadtDynamic<Scalar>::isDeltaSmall(Scalar *x0)
     {
-        Eigen::Map<ParameterVector> delta(x0);
+        Eigen::Map<ParameterVector> delta(x0, num_parameters_);
         Scalar epsilon = delta.array().abs().maxCoeff();
         if (epsilon < sqrt(std::numeric_limits<Scalar>::epsilon()))
             return true;
         return false;
     }
 
-    template <class Scalar, int N_PARAMETERS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::step(Scalar *x0)
+    template <class Scalar>
+    OptimizationStatus LevenbergMarquadtDynamic<Scalar>::step(Scalar *x0)
     {
         return OptimizationStatus::NUMERIC_ERROR;
     }
 
-    template <class Scalar, int N_PARAMETERS>
-    OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
+    template <class Scalar>
+    OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0)
     {
         this->checkCosts();
-
+        
         this->reset();
 
-        Eigen::Map<ParameterVector> x0_map(x0);
+        Eigen::Map<ParameterVector> x0_map(x0, num_parameters_);
         HessianMatrix hessian;
         HessianMatrix hessian_diagonal;
         ParameterVector b;
         ParameterVector xi;
+
+        xi.resize(num_parameters_);
+        b.resize(num_parameters_);
+        hessian_diagonal.resize(num_parameters_, num_parameters_);
+        hessian.resize(num_parameters_, num_parameters_);
 
         for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations; ++m_executed_iterations)
         {
@@ -42,18 +47,23 @@ namespace duna
             for (int cost_i = 0; cost_i < costs_.size(); cost_i++)
             {
                 const auto &cost = costs_[cost_i];
-                HessianMatrix cost_hessian = HessianMatrix::Zero();
-                ParameterVector cost_b = ParameterVector::Zero();
+                HessianMatrix cost_hessian;
+                ParameterVector cost_b;
+
+                cost_hessian.resize(num_parameters_, num_parameters_);
+                cost_b.resize(num_parameters_);
+
+                cost_hessian.setZero();
+                cost_b.setZero();
+
                 cost->update(x0);
+                logger::log_debug("[LM] Linearize");
                 Scalar cost_y = cost->linearize(x0, cost_hessian.data(), cost_b.data());
                 logger::log_debug("[LM] Cost(%d) = %e ", cost_i, cost_y);
                 y0 += cost_y;
                 hessian += cost_hessian;
                 b += cost_b;
             }
-
-            // std::cout << "Hessian: " << hessian << std::endl;
-            // std::cout << "b: " << b << std::endl;
 
             if (this->isCostSmall(y0))
                 return OptimizationStatus::CONVERGED;
@@ -65,16 +75,17 @@ namespace duna
 
             Scalar nu = 2.0;
 
+
             logger::log_debug("[LM] Internal Iteration --- : it | max | prev_cost | new_cost | rho | lambda| nu");
             for (int k = 0; k < m_lm_max_iterations; ++k)
             {
+
                 Eigen::LDLT<HessianMatrix> solver(hessian + m_lm_lambda * hessian_diagonal);
+
                 ParameterVector delta = solver.solve(-b);
 
                 // TODO Manifold operation
                 xi = x0_map + delta;
-
-                // std::cout << xi << std::endl;
 
                 Scalar yi = 0;
 
@@ -111,18 +122,9 @@ namespace duna
                 break;
             }
         }
+
         return OptimizationStatus::MAXIMUM_ITERATIONS_REACHED;
     }
-
-    // Instantiations
-    template class LevenbergMarquadt<float, 2>;
-    template class LevenbergMarquadt<float, 6>;
-    template class LevenbergMarquadt<float, 3>; // 3DOF
-
-    template class LevenbergMarquadt<double, 4>; // powell
-    template class LevenbergMarquadt<double, 2>;
-    template class LevenbergMarquadt<double, 6>;
-    template class LevenbergMarquadt<double, 3>; // 3DOF
-
-
-} // namespace duna
+    template class LevenbergMarquadtDynamic<float>;
+    template class LevenbergMarquadtDynamic<double>;
+} // namespace

@@ -78,7 +78,7 @@ TYPED_TEST(RegistrationPoint2Plane, Translation)
     TypeParam x0[6] = {0};
     typename duna::ScanMatching6DOFPoint2Plane<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     scan_matcher_model.reset(new duna::ScanMatching6DOFPoint2Plane<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
-    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 6, 1>(scan_matcher_model, this->source->size());
+    auto cost = new duna::CostFunctionNumerical<TypeParam, 6, 1>(scan_matcher_model, this->source->size());
     this->optimizer.addCost(cost);
     this->optimizer.minimize(x0);
     so3::convert6DOFParameterToMatrix(x0, this->result_transform);
@@ -113,7 +113,7 @@ TYPED_TEST(RegistrationPoint2Plane, RotationPlusTranslation)
     TypeParam x0[6] = {0};
     typename duna::ScanMatching6DOFPoint2Plane<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     scan_matcher_model.reset(new duna::ScanMatching6DOFPoint2Plane<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
-    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 6, 1>(scan_matcher_model, this->source->size());
+    auto cost = new duna::CostFunctionNumerical<TypeParam, 6, 1>(scan_matcher_model, this->source->size());
     this->optimizer.addCost(cost);
     this->optimizer.minimize(x0);
     so3::convert6DOFParameterToMatrix(x0, this->result_transform);

@@ -50,7 +50,7 @@ namespace duna
         // No jacobian definition.
         virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) final
         {
-            return false;
+            throw duna::Exception("Non implemented non-jacobian model function `f_df` being used.");
         }
     };
 

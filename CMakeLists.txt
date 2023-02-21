@@ -36,8 +36,9 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Library
 add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
-src/cost_function.cpp
-# src/cost_function_analytical.cpp
+src/levenberg_marquadt_dynamic.cpp
+src/cost_function_analytical_dynamic.cpp
+src/cost_function_numerical_dynamic.cpp
 src/so3.cpp
 src/exception.cpp
 src/logger.cpp
@@ -75,7 +76,7 @@ if(BUILD_TESTS)
         test/multiple_objectives.cpp
         test/loss_function.cpp
         test/logging.cpp
-        # test/maximum_a_posteriori.cpp
+        test/covariance.cpp
 
         # REG
         test/registration_point2plane.cpp
@@ -97,6 +98,7 @@ if(BUILD_TESTS)
         add_executable(draft test/draft.cpp)
         target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
 endif()
+
 
 # Link library to headers, but does not install. 
 target_include_directories(${PROJECT_NAME} PUBLIC

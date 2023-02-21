@@ -1,1 +1,0 @@
-# This folder contains API for solving Maximum A Posteriori problems.

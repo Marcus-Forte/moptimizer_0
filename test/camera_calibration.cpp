@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/levenberg_marquadt_dynamic.h>
 #include <duna/model.h>
 #include <duna/so3.h>
 
@@ -92,7 +93,7 @@ public:
         pixel_list.push_back(Eigen::Vector2i(559, 282));
         pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-        cost = new duna::CostFunctionNumericalDiff<double, 6, 2>(
+        cost = new duna::CostFunctionNumerical<double, 6, 2>(
             Model::Ptr(new Model(point_list, pixel_list)),
             5);
         optimizer.addCost(cost);
@@ -104,7 +105,7 @@ public:
     }
 
 protected:
-    duna::CostFunctionNumericalDiff<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+    duna::CostFunctionNumerical<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
     duna::LevenbergMarquadt<double, MODEL_PARAMETERS> optimizer;
 
     std::vector<Eigen::Vector4d> point_list;
@@ -146,9 +147,41 @@ TEST_F(CameraCalibration, GoodWeather)
 TEST_F(CameraCalibration, BadWeather)
 {
     double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
-
-    optimizer.minimize(x0);
     optimizer.setMaximumIterations(50);
+    optimizer.minimize(x0);
+
+    for (int i = 0; i < MODEL_PARAMETERS; ++i)
+    {
+        EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);
+    }
+
+    std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);
+}
+
+TEST_F(CameraCalibration, GoodWeatherDynamic)
+{
+    double x0[6] = {0};
+
+    duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
+    dyn_optimizer.addCost(this->cost);
+    dyn_optimizer.minimize(x0);
+
+    for (int i = 0; i < MODEL_PARAMETERS; ++i)
+    {
+        EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);
+    }
+
+    std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);
+}
+
+TEST_F(CameraCalibration, BadWeatherDynamic)
+{
+    double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
+    duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
+    dyn_optimizer.addCost(this->cost);
+    dyn_optimizer.setMaximumIterations(50);
+    dyn_optimizer.minimize(x0);
+
     for (int i = 0; i < MODEL_PARAMETERS; ++i)
     {
         EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);

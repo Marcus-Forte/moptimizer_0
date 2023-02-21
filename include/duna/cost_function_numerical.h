@@ -7,9 +7,9 @@
 
 namespace duna
 {
-    // NOTE. We are using Model as a template to be able to call its copy constructors and enable numerical diff.
+    /* Numerical Differentiation cost function module. Computes numerical derivatives when computing hessian. */
     template <class Scalar = double, int N_PARAMETERS = duna::Dynamic, int N_MODEL_OUTPUTS = duna::Dynamic>
-    class CostFunctionNumericalDiff : public CostFunctionBase<Scalar>
+    class CostFunctionNumerical : public CostFunctionBase<Scalar>
     {
     public:
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
@@ -19,18 +19,16 @@ namespace duna
         using typename CostFunctionBase<Scalar>::Model;
         using typename CostFunctionBase<Scalar>::ModelPtr;
 
-        CostFunctionNumericalDiff(ModelPtr model, int num_residuals) : CostFunctionBase<Scalar>(model, num_residuals, N_MODEL_OUTPUTS)
+        CostFunctionNumerical(ModelPtr model, int num_residuals) : CostFunctionBase<Scalar>(model, num_residuals),
+                                                                       hessian_map_(0, 0, 0), x_map_(0, 0, 0), b_map_(0, 0, 0)
         {
-            init();
         }
-
-        CostFunctionNumericalDiff(ModelPtr model) : CostFunctionBase<Scalar>(model, 1, N_MODEL_OUTPUTS)
+        CostFunctionNumerical(ModelPtr model) : CostFunctionBase<Scalar>(model, 1),
+                                                    hessian_map_(0, 0, 0), x_map_(0, 0, 0), b_map_(0, 0, 0)
         {
-            init();
         }
-
-        CostFunctionNumericalDiff(const CostFunctionNumericalDiff &) = delete;
-        CostFunctionNumericalDiff &operator=(const CostFunctionNumericalDiff &) = delete;
+        CostFunctionNumerical(const CostFunctionNumerical &) = delete;
+        CostFunctionNumerical &operator=(const CostFunctionNumerical &) = delete;
 
         Scalar computeCost(const Scalar *x) override
         {
@@ -50,32 +48,27 @@ namespace duna
 
         virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
         {
-            Eigen::Map<const ParameterVector> x_map(x);
-            Eigen::Map<HessianMatrix> hessian_map(hessian);
-            Eigen::Map<ParameterVector> b_map(b);
-
-            hessian_map.setZero();
-            b_map.setZero();
+            init(x, hessian, b);
 
             Scalar sum = 0.0;
 
             const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
 
             // Step size
-            std::vector<Scalar> h(x_map.size());
+            std::vector<Scalar> h(x_map_.size());
 
             // TODO check if at least a few residuals were computed.
             // TODO Optimize!!
             for (int i = 0; i < m_num_residuals; ++i)
             {
-                model_->setup(x_map.data());
-                
+                model_->setup(x_map_.data());
+
                 if (model_->f(x, residuals_.data(), i))
                 {
-                    std::vector<ParameterVector> x_plus(x_map.size(), x_map);
-                    for (int j = 0; j < x_map.size(); ++j)
+                    std::vector<ParameterVector> x_plus(x_map_.size(), x_map_);
+                    for (int j = 0; j < x_map_.size(); ++j)
                     {
-                        h[j] = min_step_size * abs(x_map[j]);
+                        h[j] = min_step_size * abs(x_map_[j]);
 
                         if (h[j] == 0.0)
                             h[j] = min_step_size;
@@ -87,32 +80,39 @@ namespace duna
 
                         jacobian_.col(j) = (residuals_plus_ - residuals_) / h[j];
                     }
-                    
+
                     Scalar w = loss_function_->weight(residuals_.squaredNorm());
                     // hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
-                    hessian_map.noalias() += jacobian_.transpose() * w * jacobian_;
-                    b_map.noalias() += jacobian_.transpose() * w * residuals_;
+                    hessian_map_.noalias() += jacobian_.transpose() * w * jacobian_;
+                    b_map_.noalias() += jacobian_.transpose() * w * residuals_;
                     sum += residuals_.transpose() * residuals_;
                 }
             }
-            hessian_map.template triangularView<Eigen::Upper>() = hessian_map.transpose();
+            hessian_map_.template triangularView<Eigen::Upper>() = hessian_map_.transpose();
             return sum;
         }
 
-    private:
-        using CostFunctionBase<Scalar>::m_num_outputs;
+    protected:
         using CostFunctionBase<Scalar>::m_num_residuals;
         using CostFunctionBase<Scalar>::model_;
         using CostFunctionBase<Scalar>::loss_function_;
+        Eigen::Map<const ParameterVector> x_map_;
+        Eigen::Map<HessianMatrix> hessian_map_;
+        Eigen::Map<ParameterVector> b_map_;
+
         JacobianMatrix jacobian_;
         ResidualVector residuals_;
         ResidualVector residuals_plus_;
 
-        // TODO test if dynamic
-        void init()
+        // Initialize internal cost function states.
+        virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) override
         {
-            // TODO do more assertions
-            static_assert(N_PARAMETERS != -1, "Dynamic Cost Function not yet implemented");
+            new (&x_map_) Eigen::Map<const ParameterVector>(x, N_PARAMETERS, 1);
+            new (&hessian_map_) Eigen::Map<HessianMatrix>(hessian, N_PARAMETERS, N_PARAMETERS);
+            new (&b_map_) Eigen::Map<ParameterVector>(b, N_PARAMETERS, 1);
+
+            hessian_map_.setZero();
+            b_map_.setZero();
         }
     };
 }

@@ -21,13 +21,11 @@ namespace duna
         using ModelConstPtr = typename Model::ConstPtr;
         using LossFunctionPtr = typename loss::ILossFunction<Scalar>::Ptr;
 
-
         CostFunctionBase() = default;
 
-        CostFunctionBase(ModelPtr model, int num_residuals, int num_model_outputs) : model_(model),
-                                                                                     m_num_residuals(num_residuals),
-                                                                                     m_num_outputs(num_model_outputs)
-                                                                                     
+        CostFunctionBase(ModelPtr model, int num_residuals) : model_(model),
+                                                              m_num_residuals(num_residuals)
+
         {
             loss_function_.reset(new duna::loss::NoLoss<Scalar>());
         }
@@ -40,17 +38,16 @@ namespace duna
         inline void setLossFunction(LossFunctionPtr loss_function) { loss_function_ = loss_function; }
 
         // Setup internal state of the model. Runs at the beggining of the optimization loop.
-        virtual void update(const Scalar *x)
-        {
-            model_->update(x);
-        }
+        virtual void update(const Scalar *x) { model_->update(x); }
 
         virtual Scalar computeCost(const Scalar *x) = 0;
         virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
 
+        // Initialize internal variables.
+        virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
+
     protected:
         int m_num_residuals;
-        int m_num_outputs;
 
         // Model interface;
         ModelPtr model_;

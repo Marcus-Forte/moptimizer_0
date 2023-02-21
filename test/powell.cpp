@@ -2,6 +2,8 @@
 #include <duna/levenberg_marquadt.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/stopwatch.hpp>
+#include <duna/levenberg_marquadt_dynamic.h>
+#include <duna/cost_function_analytical_dynamic.h>
 
 //  Powell's singular function.
 //
@@ -22,7 +24,7 @@ int main(int argc, char **argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModel<double>
+struct Model : public duna::BaseModelJacobian<double>
 {
     bool f(const double *x, double *f_x, unsigned int index) override
     {
@@ -30,6 +32,39 @@ struct Model : public duna::BaseModel<double>
         f_x[1] = sqrt(5) * (x[2] - x[3]);
         f_x[2] = (x[1] - 2 * x[2]) * (x[1] - 2 * x[2]);
         f_x[3] = sqrt(10) * (x[0] - x[3]) * (x[0] - x[3]);
+        return true;
+    }
+
+    /* ROW MAJOR*/
+    bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override
+    {
+
+        this->f(x, f_x, index);
+
+        // Df / dx0
+        jacobian[0] = 1;
+        jacobian[4] = 0;
+        jacobian[8] = 0;
+        jacobian[12] = sqrt(10) * 2 * (x[0] - x[3]);
+
+        // Df / dx1
+        jacobian[1] = 10;
+        jacobian[5] = 0;
+        jacobian[9] = 2 * (x[1] + 2 * x[2]);
+        jacobian[13] = 0;
+
+        // Df / dx2
+        jacobian[2] = 0;
+        jacobian[6] = sqrt(5);
+        jacobian[10] = 2 * (x[1] + 2 * x[2]) * (-2);
+        jacobian[14] = 0;
+
+        // Df / dx3
+        jacobian[3] = 0;
+        jacobian[7] = -sqrt(5);
+        jacobian[11] = 0;
+        jacobian[15] = sqrt(10) * 2 * (x[0] - x[3]) * (-1);
+
         return true;
     }
 };
@@ -46,7 +81,7 @@ TEST(PowellFunction, InitialCondition0)
     duna::LevenbergMarquadt<double, 4> optimizer;
     optimizer.setMaximumIterations(25);
 
-    optimizer.addCost(new duna::CostFunctionNumericalDiff<double, 4, 4>(
+    optimizer.addCost(new duna::CostFunctionNumerical<double, 4, 4>(
         Model::Ptr(new Model), 1));
 
     optimizer.minimize(x0);

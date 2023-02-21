@@ -80,7 +80,7 @@ TYPED_TEST(RegistrationPoint2Plane3DOF, DificultRotation)
     // Act
     typename duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
     scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
-    auto cost = new duna::CostFunctionNumericalDiff<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
+    auto cost = new duna::CostFunctionNumerical<TypeParam, 3, 1>(scan_matcher_model, this->source->size());
     this->optimizer.addCost(cost);
     this->optimizer.minimize(x0);
     so3::convert3DOFParameterToMatrix(x0, this->result_transform);
