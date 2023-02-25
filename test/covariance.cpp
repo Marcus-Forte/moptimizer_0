@@ -1,15 +1,48 @@
 #include <gtest/gtest.h>
 #include <duna/covariance/covariance.h>
 
-// User Define covariance.
-class Covariance3X3 : public duna::covariance::ICovariance<double, 3>
+/* Client covariance */
+class Covariance3x3 : public duna::covariance::ICovariance<double>
 {
-    using MatrixType = duna::covariance::ICovariance<double, 3>::MatrixType;
+    using MatrixType = typename duna::covariance::ICovariance<double>::MatrixType;
 
-    MatrixType getCovariance(double *input = 0) override
+public:
+    Covariance3x3()
     {
-        return 0.02 * MatrixType::Identity();
+        constantCovariance.resize(3, 3);
+        constantCovariance.setIdentity();
+        constantCovariance *= 10.0;
     }
+
+    MatrixType getCovariance(double *input) override
+    {
+        return constantCovariance;
+    }
+
+private:
+    MatrixType constantCovariance;
+};
+
+/* Client covariance */
+class Covariance6x6 : public duna::covariance::ICovariance<double>
+{
+    using MatrixType = typename duna::covariance::ICovariance<double>::MatrixType;
+
+public:
+    Covariance6x6()
+    {
+        constantCovariance.resize(6, 6);
+        constantCovariance.setIdentity();
+        constantCovariance *= 0.02;
+    }
+
+    MatrixType getCovariance(double *input) override
+    {
+        return constantCovariance;
+    }
+
+private:
+    MatrixType constantCovariance;
 };
 
 int main(int argc, char **argv)
@@ -27,46 +60,33 @@ TYPED_TEST_SUITE(Covariance, ScalarTypes);
 
 TYPED_TEST(Covariance, getNoCovariance)
 {
-    auto cov = duna::covariance::NoCovariance<TypeParam>();
-    auto val = cov.getCovariance();
-    GTEST_ASSERT_EQ(val(0), 1.0);
-    GTEST_ASSERT_EQ(val.size(), 1);
+    auto cov_obj = duna::covariance::IdentityCovariance<TypeParam>(1);
+    auto covariance = cov_obj.getCovariance();
+    GTEST_ASSERT_EQ(covariance(0), 1.0f);
+    GTEST_ASSERT_EQ(covariance.size(), 1);
 }
 
-TEST(Covariance, get3x3Covariance)
+TEST(Covariance, getCovariance)
 {
-    duna::covariance::ICovariance<double, 3>::Ptr covariance;
-    covariance.reset(new Covariance3X3);
-    auto val = covariance->getCovariance();
-    GTEST_ASSERT_EQ(val.rows(), 3);
-    GTEST_ASSERT_EQ(val.cols(), 3);
+    duna::covariance::ICovariance<double>::Ptr icov;
+    icov = std::make_shared<Covariance3x3>();
 
-    GTEST_ASSERT_EQ(val(0, 0), 0.02);
-    GTEST_ASSERT_EQ(val(1, 1), 0.02);
-    GTEST_ASSERT_EQ(val(2, 2), 0.02);
-}
+    auto covariance = icov->getCovariance();
+    GTEST_ASSERT_EQ(covariance(0, 0), 10.0);
+    GTEST_ASSERT_EQ(covariance(1, 1), 10.0);
+    GTEST_ASSERT_EQ(covariance(2, 2), 10.0);
+    GTEST_ASSERT_EQ(covariance.rows(), 3);
+    GTEST_ASSERT_EQ(covariance.cols(), 3);
 
-template <typename T>
-class Base
-{
-public:
-    virtual T getCov() = 0;
-};
+    icov = std::make_shared<Covariance6x6>();
 
-template <typename T, int DIM>
-class Derived : public Base<T>
-{
-    T getCov() override
-    {
-
-    }
-};
-
-TEST(Covariance, base)
-{
-    Base<double>* base;
-    base = new Derived<double, 3>;
-
-
-
+    covariance = icov->getCovariance();
+    GTEST_ASSERT_EQ(covariance(0, 0), 0.02);
+    GTEST_ASSERT_EQ(covariance(1, 1), 0.02);
+    GTEST_ASSERT_EQ(covariance(2, 2), 0.02);
+    GTEST_ASSERT_EQ(covariance(3, 3), 0.02);
+    GTEST_ASSERT_EQ(covariance(4, 4), 0.02);
+    GTEST_ASSERT_EQ(covariance(5, 5), 0.02);
+    GTEST_ASSERT_EQ(covariance.rows(), 6);
+    GTEST_ASSERT_EQ(covariance.cols(), 6);
 }

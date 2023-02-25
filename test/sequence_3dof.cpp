@@ -183,7 +183,7 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor)
 
         scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
         // scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Point<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
-        scan_matcher_model->setMaximumCorrespondenceDistance(0.15);
+        scan_matcher_model->setMaximumCorrespondenceDistance(0.3);
         scan_matcher_model->addCorrespondenceRejector(rejector0);
         auto cost = new duna::CostFunctionNumerical<TypeParam, 3, 3>(scan_matcher_model, subsampled_input->size());
         cost->setLossFunction(typename duna::loss::GemmanMCClure<TypeParam>::Ptr(new duna::loss::GemmanMCClure<TypeParam>(0.1)));
@@ -214,14 +214,14 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor)
 
         *HD_cloud = *HD_cloud + *output;
     }
-    std::cout << "All registration took: " << total_reg_time << std::endl;
+    std::cerr << "All registration took: " << total_reg_time << std::endl;
 
     PointCloudT::Ptr reference_map(new PointCloudT);
     pcl::io::loadPCDFile(TEST_DATA_DIR "/0_sequence_map_reference.pcd", *reference_map);
 
     double diff = this->compareClouds(reference_map, HD_cloud);
 
-    std::cout << "Diff =  " << diff << std::endl;
+    std::cerr << "Diff =  " << diff << std::endl;
 
     EXPECT_NEAR(diff, 0.0, 1e-2);
 

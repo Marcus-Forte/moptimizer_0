@@ -31,9 +31,10 @@ namespace duna
         using CostFunctionAnalytical<Scalar>::b_map_;
         using CostFunctionAnalytical<Scalar>::jacobian_;
         using CostFunctionAnalytical<Scalar>::residuals_;
+        using CostFunctionAnalytical<Scalar>::covariance_;
         int num_parameters_;
         int num_outputs_;
 
         void init(const Scalar *x, Scalar *hessian, Scalar *b) override;
     };
-}
+} // namespace

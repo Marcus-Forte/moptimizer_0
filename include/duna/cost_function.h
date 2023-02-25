@@ -1,16 +1,15 @@
-#ifndef COST_FUNCTION_H
-#define COST_FUNCTION_H
+#pragma once
 
-#include <exception>
 #include <Eigen/Dense>
+#include <exception>
 #include "duna/types.h"
 #include "duna/model.h"
 #include "duna/loss_function/loss_function.h"
+#include "duna/covariance/covariance.h"
 
 namespace duna
 {
-    /* This class serves as a Base for cost function implementations.
-     */
+    /* Base class for cost functions. */
 
     template <class Scalar = double>
     class CostFunctionBase
@@ -20,6 +19,7 @@ namespace duna
         using ModelPtr = typename Model::Ptr;
         using ModelConstPtr = typename Model::ConstPtr;
         using LossFunctionPtr = typename loss::ILossFunction<Scalar>::Ptr;
+        using CovariancePtr = typename covariance::ICovariance<Scalar>::Ptr;
 
         CostFunctionBase() = default;
 
@@ -27,7 +27,8 @@ namespace duna
                                                               m_num_residuals(num_residuals)
 
         {
-            loss_function_.reset(new duna::loss::NoLoss<Scalar>());
+            loss_function_.reset(new loss::NoLoss<Scalar>());
+            covariance_.reset(new covariance::IdentityCovariance<Scalar>(1));
         }
 
         CostFunctionBase(const CostFunctionBase &) = delete;
@@ -49,10 +50,10 @@ namespace duna
     protected:
         int m_num_residuals;
 
-        // Model interface;
+        // Interfaces
         ModelPtr model_;
         LossFunctionPtr loss_function_;
+        CovariancePtr covariance_;
+        
     };
-}
-
-#endif
+} // namespace

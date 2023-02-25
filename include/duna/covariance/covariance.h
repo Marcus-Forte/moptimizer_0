@@ -2,36 +2,36 @@
 
 #include <Eigen/Dense>
 #include <memory>
-
+#include "duna/types.h"
 
 namespace duna::covariance
 {
     // Covariance function interface.
-    template <typename T, int DIM = Eigen::Dynamic>
+    template <typename T>
     class ICovariance
     {
-        public:
+    public:
         using Ptr = std::shared_ptr<ICovariance>;
         using ConstPtr = std::shared_ptr<const ICovariance>;
-        using MatrixType = Eigen::Matrix<T, DIM, DIM>;
-        
+        using MatrixType = Eigen::Matrix<T, duna::Dynamic, duna::Dynamic>;
+
         ICovariance() = default;
         virtual ~ICovariance() = default;
 
-        virtual MatrixType getCovariance(T* input = 0) = 0;
+        virtual MatrixType getCovariance(T *input = 0) = 0;
     };
 
-    
+    /* No Covariance / Identity Covariance*/
     template <typename T>
-    class NoCovariance : public ICovariance<T, 1>
+    class IdentityCovariance : public ICovariance<T>
     {
-        public:
-        using typename ICovariance<T,1>::MatrixType;
+    public:
+        using typename ICovariance<T>::MatrixType;
+        /* Identity covariance dimension. */
+        IdentityCovariance(unsigned int dimension);
+        MatrixType getCovariance(T *input = 0) override;
 
-        inline MatrixType getCovariance(T* input = 0) override
-        {
-            return MatrixType::Identity();
-        }
-
+        protected:
+        MatrixType covariance_matrix_;
     };
 }

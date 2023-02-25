@@ -32,9 +32,10 @@ namespace duna
         using CostFunctionNumerical<Scalar>::jacobian_;
         using CostFunctionNumerical<Scalar>::residuals_;
         using CostFunctionNumerical<Scalar>::residuals_plus_;
+        using CostFunctionNumerical<Scalar>::covariance_;
         int num_parameters_;
         int num_outputs_;
 
         void init(const Scalar *x, Scalar *hessian, Scalar *b) override;
     };
-}
+} // namespace

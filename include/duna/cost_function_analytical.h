@@ -3,7 +3,6 @@
 #include <duna/cost_function.h>
 #include <duna/model.h>
 #include <duna/logger.h>
-#include <memory>
 
 namespace duna
 {
@@ -19,7 +18,6 @@ namespace duna
         using typename CostFunctionBase<Scalar>::Model;
         using typename CostFunctionBase<Scalar>::ModelPtr;
 
-        // TODO change pointer to smartpointer
         CostFunctionAnalytical(ModelPtr model, int num_residuals) : CostFunctionBase<Scalar>(model, num_residuals),
                                                                     hessian_map_(0, 0, 0), x_map_(0, 0, 0), b_map_(0, 0, 0)
         {
@@ -50,14 +48,11 @@ namespace duna
 
         Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override
         {
-
             init(x, hessian, b);
 
             Scalar sum = 0.0;
 
             model_->setup(x);
-
-            
 
             // TODO check if at least a few residuals were computed.
             for (int i = 0; i < m_num_residuals; ++i)
@@ -68,10 +63,10 @@ namespace duna
                                  i))
                 {
                     Scalar w = loss_function_->weight(residuals_.squaredNorm());
-                    // std::cout << "residuals_" << residuals_ << std::endl;
+                    auto covariance = covariance_->getCovariance();
                     // hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
-                    hessian_map_.noalias() += jacobian_.transpose() * w * jacobian_;
-                    b_map_.noalias() += jacobian_.transpose() * w * residuals_;
+                    hessian_map_.noalias() += jacobian_.transpose() * covariance * w * jacobian_;
+                    b_map_.noalias() += jacobian_.transpose() * covariance * w * residuals_;
                     sum += residuals_.transpose() * residuals_;
                 }
             }
@@ -84,6 +79,7 @@ namespace duna
         using CostFunctionBase<Scalar>::m_num_residuals;
         using CostFunctionBase<Scalar>::model_;
         using CostFunctionBase<Scalar>::loss_function_;
+        using CostFunctionBase<Scalar>::covariance_;
         Eigen::Map<const ParameterVector> x_map_;
         Eigen::Map<HessianMatrix> hessian_map_;
         Eigen::Map<ParameterVector> b_map_;
@@ -100,6 +96,7 @@ namespace duna
 
             hessian_map_.setZero();
             b_map_.setZero();
+            covariance_.reset(new covariance::IdentityCovariance<Scalar>(N_PARAMETERS));
         }
     };
-}
+} // namespace

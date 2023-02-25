@@ -39,6 +39,7 @@ src/levenberg_marquadt.cpp
 src/levenberg_marquadt_dynamic.cpp
 src/cost_function_analytical_dynamic.cpp
 src/cost_function_numerical_dynamic.cpp
+src/covariance.cpp
 src/so3.cpp
 src/exception.cpp
 src/logger.cpp
