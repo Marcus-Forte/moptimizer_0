@@ -107,12 +107,11 @@ namespace duna
 
         virtual void setup(const Scalar *x) override = 0;
         virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) override = 0;
-        virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override 
+        virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override
         {
             throw duna::Exception("Non implemented jacobian model function `f_df` being used.");
             return false;
         }
-        
 
     protected:
         PointCloudSourceConstPtr source_;
@@ -128,5 +127,17 @@ namespace duna
 
         // Parameters
         double maximum_corr_dist_;
+
+        // Check if normal is usable.
+        inline bool isNormalUsable(const PointTarget &point_with_normal) const
+        {
+            if (std::isnan(point_with_normal.normal_x) ||
+                std::isnan(point_with_normal.normal_y) ||
+                std::isnan(point_with_normal.normal_z))
+            {
+                return false;
+            }
+            return true;
+        }
     };
 }

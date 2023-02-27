@@ -14,6 +14,8 @@
 #include <duna/models/scan_matching.h>
 #include <duna/cost_function_numerical.h>
 #include <duna/levenberg_marquadt.h>
+#include <duna/cost_function_analytical.h>
+#include <duna/cost_function_analytical_dynamic.h>
 #include <duna/loss_function/geman_mcclure.h>
 
 #define N_MAP 20
@@ -185,7 +187,7 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor)
         // scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Point<PointT, PointT, TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
         scan_matcher_model->setMaximumCorrespondenceDistance(0.3);
         scan_matcher_model->addCorrespondenceRejector(rejector0);
-        auto cost = new duna::CostFunctionNumerical<TypeParam, 3, 3>(scan_matcher_model, subsampled_input->size());
+        auto cost = new duna::CostFunctionAnalytical<TypeParam, 3, 1>(scan_matcher_model, subsampled_input->size());
         cost->setLossFunction(typename duna::loss::GemmanMCClure<TypeParam>::Ptr(new duna::loss::GemmanMCClure<TypeParam>(0.1)));
         
         optimizer.addCost(cost);

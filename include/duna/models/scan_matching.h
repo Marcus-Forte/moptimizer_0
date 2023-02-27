@@ -42,11 +42,9 @@ namespace duna
 
             const PointSource &src_pt = source_->points[correspondences_[index].index_query];
             const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
-
-            if (std::isnan(tgt_pt.normal_x))
-            {
+            
+            if (!this->isNormalUsable(tgt_pt))
                 return false;
-            }
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);
             Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
@@ -67,10 +65,8 @@ namespace duna
             const PointSource &src_pt = source_->points[correspondences_[index].index_query];
             const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
 
-            if (std::isnan(tgt_pt.normal_x))
-            {
+            if (!this->isNormalUsable(tgt_pt))
                 return false;
-            }
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);
             Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
@@ -316,6 +312,9 @@ namespace duna
 
             const PointSource &src_pt = source_->points[correspondences_[index].index_query];
             const PointTarget &tgt_pt = target_->points[correspondences_[index].index_match];
+
+            if (!this->isNormalUsable(tgt_pt))
+                return false;
 
             Eigen::Matrix<Scalar, 4, 1> src_(static_cast<Scalar>(src_pt.x), static_cast<Scalar>(src_pt.y), static_cast<Scalar>(src_pt.z), 1.0);
             Eigen::Matrix<Scalar, 4, 1> tgt_(static_cast<Scalar>(tgt_pt.x), static_cast<Scalar>(tgt_pt.y), static_cast<Scalar>(tgt_pt.z), 0.0);
