@@ -100,7 +100,6 @@ if(BUILD_TESTS)
         target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
 endif()
 
-
 # Link library to headers, but does not install. 
 target_include_directories(${PROJECT_NAME} PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -108,27 +107,22 @@ $<INSTALL_INTERFACE:include>
 )
 
 # Install Artifacts
+include(GNUInstallDirs)
 install(
   DIRECTORY include/
-  DESTINATION include
-)
-
-install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}Targets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include       
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 ### Install Config and ConfigVersion files
-set (CMAKE_INSTALL_LIBDIR share/cmake/duna_optimizer)
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}-targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}      
+)
 
 install(
-        EXPORT ${PROJECT_NAME}Targets
-        FILE ${PROJECT_NAME}Targets.cmake
+        EXPORT ${PROJECT_NAME}-targets
         NAMESPACE duna::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
 include(CMakePackageConfigHelpers)
@@ -138,10 +132,13 @@ write_basic_package_version_file(
         COMPATIBILITY SameMajorVersion
         )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in ${PROJECT_NAME}-config.cmake
+               @ONLY)
+
 install(FILES 
-        cmake/${PROJECT_NAME}Config.cmake
+        "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Version.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         )
 
 # Packaging

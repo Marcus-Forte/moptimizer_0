@@ -12,14 +12,13 @@ namespace duna
         using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
         using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
 
-        LevenbergMarquadt()
+        LevenbergMarquadt() : m_lm_max_iterations(8)
         {
             reset();
         }
 
         void reset()
         {
-            m_lm_max_iterations = 8;
             m_lm_init_lambda_factor_ = 1e-9;
             m_lm_lambda = -1.0;
         }
