@@ -83,7 +83,7 @@ namespace duna
                     Scalar w = loss_function_->weight(residuals_.squaredNorm());
                     // auto covariance = covariance_->getCovariance();  // TODO causing double free!
                     // hessian_map.template selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose()); // H = J^T * J
-                    hessian_map_.noalias() += jacobian_.transpose()  * jacobian_;
+                    hessian_map_.noalias() += jacobian_.transpose()  * w * jacobian_;
                     b_map_.noalias() += jacobian_.transpose()  * w * residuals_;
                     sum += residuals_.transpose() * residuals_;
                 }
