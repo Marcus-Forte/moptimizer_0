@@ -19,6 +19,7 @@ namespace duna
 
         void reset()
         {
+            logger::log_debug("[LM] Reset");
             m_lm_init_lambda_factor_ = 1e-9;
             m_lm_lambda = -1.0;
         }

@@ -85,6 +85,8 @@ TYPED_TEST(RegistrationPoint2Plane3DOF, DificultRotation)
     this->optimizer.minimize(x0);
     so3::convert3DOFParameterToMatrix(x0, this->result_transform);
 
+    this->optimizer.clearCosts();
+
     // Assert
     std::cout << "Final x: \n" << Eigen::Map<Eigen::Matrix<TypeParam, 3, 1>>(x0) << std::endl;
     std::cout << "Final Transform: \n" << this->result_transform << std::endl;

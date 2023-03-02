@@ -162,7 +162,8 @@ TYPED_TEST(RegistrationPoint2Point, RotationPlusTranslationDynamic)
     scan_matcher_model.reset(new duna::ScanMatching6DOFPoint2Point<PointT, PointT, TypeParam>(this->source, this->target, this->target_kdtree));
 
     auto cost = new duna::CostFunctionAnalyticalDynamic<TypeParam>(scan_matcher_model, 6, 3, this->source->size());
-    auto dyn_opt = duna::LevenbergMarquadtDynamic<TypeParam>(6);
+    // auto dyn_opt = duna::LevenbergMarquadtDynamic<TypeParam>(6);
+    auto dyn_opt = duna::LevenbergMarquadt<TypeParam, 6>();
 
     dyn_opt.addCost(cost);
     dyn_opt.setMaximumIterations(150);

@@ -29,6 +29,7 @@ namespace duna::covariance
         using typename ICovariance<T>::MatrixType;
         /* Identity covariance dimension. */
         IdentityCovariance(unsigned int dimension);
+        virtual ~IdentityCovariance();
         MatrixType getCovariance(T *input = 0) override;
 
         protected:

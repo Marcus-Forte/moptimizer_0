@@ -36,7 +36,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Library
 add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
-src/levenberg_marquadt_dynamic.cpp
+# src/levenberg_marquadt_dynamic.cpp #temporarily removed
 src/cost_function_analytical_dynamic.cpp
 src/cost_function_numerical_dynamic.cpp
 src/covariance.cpp
