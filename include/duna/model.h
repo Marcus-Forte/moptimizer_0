@@ -1,80 +1,86 @@
 #pragma once
 
-#include <memory>
 #include <duna/exception.h>
 
-namespace duna
-{
-    /* Interface definitions for user models.*/
-    /* "W can be set to the inverse of the measurement error covariance matrix, in the unusual case that it is known."" */
+#include <memory>
 
-    template <typename Scalar>
-    class IBaseModel
-    {
-    public:
-        using Ptr = std::shared_ptr<IBaseModel>;
-        using ConstPtr = std::shared_ptr<const IBaseModel>;
-        IBaseModel() = default;
-        virtual ~IBaseModel() = default;
+namespace duna {
+/* Interface definitions for user models.*/
+/* "W can be set to the inverse of the measurement error covariance matrix, in
+ * the unusual case that it is known."" */
 
-        // Setups up data for the model (i.e setting up transform 'T' from state vector 'x')
-        virtual void setup(const Scalar *x) = 0;
+template <typename Scalar>
+class IBaseModel {
+ public:
+  using Ptr = std::shared_ptr<IBaseModel>;
+  using ConstPtr = std::shared_ptr<const IBaseModel>;
+  IBaseModel() = default;
+  virtual ~IBaseModel() = default;
 
-        // Update internal states of the model. (i.e registration correspondences)
-        virtual void update(const Scalar *x) = 0;
+  // Setups up data for the model (i.e setting up transform 'T' from state
+  // vector 'x')
+  virtual void setup(const Scalar *x) = 0;
 
-        // Function (r_i)
-        virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) = 0;
+  // Update internal states of the model. (i.e registration correspondences)
+  virtual void update(const Scalar *x) = 0;
 
-        // Computes both jacobian and function at same time. Usually they depend on commons functions.
-        virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) = 0;
-    };
+  // Function (r_i)
+  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) = 0;
 
-    /* For non-jacobian defined models. */
-    template <typename Scalar>
-    class BaseModel : public IBaseModel<Scalar>
-    {
-    public:
-        BaseModel() = default;
-        virtual ~BaseModel() = default;
+  // Computes both jacobian and function at same time. Usually they depend on
+  // commons functions.
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
+                    unsigned int index) = 0;
+};
 
-        // Setups up data for the model (i.e setting up transform 'T' from state vector 'x')
-        virtual void setup(const Scalar *x) override {}
+/* For non-jacobian defined models. */
+template <typename Scalar>
+class BaseModel : public IBaseModel<Scalar> {
+ public:
+  BaseModel() = default;
+  virtual ~BaseModel() = default;
 
-        // Update internal states of the model. (i.e registration correspondences)
-        virtual void update(const Scalar *x) override {}
+  // Setups up data for the model (i.e setting up transform 'T' from state
+  // vector 'x')
+  virtual void setup(const Scalar *x) override {}
 
-        // Function (r_i). Must return true if result if valid.
-        virtual bool f(const Scalar *x, Scalar *residual, unsigned int index) override = 0;
+  // Update internal states of the model. (i.e registration correspondences)
+  virtual void update(const Scalar *x) override {}
 
-        // No jacobian definition.
-        virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) final
-        {
-            throw duna::Exception("Non implemented non-jacobian model function `f_df` being used.");
-        }
-    };
+  // Function (r_i). Must return true if result if valid.
+  virtual bool f(const Scalar *x, Scalar *residual,
+                 unsigned int index) override = 0;
 
-    /* For jacobian defined models. */
-    template <typename Scalar>
-    class BaseModelJacobian : public IBaseModel<Scalar>
-    {
-    public:
-        BaseModelJacobian() = default;
-        virtual ~BaseModelJacobian() = default;
+  // No jacobian definition.
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
+                    unsigned int index) final {
+    throw duna::Exception(
+        "Non implemented non-jacobian model function `f_df` being used.");
+  }
+};
 
-        // Setups up data for the model (i.e setting up transform 'T' from state vector 'x')
-        virtual void setup(const Scalar *x) override {}
+/* For jacobian defined models. */
+template <typename Scalar>
+class BaseModelJacobian : public IBaseModel<Scalar> {
+ public:
+  BaseModelJacobian() = default;
+  virtual ~BaseModelJacobian() = default;
 
-        // Update internal states of the model. (i.e registration correspondences)
-        virtual void update(const Scalar *x) override {}
+  // Setups up data for the model (i.e setting up transform 'T' from state
+  // vector 'x')
+  virtual void setup(const Scalar *x) override {}
 
-        // Function (r_i). Must return true if result if valid.
-        virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) override
-        {
-            throw duna::Exception("Non implemented jacobian model function `f` being used.");
-        }
+  // Update internal states of the model. (i.e registration correspondences)
+  virtual void update(const Scalar *x) override {}
 
-        // No jacobian definition.
-        virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override = 0;
-    };
-} // namespace
+  // Function (r_i). Must return true if result if valid.
+  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) override {
+    throw duna::Exception(
+        "Non implemented jacobian model function `f` being used.");
+  }
+
+  // No jacobian definition.
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
+                    unsigned int index) override = 0;
+};
+}  // namespace duna

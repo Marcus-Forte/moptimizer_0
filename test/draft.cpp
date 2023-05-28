@@ -2,15 +2,10 @@
 
 #include <Eigen/Dense>
 
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv);
 
-int main(int argc, char **argv)
-{
-    ::testing::InitGoogleTest(&argc, argv);
-
-    return RUN_ALL_TESTS();
+  return RUN_ALL_TESTS();
 }
 
-TEST(Draft, Draft1)
-{
-    
-}
+TEST(Draft, Draft1) {}

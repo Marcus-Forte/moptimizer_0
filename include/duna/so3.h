@@ -1,40 +1,49 @@
 #pragma once
 #include <Eigen/Dense>
 
-#define SKEW_SYMMETRIC_FROM(v) 0.0, -v[2], v[1], v[2], 0.0, -v[0], -v[1], v[0], 0.0
+#define SKEW_SYMMETRIC_FROM(v) \
+  0.0, -v[2], v[1], v[2], 0.0, -v[0], -v[1], v[0], 0.0
 
-namespace so3
-{
-    template <typename Scalar>
-    void convert6DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_);
+namespace so3 {
+template <typename Scalar>
+void convert6DOFParameterToMatrix(
+    const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_);
 
-    template <typename Scalar>
-    void convert3DOFParameterToMatrix(const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_);
+template <typename Scalar>
+void convert3DOFParameterToMatrix(
+    const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_);
 
-    template <typename Scalar>
-    void convert3DOFParameterToMatrix3(const Scalar *x, Eigen::Matrix<Scalar, 3, 3> &transform_matrix_);
+template <typename Scalar>
+void convert3DOFParameterToMatrix3(
+    const Scalar *x, Eigen::Matrix<Scalar, 3, 3> &transform_matrix_);
 
-    /* Performs R = exp(delta). This means R ⊞ delta*/
-    template <typename Scalar>
-    void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R);
+/* Performs R = exp(delta). This means R ⊞ delta*/
+template <typename Scalar>
+void Exp(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &delta,
+         Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> R);
 
-    template <typename Scalar>
-    Eigen::Matrix<Scalar, 3, 3> Exp(const Eigen::Matrix<Scalar, 3, 1> &ang);
+template <typename Scalar>
+Eigen::Matrix<Scalar, 3, 3> Exp(const Eigen::Matrix<Scalar, 3, 1> &ang);
 
-    template <typename Scalar>
-    Eigen::Matrix<Scalar, 3, 3> Exp(const Eigen::Matrix<Scalar, 3, 1> &ang_vel, const Scalar &dt);
+template <typename Scalar>
+Eigen::Matrix<Scalar, 3, 3> Exp(const Eigen::Matrix<Scalar, 3, 1> &ang_vel,
+                                const Scalar &dt);
 
-    /* Performs delta = LOG(R). This means R ⊟ delta*/
-    template <typename Scalar>
-    void Log(const Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> &R, Eigen::Matrix<Scalar, 3, 1> &delta);
+/* Performs delta = LOG(R). This means R ⊟ delta*/
+template <typename Scalar>
+void Log(const Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> &R,
+         Eigen::Matrix<Scalar, 3, 1> &delta);
 
-    template <typename Scalar>
-    void inverseRightJacobian(const Eigen::Matrix<Scalar, 3, 1> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> inv_jacobian);
+template <typename Scalar>
+void inverseRightJacobian(const Eigen::Matrix<Scalar, 3, 1> &r,
+                          Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> inv_jacobian);
 
-    template <typename Scalar>
-    void rightJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> jacobian);
+template <typename Scalar>
+void rightJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r,
+                   Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> jacobian);
 
-    template <typename Scalar>
-    void leftJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r, Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> left_jacobian);
+template <typename Scalar>
+void leftJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r,
+                  Eigen::Ref<Eigen::Matrix<Scalar, 3, 3>> left_jacobian);
 
-}
+}  // namespace so3

@@ -2,30 +2,23 @@
 
 #include <memory>
 
-namespace duna::loss
-{
-    // Loss Function Interface
-    template <typename T>
-    class ILossFunction
-    {
-        public:
-        using Ptr = std::shared_ptr<ILossFunction>;
-        using ConstPtr = std::shared_ptr<const ILossFunction>;
-        
-        ILossFunction() = default;
-        virtual ~ILossFunction() = default;
+namespace duna::loss {
+// Loss Function Interface
+template <typename T>
+class ILossFunction {
+ public:
+  using Ptr = std::shared_ptr<ILossFunction>;
+  using ConstPtr = std::shared_ptr<const ILossFunction>;
 
-        virtual T weight(T errorSquaredNorm) = 0;
-    };
+  ILossFunction() = default;
+  virtual ~ILossFunction() = default;
 
-    
-    template <typename T>
-    class NoLoss : public ILossFunction<T>
-    {
-        public:
-        inline virtual T weight(T errorSquaredNorm) override
-        {
-            return 1.0;
-        }
-    };
-}
+  virtual T weight(T errorSquaredNorm) = 0;
+};
+
+template <typename T>
+class NoLoss : public ILossFunction<T> {
+ public:
+  inline virtual T weight(T errorSquaredNorm) override { return 1.0; }
+};
+}  // namespace duna::loss

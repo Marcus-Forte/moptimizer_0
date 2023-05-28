@@ -1,7 +1,3 @@
 #include <duna/exception.h>
 
-namespace duna
-{
-    
-
-} // namespace
+namespace duna {}  // namespace duna

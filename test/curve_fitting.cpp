@@ -1,6 +1,7 @@
-#include <gtest/gtest.h>
-#include <duna/levenberg_marquadt.h>
 #include <duna/cost_function_numerical.h>
+#include <duna/levenberg_marquadt.h>
+#include <gtest/gtest.h>
+
 #include <cmath>
 #include <duna/stopwatch.hpp>
 // From Ceres
