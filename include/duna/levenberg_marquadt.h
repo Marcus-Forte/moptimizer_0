@@ -32,7 +32,7 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public Optimizer<Scalar> {
 
  protected:
   // TODO
-  bool hasConverged() { return false; }
+  bool hasConverged() override { return false; }
   Scalar m_lm_init_lambda_factor_;
   Scalar m_lm_lambda;
   unsigned int m_lm_max_iterations;

@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 # set(CMAKE_INSTALL_PREFIX install) # always install locally
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.12 REQUIRED COMPONENTS io common search registration)
+find_package(PCL 1.12 QUIET COMPONENTS io common search registration)
 find_package(GTest REQUIRED)
 find_package(OpenMP REQUIRED)
 link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX ${PCL_LIBRARIES})
@@ -24,7 +24,7 @@ add_definitions(${PCL_DEFINITIONS})
 if(UNIX)
 # GTest required pthread in UNIX Os
         link_libraries(pthread)
-        add_compile_options(-march=native)
+     #   add_compile_options(-march=native)
         # add_compile_options(-msse -msse2 -mavx -mfma -msse4)
 elseif(MSVC)
         add_compile_options(/bigobj)
@@ -58,46 +58,54 @@ endif()
 
 #gtest
 if(BUILD_TESTS)
-        # Copy point cloud
-        get_filename_component(DATASET_PATH test/data/ REALPATH)
-        add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
-        
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-        enable_testing()
-        include(GoogleTest)
+  # Copy point cloud
+  get_filename_component(DATASET_PATH test/data/ REALPATH)
+  add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  enable_testing()
+  include(GoogleTest)
+  # Make test cases
+  set(test_src 
+  test/simple_model.cpp    
+  test/camera_calibration.cpp  
+  test/manifold.cpp
+  test/powell.cpp
+  test/curve_fitting.cpp
+  test/multiple_objectives.cpp
+  test/loss_function.cpp
+  test/logging.cpp
+  test/covariance.cpp
+  )
 
-        # Make test cases
-        set(test_src 
-        test/simple_model.cpp    
-        test/camera_calibration.cpp  
-        test/differentiation.cpp
-        test/manifold.cpp
-        test/powell.cpp
-        test/curve_fitting.cpp
-        test/multiple_objectives.cpp
-        test/loss_function.cpp
-        test/logging.cpp
-        test/covariance.cpp
+  # Add registration related tests
+  if(${PCL_FOUND})
+  message(STATUS "PCL Found. Building registration related tests..")
+  set(test_src
+  ${test_src}
+  
+  # Registration
+  test/differentiation.cpp
+  test/registration_point2plane.cpp
+  test/registration_point2point.cpp
+  test/registration_point2plane3DOF.cpp
+  
+  # Registration sequence
+  test/sequence_3dof.cpp
+  )
+  endif()
 
-        # REG
-        test/registration_point2plane.cpp
-        test/registration_point2point.cpp
-        test/registration_point2plane3DOF.cpp
-        
-        # Sequence
-        test/sequence_3dof.cpp
-        )
+  message(STATUS ${test_src})
 
-        foreach(test_case ${test_src})
-                get_filename_component(test_src_name ${test_case} NAME_WE)
-                message(STATUS ${filename})    
-                add_executable(${test_src_name} ${test_case})
-                target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
-                gtest_discover_tests(${test_src_name})
-        endforeach()
+  foreach(test_case ${test_src})
+          get_filename_component(test_src_name ${test_case} NAME_WE)
+          message(STATUS ${filename})    
+          add_executable(${test_src_name} ${test_case})
+          target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
+          gtest_discover_tests(${test_src_name})
+  endforeach()
 
-        add_executable(draft test/draft.cpp)
-        target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
+  add_executable(draft test/draft.cpp)
+  target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
 endif()
 
 # Link library to headers, but does not install. 

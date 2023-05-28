@@ -4,6 +4,8 @@
 #include <duna/logger.h>
 #include <duna/model.h>
 
+#include <vector>
+
 namespace duna {
 /* Numerical Differentiation cost function module. Computes numerical
  * derivatives when computing hessian. */

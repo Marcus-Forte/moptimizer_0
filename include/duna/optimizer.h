@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 #include <memory>
+#include <vector>
 
 namespace duna {
 template <class Scalar = double>
