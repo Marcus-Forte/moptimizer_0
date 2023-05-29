@@ -138,8 +138,8 @@ TEST_F(CameraCalibration, BadWeather) {
 TEST_F(CameraCalibration, GoodWeatherDynamic) {
   double x0[6] = {0};
 
-  // duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
-  duna::LevenbergMarquadt<double, 6> dyn_optimizer;
+  duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
+
   dyn_optimizer.addCost(this->cost);
   dyn_optimizer.minimize(x0);
 
@@ -152,8 +152,8 @@ TEST_F(CameraCalibration, GoodWeatherDynamic) {
 
 TEST_F(CameraCalibration, BadWeatherDynamic) {
   double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
-  // duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
-  duna::LevenbergMarquadt<double, 6> dyn_optimizer;
+  duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
+
   dyn_optimizer.addCost(this->cost);
   dyn_optimizer.setMaximumIterations(50);
   dyn_optimizer.minimize(x0);

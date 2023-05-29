@@ -1,5 +1,4 @@
 #! /bin/bash
 
 echo "Formatting code..."
-find . -iname *.h -o -iname *.cpp -o -iname *.md | xargs clang-format -i
-echo "Done!"
+find . \( -iname *.h -o -iname *.cpp -o -iname *.md \) -and -not -iname *duna_exports.h | xargs clang-format -i

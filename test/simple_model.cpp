@@ -66,8 +66,8 @@ TEST_F(SimpleModel, InitialCondition1) {
 
 TEST_F(SimpleModel, InitialCondition0Dynamic) {
   Scalar x0[] = {0.9, 0.2};
-  // duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
-  duna::LevenbergMarquadt<Scalar, 2> dyn_optimizer;
+  duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
+
   dyn_optimizer.addCost(cost);
 
   dyn_optimizer.minimize(x0);
@@ -78,8 +78,7 @@ TEST_F(SimpleModel, InitialCondition0Dynamic) {
 
 TEST_F(SimpleModel, InitialCondition1Dynamic) {
   Scalar x0[] = {1.9, 1.5};
-  // duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
-  duna::LevenbergMarquadt<Scalar, 2> dyn_optimizer;
+  duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
   dyn_optimizer.addCost(cost);
 
   dyn_optimizer.minimize(x0);
@@ -90,8 +89,8 @@ TEST_F(SimpleModel, InitialCondition1Dynamic) {
 
 TEST_F(SimpleModel, InitialCondition1DynamicCost) {
   Scalar x0[] = {1.9, 1.5};
-  // duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
-  duna::LevenbergMarquadt<Scalar, 2> dyn_optimizer;
+  duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
+
   duna::CostFunctionNumericalDynamic<Scalar> *dyn_cost =
       new duna::CostFunctionNumericalDynamic<Scalar>(
           Model::Ptr(new Model(x_data, y_data)), 2, 1, 7);

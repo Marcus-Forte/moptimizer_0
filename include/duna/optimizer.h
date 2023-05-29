@@ -16,7 +16,7 @@ class Optimizer {
   using ConstPtr = std::shared_ptr<const Optimizer>;
   using CostFunctionType = CostFunctionBase<Scalar>;
 
-  Optimizer() : m_maximum_iterations(15) {}
+  Optimizer() : maximum_iterations_(15) {}
   Optimizer(const Optimizer &) = delete;
   Optimizer &operator=(const Optimizer &) = delete;
   virtual ~Optimizer() = default;
@@ -31,13 +31,13 @@ class Optimizer {
     if (max_iterations < 0)
       throw std::invalid_argument(
           "Optimization::max_iterations cannot be less than 0.");
-    m_maximum_iterations = max_iterations;
+    maximum_iterations_ = max_iterations;
   }
   inline unsigned int getMaximumIterations() const {
-    return m_maximum_iterations;
+    return maximum_iterations_;
   }
   inline unsigned int getExecutedIterations() const {
-    return m_executed_iterations;
+    return executed_iterations_;
   }
 
   inline bool checkCosts() {
@@ -65,8 +65,8 @@ class Optimizer {
  protected:
   virtual bool hasConverged() = 0;
   std::vector<CostFunctionType *> costs_;
-  unsigned int m_maximum_iterations;
-  unsigned int m_executed_iterations;
+  unsigned int maximum_iterations_;
+  unsigned int executed_iterations_;
 };
 }  // namespace duna
 

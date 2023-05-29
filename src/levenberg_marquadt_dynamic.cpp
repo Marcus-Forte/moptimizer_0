@@ -31,10 +31,10 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
   hessian_diagonal.resize(num_parameters_, num_parameters_);
   hessian.resize(num_parameters_, num_parameters_);
 
-  for (m_executed_iterations = 0; m_executed_iterations < m_maximum_iterations;
-       ++m_executed_iterations) {
+  for (executed_iterations_ = 0; executed_iterations_ < maximum_iterations_;
+       ++executed_iterations_) {
     logger::log_debug("[LM] Levenberg-Marquadt Iteration: %d/%d",
-                      m_executed_iterations, m_maximum_iterations);
+                      executed_iterations_, maximum_iterations_);
 
     Scalar y0 = 0;
     hessian.setZero();
@@ -64,9 +64,9 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
 
     hessian_diagonal = hessian.diagonal().asDiagonal();
 
-    if (m_lm_lambda < 0.0)
-      m_lm_lambda = m_lm_init_lambda_factor_ *
-                    hessian.diagonal().array().abs().maxCoeff();
+    if (lm_lambda_ < 0.0)
+      lm_lambda_ =
+          lm_init_lambda_factor_ * hessian.diagonal().array().abs().maxCoeff();
 
     Scalar nu = 2.0;
 
@@ -74,9 +74,9 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
         "[LM] Internal Iteration --- : it | max | prev_cost | new_cost | "
         "rho | "
         "lambda| nu");
-    for (int k = 0; k < m_lm_max_iterations; ++k) {
+    for (int k = 0; k < lm_max_iterations_; ++k) {
       Eigen::LDLT<HessianMatrix> solver(hessian +
-                                        m_lm_lambda * hessian_diagonal);
+                                        lm_lambda_ * hessian_diagonal);
 
       ParameterVector delta = solver.solve(-b);
 
@@ -92,10 +92,9 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
         return OptimizationStatus::NUMERIC_ERROR;
       }
 
-      Scalar rho = (y0 - yi) / delta.dot(m_lm_lambda * delta - b);
+      Scalar rho = (y0 - yi) / delta.dot(lm_lambda_ * delta - b);
       logger::log_debug("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f",
-                        k + 1, m_lm_max_iterations, y0, yi, rho, m_lm_lambda,
-                        nu);
+                        k + 1, lm_max_iterations_, y0, yi, rho, lm_lambda_, nu);
 
       if (rho < 0) {
         if (this->isDeltaSmall(delta.data())) {
@@ -107,14 +106,14 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
             return OptimizationStatus::SMALL_DELTA;
         }
 
-        m_lm_lambda = nu * m_lm_lambda;
+        lm_lambda_ = nu * lm_lambda_;
         nu = 2 * nu;
         continue;
       }
 
       x0_map = xi;
-      m_lm_lambda =
-          m_lm_lambda * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
+      lm_lambda_ =
+          lm_lambda_ * std::max(1.0 / 3.0, 1 - std::pow(2 * rho - 1, 3));
       break;
     }
   }

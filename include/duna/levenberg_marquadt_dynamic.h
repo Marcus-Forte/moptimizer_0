@@ -1,20 +1,34 @@
 #pragma once
 
-#include "duna/levenberg_marquadt.h"
-#include "duna/types.h"
+#include "duna/optimizer.h"
 #include "duna_exports.h"
 
 namespace duna {
 template <class Scalar>
 class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic
-    : public LevenbergMarquadt<Scalar, duna::Dynamic> {
+    : public Optimizer<Scalar> {
  public:
-  using typename LevenbergMarquadt<Scalar, duna::Dynamic>::HessianMatrix;
-  using typename LevenbergMarquadt<Scalar, duna::Dynamic>::ParameterVector;
+  using HessianMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
+  using ParameterVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
   LevenbergMarquadtDynamic(int num_parameters)
-      : num_parameters_(num_parameters) {}
+      : num_parameters_(num_parameters) {
+    lm_max_iterations_ = 8;
+  }
   virtual ~LevenbergMarquadtDynamic() = default;
+
+  inline void setLevenbergMarquadtIterations(int max_iterations) {
+    lm_max_iterations_ = max_iterations;
+  }
+  inline unsigned int getLevenbergMarquadtIterations() const {
+    return lm_max_iterations_;
+  }
+
+  void reset() {
+    logger::log_debug("[LM] Reset");
+    lm_init_lambda_factor_ = 1e-9;
+    lm_lambda_ = -1.0;
+  }
 
   virtual OptimizationStatus step(Scalar *x0) override;
   virtual OptimizationStatus minimize(Scalar *x0) override;
@@ -24,12 +38,14 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic
  protected:
   int num_parameters_;
   bool isDeltaSmall(Scalar *delta) override;
+  bool hasConverged() override { return false; }
 
-  using LevenbergMarquadt<Scalar, duna::Dynamic>::costs_;
-  using LevenbergMarquadt<Scalar, duna::Dynamic>::m_maximum_iterations;
-  using LevenbergMarquadt<Scalar, duna::Dynamic>::m_executed_iterations;
-  using LevenbergMarquadt<Scalar, duna::Dynamic>::m_lm_init_lambda_factor_;
-  using LevenbergMarquadt<Scalar, duna::Dynamic>::m_lm_lambda;
-  using LevenbergMarquadt<Scalar, duna::Dynamic>::m_lm_max_iterations;
+  using Optimizer<Scalar>::costs_;
+  using Optimizer<Scalar>::maximum_iterations_;
+  using Optimizer<Scalar>::executed_iterations_;
+
+  Scalar lm_init_lambda_factor_;
+  Scalar lm_lambda_;
+  unsigned int lm_max_iterations_;
 };
 }  // namespace duna
