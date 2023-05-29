@@ -1,4 +1,9 @@
 build/
 .cache/
-.vscode/
+.vscode/*
+!.vscode/tasks.json
+
+
+# vim files.
 *.swp
+

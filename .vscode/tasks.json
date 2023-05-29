@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure",
+            "type": "shell",
+            "command": "cmake -B ${workspaceFolder}/build"
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "cmake --build ${workspaceFolder}/build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Test",
+            "type": "shell",
+            "command": "ctest --test-dir build",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+            
+        }
+    ]
+}
