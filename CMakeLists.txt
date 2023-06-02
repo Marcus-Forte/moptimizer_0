@@ -24,8 +24,10 @@ add_definitions(${PCL_DEFINITIONS})
 if(UNIX)
 # GTest required pthread in UNIX Os
         link_libraries(pthread)
-     #   add_compile_options(-march=native)
-        # add_compile_options(-msse -msse2 -mavx -mfma -msse4)
+        if(LINUX) # not APPLE
+        add_compile_options(-march=native)
+        add_compile_options(-msse -msse2 -mavx -mfma -msse4)
+        endif()
 elseif(MSVC)
         add_compile_options(/bigobj)
         add_compile_definitions(_USE_MATH_DEFINES)
