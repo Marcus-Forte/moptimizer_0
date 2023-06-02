@@ -22,23 +22,17 @@ class Optimizer {
   virtual ~Optimizer() = default;
 
   bool isCostSmall(Scalar cost_sum) {
-    if (std::abs(cost_sum) < 8 * (std::numeric_limits<Scalar>::epsilon()))
-      return true;
+    if (std::abs(cost_sum) < 8 * (std::numeric_limits<Scalar>::epsilon())) return true;
     return false;
   }
 
   inline void setMaximumIterations(int max_iterations) {
     if (max_iterations < 0)
-      throw std::invalid_argument(
-          "Optimization::max_iterations cannot be less than 0.");
+      throw std::invalid_argument("Optimization::max_iterations cannot be less than 0.");
     maximum_iterations_ = max_iterations;
   }
-  inline unsigned int getMaximumIterations() const {
-    return maximum_iterations_;
-  }
-  inline unsigned int getExecutedIterations() const {
-    return executed_iterations_;
-  }
+  inline unsigned int getMaximumIterations() const { return maximum_iterations_; }
+  inline unsigned int getExecutedIterations() const { return executed_iterations_; }
 
   inline bool checkCosts() {
     if (costs_.size() == 0) {

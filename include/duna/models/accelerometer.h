@@ -9,8 +9,7 @@ namespace duna {
 class Accelerometer : public BaseModelJacobian<double> {
  public:
   Accelerometer(const double *measurements)
-      : measurements_(measurements[0], measurements[1], measurements[2]),
-        gravity_(0, 0, 9.81) {
+      : measurements_(measurements[0], measurements[1], measurements[2]), gravity_(0, 0, 9.81) {
     transform_.setIdentity();
     // measurements_.normalize();
   }
@@ -42,8 +41,7 @@ class Accelerometer : public BaseModelJacobian<double> {
     return true;
   }
 
-  bool f_df(const double *x, double *f_x, double *jacobian,
-            unsigned int index) override {
+  bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override {
     // fill residue
     f(x, f_x, index);
 

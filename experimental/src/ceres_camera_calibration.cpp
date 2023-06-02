@@ -5,8 +5,8 @@
 using namespace ceres;
 
 template <typename Scalar>
-inline void convert6DOFParameterToMatrix(
-    const Scalar *x, Eigen::Matrix<Scalar, 4, 4> &transform_matrix_) {
+inline void convert6DOFParameterToMatrix(const Scalar *x,
+                                         Eigen::Matrix<Scalar, 4, 4> &transform_matrix_) {
   // transform_matrix_.setZero();
   // transform_matrix_(0, 3) = x[0];
   // transform_matrix_(1, 3) = x[1];
@@ -32,8 +32,7 @@ inline void convert6DOFParameterToMatrix(
 
 struct Model {
   Model(const Eigen::Matrix<double, 4, 4> &camera_laser_conversion_,
-        const Eigen::Matrix<double, 3, 4> &camera_model_,
-        const Eigen::Matrix<double, 4, 1> &point_,
+        const Eigen::Matrix<double, 3, 4> &camera_model_, const Eigen::Matrix<double, 4, 1> &point_,
         const Eigen::Matrix<int, 2, 1> &pixel_)
       : camera_laser_conversion(camera_laser_conversion_),
         camera_model(camera_model_),
@@ -76,8 +75,8 @@ int main()
         Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
   camera_laser_frame_conversion.block<3, 3>(0, 0) = rot;
 
-  camera_model << 586.122314453125, 0, 638.8477694496105, 0, 0,
-      722.3973388671875, 323.031267074588, 0, 0, 0, 1, 0;
+  camera_model << 586.122314453125, 0, 638.8477694496105, 0, 0, 722.3973388671875, 323.031267074588,
+      0, 0, 0, 1, 0;
 
   Solver::Options options;
   options.linear_solver_type = ceres::DENSE_QR;
@@ -105,10 +104,8 @@ int main()
   // AA(camera_laser_frame_conversion,camera_model,point_list[0],pixel_list[0]);
 
   for (int i = 0; i < 5; ++i) {
-    CostFunction *cost_function =
-        new NumericDiffCostFunction<Model, ceres::CENTRAL, 2, 6>(
-            new Model(camera_laser_frame_conversion, camera_model,
-                      point_list[i], pixel_list[i]));
+    CostFunction *cost_function = new NumericDiffCostFunction<Model, ceres::CENTRAL, 2, 6>(
+        new Model(camera_laser_frame_conversion, camera_model, point_list[i], pixel_list[i]));
     problem.AddResidualBlock(cost_function, nullptr, x);
   }
 

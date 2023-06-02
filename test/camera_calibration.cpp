@@ -17,8 +17,7 @@ struct Model : public duna::BaseModel<double> {
 
     if (point_list.empty()) throw std::runtime_error("Empty point list");
 
-    if (pixel_list.size() != point_list.size())
-      throw std::runtime_error("Different point sizes");
+    if (pixel_list.size() != point_list.size()) throw std::runtime_error("Different point sizes");
 
     camera_laser_frame_conversion.setIdentity();
 
@@ -27,19 +26,15 @@ struct Model : public duna::BaseModel<double> {
           Eigen::AngleAxisd(M_PI_2, Eigen::Vector3d::UnitZ());
     camera_laser_frame_conversion.block<3, 3>(0, 0) = rot;
 
-    camera_model << 586.122314453125, 0, 638.8477694496105, 0, 0,
-        722.3973388671875, 323.031267074588, 0, 0, 0, 1, 0;
+    camera_model << 586.122314453125, 0, 638.8477694496105, 0, 0, 722.3973388671875,
+        323.031267074588, 0, 0, 0, 1, 0;
   }
 
-  inline void setup(const double *x) override {
-    so3::convert6DOFParameterToMatrix(x, transform);
-  }
+  inline void setup(const double *x) override { so3::convert6DOFParameterToMatrix(x, transform); }
 
-  inline bool f(const double *x, double *residual,
-                unsigned int index) override {
+  inline bool f(const double *x, double *residual, unsigned int index) override {
     Eigen::Vector3d out_pixel;
-    out_pixel = camera_model * transform * camera_laser_frame_conversion *
-                point_vector[index];
+    out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];
     residual[0] = pixel_vector[index][0] - (out_pixel[0] / out_pixel[2]);
     residual[1] = pixel_vector[index][1] - (out_pixel[1] / out_pixel[2]);
     return true;
@@ -111,8 +106,8 @@ class CameraCalibration : public testing::Test {
       0.009185665242934,  -0.000659168270130, 0.013700587828461,
   };
 
-  const double ceres_solution[MODEL_PARAMETERS] = {
-      -0.0101064, 0.0206767, -0.0582803, 0.0183564, -0.00130745, 0.027414};
+  const double ceres_solution[MODEL_PARAMETERS] = {-0.0101064, 0.0206767,   -0.0582803,
+                                                   0.0183564,  -0.00130745, 0.027414};
 };
 
 TEST_F(CameraCalibration, GoodWeather) {

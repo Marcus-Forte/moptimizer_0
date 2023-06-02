@@ -12,8 +12,8 @@ template <class Scalar>
 IdentityCovariance<Scalar>::~IdentityCovariance() = default;
 
 template <class Scalar>
-inline typename IdentityCovariance<Scalar>::MatrixType
-IdentityCovariance<Scalar>::getCovariance(Scalar *input) {
+inline typename IdentityCovariance<Scalar>::MatrixType IdentityCovariance<Scalar>::getCovariance(
+    Scalar *input) {
   return covariance_matrix_;
 }
 

@@ -13,8 +13,7 @@ struct Model : public duna::BaseModel<Scalar> {
   // API simply has to override this method
 
   bool f(const Scalar *x, Scalar *residual, unsigned int index) override {
-    residual[0] =
-        data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
+    residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
     return true;
   }
 
@@ -36,8 +35,7 @@ int main(int argc, char **argv) {
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {
-    cost = new duna::CostFunctionNumerical<Scalar, 2, 1>(
-        Model::Ptr(new Model(x_data, y_data)), 7);
+    cost = new duna::CostFunctionNumerical<Scalar, 2, 1>(Model::Ptr(new Model(x_data, y_data)), 7);
 
     optimizer.addCost(cost);
   }
@@ -96,8 +94,8 @@ TEST_F(SimpleModel, InitialCondition1DynamicCost) {
   duna::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
 
   duna::CostFunctionNumericalDynamic<Scalar> *dyn_cost =
-      new duna::CostFunctionNumericalDynamic<Scalar>(
-          Model::Ptr(new Model(x_data, y_data)), 2, 1, 7);
+      new duna::CostFunctionNumericalDynamic<Scalar>(Model::Ptr(new Model(x_data, y_data)), 2, 1,
+                                                     7);
   dyn_optimizer.addCost(dyn_cost);
   dyn_optimizer.minimize(x0);
 

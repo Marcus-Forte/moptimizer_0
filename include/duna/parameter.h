@@ -18,8 +18,7 @@ template <int Dim, typename Scalar = double>
 class Parameter : public IParameter {
  public:
   void Plus(const IParameter *in, IParameter *out) const override {
-    const Parameter<Dim, Scalar> *in_ =
-        dynamic_cast<const Parameter<Dim, Scalar> *>(in);
+    const Parameter<Dim, Scalar> *in_ = dynamic_cast<const Parameter<Dim, Scalar> *>(in);
     Parameter<Dim, Scalar> *out_ = dynamic_cast<Parameter<Dim, Scalar> *>(out_);
     out_->values_ = this->values_ + in_->values_;
   }
@@ -29,8 +28,6 @@ class Parameter : public IParameter {
   Eigen::Matrix<Scalar, Dim, 1> values_;
 };
 
-void plus(const IParameter *lhs, const IParameter *rhs, IParameter *res) {
-  lhs->Plus(rhs, res);
-}
+void plus(const IParameter *lhs, const IParameter *rhs, IParameter *res) { lhs->Plus(rhs, res); }
 
 }  // namespace duna

@@ -35,12 +35,8 @@ class CostFunctionBase {
   CostFunctionBase &operator=(const CostFunctionBase &) = delete;
   virtual ~CostFunctionBase() = default;
 
-  inline void setNumResiduals(int num_residuals) {
-    m_num_residuals = num_residuals;
-  }
-  inline void setLossFunction(LossFunctionPtr loss_function) {
-    loss_function_ = loss_function;
-  }
+  inline void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
+  inline void setLossFunction(LossFunctionPtr loss_function) { loss_function_ = loss_function; }
 
   // Setup internal state of the model. Runs at the beggining of the
   // optimization loop.

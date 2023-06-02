@@ -47,14 +47,12 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
     return sum;
   }
 
-  virtual Scalar linearize(const Scalar *x, Scalar *hessian,
-                           Scalar *b) override {
+  virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override {
     init(x, hessian, b);
 
     Scalar sum = 0.0;
 
-    const Scalar min_step_size =
-        std::sqrt(std::numeric_limits<Scalar>::epsilon());
+    const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
 
     // Step size
     std::vector<Scalar> h(x_map_.size());

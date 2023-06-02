@@ -27,9 +27,7 @@ class DUNA_OPTIMIZER_EXPORT logger {
   logger() : default_stream_(std::cout), level_(L_ERROR), logger_name_("LOG") {}
 
   logger(const std::string &logger_name)
-      : default_stream_(std::cout),
-        level_(L_ERROR),
-        logger_name_(logger_name) {}
+      : default_stream_(std::cout), level_(L_ERROR), logger_name_(logger_name) {}
 
   virtual ~logger() = default;
 
@@ -65,9 +63,7 @@ class DUNA_OPTIMIZER_EXPORT logger {
 
   inline void setVerbosityLevel(VERBOSITY_LEVEL level) { level_ = level; }
 
-  static inline void setGlobalVerbosityLevel(VERBOSITY_LEVEL level) {
-    s_level_ = level;
-  }
+  static inline void setGlobalVerbosityLevel(VERBOSITY_LEVEL level) { s_level_ = level; }
 
  private:
   VERBOSITY_LEVEL level_;

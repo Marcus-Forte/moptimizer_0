@@ -31,8 +31,7 @@ class IBaseModel {
 
   // Computes both jacobian and function at same time. Usually they depend on
   // commons functions.
-  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
-                    unsigned int index) = 0;
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) = 0;
 
   // Clone method for copying derived classes.
   virtual Ptr clone() = 0;
@@ -53,14 +52,11 @@ class BaseModel : public IBaseModel<Scalar> {
   virtual void update(const Scalar *x) override {}
 
   // Function (r_i). Must return true if result if valid.
-  virtual bool f(const Scalar *x, Scalar *residual,
-                 unsigned int index) override = 0;
+  virtual bool f(const Scalar *x, Scalar *residual, unsigned int index) override = 0;
 
   // No jacobian definition.
-  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
-                    unsigned int index) final {
-    throw duna::Exception(
-        "Non implemented non-jacobian model function `f_df` being used.");
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) final {
+    throw duna::Exception("Non implemented non-jacobian model function `f_df` being used.");
   }
 };
 
@@ -80,8 +76,7 @@ class BaseModelJacobian : public IBaseModel<Scalar> {
 
   // Function (r_i). Must return true if result if valid.
   virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) override {
-    throw duna::Exception(
-        "Non implemented jacobian model function `f` being used.");
+    throw duna::Exception("Non implemented jacobian model function `f` being used.");
   }
 
   // No jacobian definition.

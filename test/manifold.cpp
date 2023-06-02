@@ -14,16 +14,14 @@ TEST(Manifold, EuclideanSpace) {
 
   ManifoldA.getEunclideanRepresentation().setRandom();
 
-  Manifold<3>::LinearRepresentation originalA(
-      ManifoldA.getEunclideanRepresentation());
+  Manifold<3>::LinearRepresentation originalA(ManifoldA.getEunclideanRepresentation());
 
   delta.setRandom();
 
   ManifoldA.Plus(delta);
 
   for (int i = 0; i < ManifoldA.getEunclideanRepresentation().size(); ++i) {
-    EXPECT_EQ(ManifoldA.getEunclideanRepresentation()[i],
-              originalA[i] + delta[i]);
+    EXPECT_EQ(ManifoldA.getEunclideanRepresentation()[i], originalA[i] + delta[i]);
   }
 
   // reset
@@ -32,8 +30,7 @@ TEST(Manifold, EuclideanSpace) {
   ManifoldA.Minus(delta);
 
   for (int i = 0; i < ManifoldA.getEunclideanRepresentation().size(); ++i) {
-    EXPECT_EQ(ManifoldA.getEunclideanRepresentation()[i],
-              originalA[i] - delta[i]);
+    EXPECT_EQ(ManifoldA.getEunclideanRepresentation()[i], originalA[i] - delta[i]);
   }
 }
 
@@ -44,9 +41,7 @@ class ManifoldSO3 : public Manifold<3, 9> {
   using Manifold<3, 9>::parameter;
 
  public:
-  ManifoldSO3() : parameter_matrix(parameter.data()) {
-    parameter_matrix.setIdentity();
-  }
+  ManifoldSO3() : parameter_matrix(parameter.data()) { parameter_matrix.setIdentity(); }
 
   // Exp3
   void Plus(const TangentRepresentation &rhs) {
@@ -59,9 +54,7 @@ class ManifoldSO3 : public Manifold<3, 9> {
   void Minus(const TangentRepresentation &rhs) {}
 
   // Overload parent
-  Eigen::Map<Eigen::Matrix3d> &getEunclideanRepresentation() {
-    return parameter_matrix;
-  }
+  Eigen::Map<Eigen::Matrix3d> &getEunclideanRepresentation() { return parameter_matrix; }
 
  private:
   Eigen::Map<Eigen::Matrix3d> parameter_matrix;

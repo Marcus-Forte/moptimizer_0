@@ -22,8 +22,7 @@ int main() {
 
   Problem problem;
 
-  CostFunction *cost_function =
-      new AutoDiffCostFunction<CostFunctor, 1, 1>(new CostFunctor);
+  CostFunction *cost_function = new AutoDiffCostFunction<CostFunctor, 1, 1>(new CostFunctor);
   problem.AddResidualBlock(cost_function, nullptr, &x);
 
   // Run the solver!
