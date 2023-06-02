@@ -45,6 +45,10 @@ struct Model : public duna::BaseModel<double> {
     return true;
   }
 
+  virtual duna::IBaseModel<double>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<double>>(new Model(*this));
+  }
+
  private:
   // input data
 

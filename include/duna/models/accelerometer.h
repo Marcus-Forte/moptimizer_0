@@ -74,5 +74,9 @@ class Accelerometer : public BaseModelJacobian<double> {
   Eigen::Matrix3d transform_;
   Eigen::Vector3d gravity_;
   Eigen::Vector3d measurements_;
+
+  virtual typename duna::IBaseModel<double>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<double>>(new Accelerometer(*this));
+  }
 };
 }  // namespace duna

@@ -12,7 +12,7 @@ class ICovariance {
  public:
   using Ptr = std::shared_ptr<ICovariance>;
   using ConstPtr = std::shared_ptr<const ICovariance>;
-  using MatrixType = Eigen::Matrix<T, duna::Dynamic, duna::Dynamic>;
+  using MatrixType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
   ICovariance() = default;
   virtual ~ICovariance() = default;

@@ -9,7 +9,7 @@
         {
             "label": "Build",
             "type": "shell",
-            "command": "cmake --build ${workspaceFolder}/build",
+            "command": "cmake --build ${workspaceFolder}/build -j",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

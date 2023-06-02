@@ -101,6 +101,11 @@ class ScanMatching3DOFPoint2Plane
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
+
+  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<Scalar>>(
+        new ScanMatching3DOFPoint2Plane(*this));
+  }
 };
 
 template <typename PointSource, typename PointTarget, typename Scalar>
@@ -196,6 +201,11 @@ class ScanMatching3DOFPoint2Point
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
+
+  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<Scalar>>(
+        new ScanMatching3DOFPoint2Point(*this));
+  }
 };
 
 /* Unified point to point 6DOF registration model. */
@@ -294,6 +304,11 @@ class ScanMatching6DOFPoint2Point
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
+
+  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<Scalar>>(
+        new ScanMatching6DOFPoint2Point(*this));
+  }
 };
 
 /* Unified point to plane 6DOF registration model. */
@@ -359,5 +374,10 @@ class ScanMatching6DOFPoint2Plane
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
+
+  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<Scalar>>(
+        new ScanMatching6DOFPoint2Plane(*this));
+  }
 };
 }  // namespace duna

@@ -18,6 +18,10 @@ struct Model : public duna::BaseModel<Scalar> {
     return true;
   }
 
+  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<Scalar>>(new Model(*this));
+  }
+
  private:
   const Scalar *const data_x;
   const Scalar *const data_y;

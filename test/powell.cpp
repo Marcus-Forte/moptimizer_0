@@ -64,6 +64,10 @@ struct Model : public duna::BaseModelJacobian<double> {
 
     return true;
   }
+
+  virtual duna::IBaseModel<double>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<double>>(new Model(*this));
+  }
 };
 
 TEST(PowellFunction, InitialCondition0) {

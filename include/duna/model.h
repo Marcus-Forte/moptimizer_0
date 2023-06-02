@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#define MAKE_CLONE(model_name) virtual IBaseModel<Scalar> clone() override
+
 namespace duna {
 /* Interface definitions for user models.*/
 /* "W can be set to the inverse of the measurement error covariance matrix, in
@@ -31,6 +33,9 @@ class IBaseModel {
   // commons functions.
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
                     unsigned int index) = 0;
+
+  // Clone method for copying derived classes.
+  virtual Ptr clone() = 0;
 };
 
 /* For non-jacobian defined models. */

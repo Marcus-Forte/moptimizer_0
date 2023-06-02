@@ -100,8 +100,12 @@ struct Model : public duna::BaseModel<double>
         return true;
     }
 
-    protected:
+    private:
     const double* m_dataset;
+
+     virtual duna::IBaseModel<double>::Ptr clone() override {
+  return std::shared_ptr<duna::IBaseModel<double>>(new Model(*this));
+   }
 };
 
 

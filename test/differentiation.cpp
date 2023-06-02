@@ -48,6 +48,10 @@ struct SimpleModel : duna::BaseModelJacobian<Scalar> {
  private:
   const Scalar *const data_x;
   const Scalar *const data_y;
+
+  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<Scalar>>(new SimpleModel(*this));
+  }
 };
 
 template <typename Scalar>
@@ -137,6 +141,10 @@ struct Powell : duna::BaseModelJacobian<double> {
     jacobian[15] = sqrt(10) * 2 * (x[0] - x[3]) * (-1);
 
     return true;
+  }
+
+  virtual duna::IBaseModel<double>::Ptr clone() override {
+    return std::shared_ptr<duna::IBaseModel<double>>(new Powell(*this));
   }
 };
 
