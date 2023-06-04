@@ -4,8 +4,7 @@
 
 namespace duna {
 template <class Scalar, int N_PARAMETERS>
-class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt
-    : public LevenbergMarquadtDynamic<Scalar> {
+class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public LevenbergMarquadtDynamic<Scalar> {
  public:
   using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
   using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;

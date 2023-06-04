@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModel<double>
+struct Model : public duna::BaseModel<double,Model>
 {
     Model(const double* dataset) {
         m_dataset = dataset;
@@ -100,8 +100,9 @@ struct Model : public duna::BaseModel<double>
         return true;
     }
 
-    protected:
+    private:
     const double* m_dataset;
+
 };
 
 

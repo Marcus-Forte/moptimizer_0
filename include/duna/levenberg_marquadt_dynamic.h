@@ -5,14 +5,12 @@
 
 namespace duna {
 template <class Scalar>
-class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic
-    : public Optimizer<Scalar> {
+class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic : public Optimizer<Scalar> {
  public:
   using HessianMatrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
   using ParameterVector = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
-  LevenbergMarquadtDynamic(int num_parameters)
-      : num_parameters_(num_parameters) {
+  LevenbergMarquadtDynamic(int num_parameters) : num_parameters_(num_parameters) {
     lm_max_iterations_ = 8;
   }
   virtual ~LevenbergMarquadtDynamic() = default;
@@ -20,9 +18,7 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic
   inline void setLevenbergMarquadtIterations(int max_iterations) {
     lm_max_iterations_ = max_iterations;
   }
-  inline unsigned int getLevenbergMarquadtIterations() const {
-    return lm_max_iterations_;
-  }
+  inline unsigned int getLevenbergMarquadtIterations() const { return lm_max_iterations_; }
 
   void reset() {
     logger::log_debug("[LM] Reset");

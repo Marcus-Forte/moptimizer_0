@@ -9,15 +9,15 @@
 namespace duna {
 /* Numerical Differentiation cost function module. Computes numerical
  * derivatives when computing hessian. */
-template <class Scalar = double, int N_PARAMETERS = duna::Dynamic,
-          int N_MODEL_OUTPUTS = duna::Dynamic>
+template <class Scalar = double, int model_parameter_dim = Eigen::Dynamic,
+          int model_output_dim = Eigen::Dynamic>
 class CostFunctionNumerical : public CostFunctionBase<Scalar> {
  public:
-  using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
-  using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
+  using ParameterVector = Eigen::Matrix<Scalar, model_parameter_dim, 1>;
+  using HessianMatrix = Eigen::Matrix<Scalar, model_parameter_dim, model_parameter_dim>;
   using JacobianMatrix =
-      Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS, Eigen::RowMajor>;
-  using ResidualVector = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>;
+      Eigen::Matrix<Scalar, model_output_dim, model_parameter_dim, Eigen::RowMajor>;
+  using ResidualVector = Eigen::Matrix<Scalar, model_output_dim, 1>;
   using typename CostFunctionBase<Scalar>::Model;
   using typename CostFunctionBase<Scalar>::ModelPtr;
 
@@ -47,35 +47,35 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
     return sum;
   }
 
-  virtual Scalar linearize(const Scalar *x, Scalar *hessian,
-                           Scalar *b) override {
+  virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override {
     init(x, hessian, b);
 
     Scalar sum = 0.0;
 
-    const Scalar min_step_size =
-        std::sqrt(std::numeric_limits<Scalar>::epsilon());
+    const Scalar min_step_size = std::sqrt(std::numeric_limits<Scalar>::epsilon());
 
     // Step size
     std::vector<Scalar> h(x_map_.size());
+    std::vector<ParameterVector> x_plus(x_map_.size(), x_map_);
+    std::vector<ModelPtr> models_plus_(x_map_.size());
+    for (int j = 0; j < x_map_.size(); ++j) {
+      h[j] = min_step_size * abs(x_map_[j]);
 
+      if (h[j] == 0.0) h[j] = min_step_size;
+
+      x_plus[j][j] += h[j];
+
+      models_plus_[j] = model_->clone();
+      models_plus_[j]->setup((x_plus[j]).data());
+    }
+
+    model_->setup(x_map_.data());
     // TODO check if at least a few residuals were computed.
-    // TODO Optimize!!
+    // TODO paralelize.
     for (int i = 0; i < m_num_residuals; ++i) {
-      model_->setup(x_map_.data());
-
       if (model_->f(x, residuals_.data(), i)) {
-        std::vector<ParameterVector> x_plus(x_map_.size(), x_map_);
         for (int j = 0; j < x_map_.size(); ++j) {
-          h[j] = min_step_size * abs(x_map_[j]);
-
-          if (h[j] == 0.0) h[j] = min_step_size;
-
-          x_plus[j][j] += h[j];
-
-          model_->setup((x_plus[j]).data());
-          model_->f(x_plus[j].data(), residuals_plus_.data(), i);
-
+          models_plus_[j]->f(x_plus[j].data(), residuals_plus_.data(), i);
           jacobian_.col(j) = (residuals_plus_ - residuals_) / h[j];
         }
 
@@ -109,14 +109,14 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
 
   // Initialize internal cost function states.
   virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) override {
-    new (&x_map_) Eigen::Map<const ParameterVector>(x, N_PARAMETERS, 1);
+    new (&x_map_) Eigen::Map<const ParameterVector>(x, model_parameter_dim, 1);
     new (&hessian_map_)
-        Eigen::Map<HessianMatrix>(hessian, N_PARAMETERS, N_PARAMETERS);
-    new (&b_map_) Eigen::Map<ParameterVector>(b, N_PARAMETERS, 1);
+        Eigen::Map<HessianMatrix>(hessian, model_parameter_dim, model_parameter_dim);
+    new (&b_map_) Eigen::Map<ParameterVector>(b, model_parameter_dim, 1);
 
     hessian_map_.setZero();
     b_map_.setZero();
-    covariance_.reset(new covariance::IdentityCovariance<Scalar>(N_PARAMETERS));
+    covariance_.reset(new covariance::IdentityCovariance<Scalar>(model_parameter_dim));
   }
 };
 }  // namespace duna

@@ -7,15 +7,15 @@
 namespace duna {
 /* Analytical cost function module. Computes hessian using provided `f_df` model
  * function with explicit jacobian calculation. */
-template <class Scalar = double, int N_PARAMETERS = duna::Dynamic,
-          int N_MODEL_OUTPUTS = duna::Dynamic>
+template <class Scalar = double, int model_parameter_dim = Eigen::Dynamic,
+          int model_output_dim = Eigen::Dynamic>
 class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
  public:
-  using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
-  using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
+  using ParameterVector = Eigen::Matrix<Scalar, model_parameter_dim, 1>;
+  using HessianMatrix = Eigen::Matrix<Scalar, model_parameter_dim, model_parameter_dim>;
   using JacobianMatrix =
-      Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, N_PARAMETERS, Eigen::RowMajor>;
-  using ResidualVector = Eigen::Matrix<Scalar, N_MODEL_OUTPUTS, 1>;
+      Eigen::Matrix<Scalar, model_output_dim, model_parameter_dim, Eigen::RowMajor>;
+  using ResidualVector = Eigen::Matrix<Scalar, model_output_dim, 1>;
   using typename CostFunctionBase<Scalar>::Model;
   using typename CostFunctionBase<Scalar>::ModelPtr;
 
@@ -54,6 +54,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
     model_->setup(x);
 
     // TODO check if at least a few residuals were computed.
+    // TODO paralelize.
     for (int i = 0; i < m_num_residuals; ++i) {
       if (model_->f_df(x, residuals_.data(), jacobian_.data(), i)) {
         Scalar w = loss_function_->weight(residuals_.squaredNorm());
@@ -68,8 +69,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
       }
     }
     // std::cout << "hessian_map_:\n " << hessian_map_ << std::endl;
-    hessian_map_.template triangularView<Eigen::Upper>() =
-        hessian_map_.transpose();
+    hessian_map_.template triangularView<Eigen::Upper>() = hessian_map_.transpose();
     return sum;
   }
 
@@ -87,14 +87,14 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
 
   // Initialize internal cost function states.
   virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) override {
-    new (&x_map_) Eigen::Map<const ParameterVector>(x, N_PARAMETERS, 1);
+    new (&x_map_) Eigen::Map<const ParameterVector>(x, model_parameter_dim, 1);
     new (&hessian_map_)
-        Eigen::Map<HessianMatrix>(hessian, N_PARAMETERS, N_PARAMETERS);
-    new (&b_map_) Eigen::Map<ParameterVector>(b, N_PARAMETERS, 1);
+        Eigen::Map<HessianMatrix>(hessian, model_parameter_dim, model_parameter_dim);
+    new (&b_map_) Eigen::Map<ParameterVector>(b, model_parameter_dim, 1);
 
     hessian_map_.setZero();
     b_map_.setZero();
-    covariance_.reset(new covariance::IdentityCovariance<Scalar>(N_PARAMETERS));
+    covariance_.reset(new covariance::IdentityCovariance<Scalar>(model_parameter_dim));
   }
 };
 }  // namespace duna

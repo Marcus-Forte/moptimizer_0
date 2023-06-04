@@ -36,8 +36,7 @@ int main(int argc, char **argv) {
 template <typename Scalar>
 class SequenceRegistration : public ::testing::Test {
  protected:
-  double compareClouds(const PointCloudT::ConstPtr &cloud_a,
-                       const PointCloudT::ConstPtr &cloud_b) {
+  double compareClouds(const PointCloudT::ConstPtr &cloud_a, const PointCloudT::ConstPtr &cloud_b) {
     double diff = 0;
     // Find correspondences
     pcl::search::KdTree<PointT> cloud_a_kdtree;
@@ -47,9 +46,7 @@ class SequenceRegistration : public ::testing::Test {
     std::vector<float> unused;
     for (const auto &it : cloud_b->points) {
       cloud_a_kdtree.nearestKSearch(it, 1, indices, unused);
-      diff +=
-          (cloud_a->points[indices[0]].getVector3fMap() - it.getVector3fMap())
-              .norm();
+      diff += (cloud_a->points[indices[0]].getVector3fMap() - it.getVector3fMap()).norm();
     }
 
     // RMSE
@@ -65,11 +62,9 @@ class SequenceRegistration : public ::testing::Test {
     target_.reset(new PointCloudT);
 
     for (int i = 1; i < N_MAP; ++i) {
-      std::cerr << "Map Loading: " << map_filename + std::to_string(i)
-                << std::endl;
-      if (pcl::io::loadPCDFile(
-              TEST_DATA_DIR + map_filename + std::to_string(i) + ".pcd",
-              *temp) != 0) {
+      std::cerr << "Map Loading: " << map_filename + std::to_string(i) << std::endl;
+      if (pcl::io::loadPCDFile(TEST_DATA_DIR + map_filename + std::to_string(i) + ".pcd", *temp) !=
+          0) {
         std::cerr << "Unable to load dataset\n";
         exit(-1);
       }
@@ -88,11 +83,9 @@ class SequenceRegistration : public ::testing::Test {
 
     for (int i = 1; i < N_SOURCE; ++i) {
       PointCloudT::Ptr temp_scan(new PointCloudT);
-      std::cerr << "Scan Loading: " << scan_filename + std::to_string(i)
-                << std::endl;
-      if (pcl::io::loadPCDFile(
-              TEST_DATA_DIR + scan_filename + std::to_string(i) + ".pcd",
-              *temp_scan) != 0) {
+      std::cerr << "Scan Loading: " << scan_filename + std::to_string(i) << std::endl;
+      if (pcl::io::loadPCDFile(TEST_DATA_DIR + scan_filename + std::to_string(i) + ".pcd",
+                               *temp_scan) != 0) {
         std::cerr << "Unable to load dataset\n";
         exit(-1);
       }
@@ -158,13 +151,13 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor) {
   x0[0] = 0;
   x0[1] = 0;
   x0[2] = 0;
-  typename duna::ScanMatchingBase<PointT, PointT, TypeParam>::Ptr
+  typename duna::ScanMatchingBase<
+      PointT, PointT, TypeParam, duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam> >::Ptr
       scan_matcher_model;
   for (int i = 0; i < this->source_vector_.size(); ++i)
   // for (int i = 0; i < 2; ++i)
   {
-    std::cout << "Registering " << i << ": " << this->source_vector_[i]->size()
-              << std::endl;
+    std::cout << "Registering " << i << ": " << this->source_vector_[i]->size() << std::endl;
 
     pcl::UniformSampling<PointT> uniform_sampler;
     uniform_sampler.setInputCloud(this->target_);
@@ -182,22 +175,20 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor) {
     voxel.filter(*subsampled_input);
     timer.tock("Voxel grid.");
 
-    std::cout << "Subsampled # points: " << subsampled_input->size()
-              << std::endl;
+    std::cout << "Subsampled # points: " << subsampled_input->size() << std::endl;
 
     timer.tick();
 
-    scan_matcher_model.reset(
-        new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>(
-            subsampled_input, this->target_, this->target_kdtree_));
+    scan_matcher_model.reset(new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam>(
+        subsampled_input, this->target_, this->target_kdtree_));
     // scan_matcher_model.reset(new
     // duna::ScanMatching3DOFPoint2Point<PointT, PointT,
     // TypeParam>(subsampled_input, this->target_, this->target_kdtree_));
     scan_matcher_model->setMaximumCorrespondenceDistance(0.3);
     scan_matcher_model->addCorrespondenceRejector(rejector0);
 
-    auto cost = new duna::CostFunctionNumerical<TypeParam, 3, 1>(
-        scan_matcher_model, subsampled_input->size());
+    auto cost = new duna::CostFunctionNumerical<TypeParam, 3, 1>(scan_matcher_model,
+                                                                 subsampled_input->size());
     // auto cost = new
     // duna::CostFunctionNumericalDynamic<TypeParam>(scan_matcher_model, 3,
     // 1, subsampled_input->size());
@@ -234,8 +225,7 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor) {
   std::cerr << "All registration took: " << total_reg_time << std::endl;
 
   PointCloudT::Ptr reference_map(new PointCloudT);
-  pcl::io::loadPCDFile(TEST_DATA_DIR "/0_sequence_map_reference.pcd",
-                       *reference_map);
+  pcl::io::loadPCDFile(TEST_DATA_DIR "/0_sequence_map_reference.pcd", *reference_map);
 
   double diff = this->compareClouds(reference_map, HD_cloud);
 
@@ -250,8 +240,7 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor) {
     final_cloud_filename += "_double";
 
   final_cloud_filename += ".pcd";
-  std::cout << "Saving final pointcloud to " << final_cloud_filename
-            << std::endl;
+  std::cout << "Saving final pointcloud to " << final_cloud_filename << std::endl;
   pcl::io::savePCDFileBinary(final_cloud_filename, *HD_cloud);
   pcl::io::savePCDFileBinary("ss_" + final_cloud_filename, *this->target_);
 }

@@ -12,9 +12,7 @@ class Covariance3x3 : public duna::covariance::ICovariance<double> {
     constantCovariance *= 10.0;
   }
 
-  MatrixType getCovariance(double *input) override {
-    return constantCovariance;
-  }
+  MatrixType getCovariance(double *input) override { return constantCovariance; }
 
  private:
   MatrixType constantCovariance;
@@ -31,9 +29,7 @@ class Covariance6x6 : public duna::covariance::ICovariance<double> {
     constantCovariance *= 0.02;
   }
 
-  MatrixType getCovariance(double *input) override {
-    return constantCovariance;
-  }
+  MatrixType getCovariance(double *input) override { return constantCovariance; }
 
  private:
   MatrixType constantCovariance;

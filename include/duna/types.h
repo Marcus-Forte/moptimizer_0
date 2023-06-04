@@ -2,7 +2,6 @@
 #define TYPES_H
 
 namespace duna {
-enum Size { Dynamic = -1 };
 
 enum OptimizationStatus {
   CONVERGED,

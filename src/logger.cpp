@@ -7,8 +7,8 @@ VERBOSITY_LEVEL logger::s_level_ = L_ERROR;
 void logger::log(VERBOSITY_LEVEL level, const std::stringstream &stream) const {
   if (level > level_) return;
 
-  default_stream_ << "[" << logger_name_ << "." << levelToString(level)
-                  << "]: " << stream.str() << std::endl;
+  default_stream_ << "[" << logger_name_ << "." << levelToString(level) << "]: " << stream.str()
+                  << std::endl;
 }
 
 void logger::log(VERBOSITY_LEVEL level, const char *format, ...) const {
@@ -18,8 +18,7 @@ void logger::log(VERBOSITY_LEVEL level, const char *format, ...) const {
 
   va_start(ap, format);
 
-  fprintf(stdout, "[%s.%s]: ", logger_name_.c_str(),
-          levelToString(level).c_str());
+  fprintf(stdout, "[%s.%s]: ", logger_name_.c_str(), levelToString(level).c_str());
   vfprintf(stdout, format, ap);
   fprintf(stdout, "\n");
 
@@ -29,8 +28,8 @@ void logger::log(VERBOSITY_LEVEL level, const char *format, ...) const {
 void logger::log(VERBOSITY_LEVEL level, const std::string &message) const {
   if (level > level_) return;
 
-  default_stream_ << "[" << logger_name_ << "." << levelToString(level)
-                  << "]: " << message << std::endl;
+  default_stream_ << "[" << logger_name_ << "." << levelToString(level) << "]: " << message
+                  << std::endl;
 }
 
 std::string logger::levelToString(VERBOSITY_LEVEL level) const {

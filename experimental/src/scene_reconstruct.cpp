@@ -37,8 +37,7 @@ static int getdir(const string _filename, vector<String> &files) {
     ;
     size_t found = _filename.find_last_of("/\\");
     string line_str, path_to_file = _filename.substr(0, found);
-    while (getline(myfile, line_str))
-      files.push_back(path_to_file + string("/") + line_str);
+    while (getline(myfile, line_str)) files.push_back(path_to_file + string("/") + line_str);
   }
   return 1;
 }
@@ -59,6 +58,5 @@ int main(int argc, char **argv) {
 
   bool is_projective = true;
   vector<Mat> Rs_est, ts_est, points3d_estimated;
-  reconstruct(images_paths, Rs_est, ts_est, K, points3d_estimated,
-              is_projective);
+  reconstruct(images_paths, Rs_est, ts_est, K, points3d_estimated, is_projective);
 }

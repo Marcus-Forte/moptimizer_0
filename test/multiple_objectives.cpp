@@ -87,7 +87,7 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModel<double>
+struct Model : public duna::BaseModel<double, Model>
 {
 
     Model(const double* dataset) {

@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModelJacobian<double> {
+struct Model : public duna::BaseModelJacobian<double, Model> {
   bool f(const double *x, double *f_x, unsigned int index) override {
     f_x[0] = x[0] + 10 * x[1];
     f_x[1] = sqrt(5) * (x[2] - x[3]);
@@ -34,8 +34,7 @@ struct Model : public duna::BaseModelJacobian<double> {
   }
 
   /* ROW MAJOR*/
-  bool f_df(const double *x, double *f_x, double *jacobian,
-            unsigned int index) override {
+  bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override {
     this->f(x, f_x, index);
 
     // Df / dx0
@@ -77,8 +76,7 @@ TEST(PowellFunction, InitialCondition0) {
   duna::LevenbergMarquadt<double, 4> optimizer;
   optimizer.setMaximumIterations(25);
 
-  optimizer.addCost(
-      new duna::CostFunctionNumerical<double, 4, 4>(Model::Ptr(new Model), 1));
+  optimizer.addCost(new duna::CostFunctionNumerical<double, 4, 4>(Model::Ptr(new Model), 1));
 
   optimizer.minimize(x0);
 
