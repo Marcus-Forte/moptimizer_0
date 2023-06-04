@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 }
 
 template <typename Scalar = double>
-struct SimpleModel : duna::BaseModelJacobian<Scalar> {
+struct SimpleModel : duna::BaseModelJacobian<Scalar, SimpleModel<Scalar>> {
   SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y){};
 
   // Defining operator for comparison.
@@ -47,10 +47,6 @@ struct SimpleModel : duna::BaseModelJacobian<Scalar> {
  private:
   const Scalar *const data_x;
   const Scalar *const data_y;
-
-  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<Scalar>>(new SimpleModel(*this));
-  }
 };
 
 template <typename Scalar>
@@ -85,7 +81,7 @@ TYPED_TEST(Differentiation, SimpleModel) {
   std::cerr << "Hessian Numerical:\n" << HessianNum << std::endl;
 }
 
-struct Powell : duna::BaseModelJacobian<double> {
+struct Powell : duna::BaseModelJacobian<double, Powell> {
   // Should be 4 x 4 = 16. Eigen stores column major order, so we fill indices
   // accordingly.
 
@@ -137,10 +133,6 @@ struct Powell : duna::BaseModelJacobian<double> {
     jacobian[15] = sqrt(10) * 2 * (x[0] - x[3]) * (-1);
 
     return true;
-  }
-
-  virtual duna::IBaseModel<double>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<double>>(new Powell(*this));
   }
 };
 

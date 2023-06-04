@@ -4,8 +4,6 @@
 
 #include <memory>
 
-#define MAKE_CLONE(model_name) virtual IBaseModel<Scalar> clone() override
-
 namespace duna {
 /* Interface definitions for user models.*/
 /* "W can be set to the inverse of the measurement error covariance matrix, in
@@ -34,11 +32,11 @@ class IBaseModel {
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) = 0;
 
   // Clone method for copying derived classes.
-  virtual Ptr clone() = 0;
+  virtual Ptr clone() const = 0;
 };
 
 /* For non-jacobian defined models. */
-template <typename Scalar>
+template <typename Scalar, class ModelT>
 class BaseModel : public IBaseModel<Scalar> {
  public:
   BaseModel() = default;
@@ -58,10 +56,15 @@ class BaseModel : public IBaseModel<Scalar> {
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) final {
     throw duna::Exception("Non implemented non-jacobian model function `f_df` being used.");
   }
+
+  std::shared_ptr<IBaseModel<Scalar>> clone() const {
+    auto copy_cast = static_cast<const ModelT *>(this);
+    return std::make_shared<ModelT>(*copy_cast);
+  }
 };
 
 /* For jacobian defined models. */
-template <typename Scalar>
+template <typename Scalar, class ModelT>
 class BaseModelJacobian : public IBaseModel<Scalar> {
  public:
   BaseModelJacobian() = default;
@@ -82,5 +85,11 @@ class BaseModelJacobian : public IBaseModel<Scalar> {
   // No jacobian definition.
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
                     unsigned int index) override = 0;
+
+  std::shared_ptr<IBaseModel<Scalar>> clone() const {
+    auto copy_cast = static_cast<const ModelT *>(this);
+    return std::make_shared<ModelT>(*copy_cast);
+  }
 };
+
 }  // namespace duna

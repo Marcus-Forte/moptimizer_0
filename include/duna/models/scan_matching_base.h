@@ -12,8 +12,8 @@
 
 /* Unified point to plane 6DOF registration model. */
 namespace duna {
-template <typename PointSource, typename PointTarget, typename Scalar>
-class ScanMatchingBase : public BaseModelJacobian<Scalar> {
+template <typename PointSource, typename PointTarget, typename Scalar, typename Derived>
+class ScanMatchingBase : public BaseModelJacobian<Scalar, Derived> {
  public:
   using Ptr = std::shared_ptr<ScanMatchingBase>;
   using PointCloudSource = pcl::PointCloud<PointSource>;

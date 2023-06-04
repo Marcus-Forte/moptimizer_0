@@ -7,7 +7,7 @@
 using Scalar = float;
 
 // Function to be minimized
-struct Model : public duna::BaseModel<Scalar> {
+struct Model : public duna::BaseModel<Scalar, Model> {
   Model(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
   // API simply has to override this method
 
@@ -19,10 +19,6 @@ struct Model : public duna::BaseModel<Scalar> {
  private:
   const Scalar *const data_x;
   const Scalar *const data_y;
-
-  virtual duna::IBaseModel<Scalar>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<Scalar>>(new Model(*this));
-  }
 };
 
 int main(int argc, char **argv) {

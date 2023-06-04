@@ -87,7 +87,7 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModel<double>
+struct Model : public duna::BaseModel<double, Model>
 {
 
     Model(const double* dataset) {
@@ -105,10 +105,6 @@ struct Model : public duna::BaseModel<double>
 
     protected:
     const double* m_dataset;
-
-     virtual duna::IBaseModel<double>::Ptr clone() override {
-  return std::shared_ptr<duna::IBaseModel<double>>(new Model(*this));
-   }
 };
 
 

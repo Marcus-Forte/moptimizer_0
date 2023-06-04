@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModelJacobian<double> {
+struct Model : public duna::BaseModelJacobian<double, Model> {
   bool f(const double *x, double *f_x, unsigned int index) override {
     f_x[0] = x[0] + 10 * x[1];
     f_x[1] = sqrt(5) * (x[2] - x[3]);
@@ -62,10 +62,6 @@ struct Model : public duna::BaseModelJacobian<double> {
     jacobian[15] = sqrt(10) * 2 * (x[0] - x[3]) * (-1);
 
     return true;
-  }
-
-  virtual duna::IBaseModel<double>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<double>>(new Model(*this));
   }
 };
 

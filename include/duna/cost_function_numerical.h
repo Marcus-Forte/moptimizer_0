@@ -70,6 +70,8 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
     }
 
     model_->setup(x_map_.data());
+    // TODO check if at least a few residuals were computed.
+    // TODO paralelize.
     for (int i = 0; i < m_num_residuals; ++i) {
       if (model_->f(x, residuals_.data(), i)) {
         for (int j = 0; j < x_map_.size(); ++j) {

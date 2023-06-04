@@ -9,7 +9,7 @@
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 5e-5
 
-struct Model : public duna::BaseModel<double> {
+struct Model : public duna::BaseModel<double, Model> {
   Model(const std::vector<Eigen::Vector4d> &point_list,
         const std::vector<Eigen::Vector2i> &pixel_list)
       : point_vector(point_list), pixel_vector(pixel_list) {
@@ -38,10 +38,6 @@ struct Model : public duna::BaseModel<double> {
     residual[0] = pixel_vector[index][0] - (out_pixel[0] / out_pixel[2]);
     residual[1] = pixel_vector[index][1] - (out_pixel[1] / out_pixel[2]);
     return true;
-  }
-
-  virtual duna::IBaseModel<double>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<double>>(new Model(*this));
   }
 
  private:

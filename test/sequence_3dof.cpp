@@ -151,7 +151,9 @@ TYPED_TEST(SequenceRegistration, OptimizerIndoor) {
   x0[0] = 0;
   x0[1] = 0;
   x0[2] = 0;
-  typename duna::ScanMatchingBase<PointT, PointT, TypeParam>::Ptr scan_matcher_model;
+  typename duna::ScanMatchingBase<
+      PointT, PointT, TypeParam, duna::ScanMatching3DOFPoint2Plane<PointT, PointT, TypeParam> >::Ptr
+      scan_matcher_model;
   for (int i = 0; i < this->source_vector_.size(); ++i)
   // for (int i = 0; i < 2; ++i)
   {

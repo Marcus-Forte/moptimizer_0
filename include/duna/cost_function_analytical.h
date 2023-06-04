@@ -54,6 +54,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
     model_->setup(x);
 
     // TODO check if at least a few residuals were computed.
+    // TODO paralelize.
     for (int i = 0; i < m_num_residuals; ++i) {
       if (model_->f_df(x, residuals_.data(), jacobian_.data(), i)) {
         Scalar w = loss_function_->weight(residuals_.squaredNorm());

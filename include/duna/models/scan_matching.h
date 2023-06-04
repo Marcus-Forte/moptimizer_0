@@ -7,7 +7,9 @@
 namespace duna {
 /* Unified point to plane 3DOF registration model. */
 template <typename PointSource, typename PointTarget, typename Scalar>
-class ScanMatching3DOFPoint2Plane : public ScanMatchingBase<PointSource, PointTarget, Scalar> {
+class ScanMatching3DOFPoint2Plane
+    : public ScanMatchingBase<PointSource, PointTarget, Scalar,
+                              ScanMatching3DOFPoint2Plane<PointSource, PointTarget, Scalar>> {
  public:
   using Ptr = std::shared_ptr<ScanMatching3DOFPoint2Plane>;
   using PointCloudSource = pcl::PointCloud<PointSource>;
@@ -23,7 +25,8 @@ class ScanMatching3DOFPoint2Plane : public ScanMatchingBase<PointSource, PointTa
 
   ScanMatching3DOFPoint2Plane(PointCloudSourceConstPtr source, PointCloudTargetConstPtr target,
                               KdTreePtr kdtree_target)
-      : ScanMatchingBase<PointSource, PointTarget, Scalar>(source, target, kdtree_target) {}
+      : ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Plane>(
+            source, target, kdtree_target) {}
 
   virtual ~ScanMatching3DOFPoint2Plane() = default;
 
@@ -79,20 +82,21 @@ class ScanMatching3DOFPoint2Plane : public ScanMatchingBase<PointSource, PointTa
   }
 
  protected:
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::kdtree_target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
-
-  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<Scalar>>(new ScanMatching3DOFPoint2Plane(*this));
-  }
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Plane>::source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Plane>::target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching3DOFPoint2Plane>::kdtree_target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching3DOFPoint2Plane>::transformed_source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching3DOFPoint2Plane>::correspondences_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Plane>::transform_;
 };
 
 template <typename PointSource, typename PointTarget, typename Scalar>
-class ScanMatching3DOFPoint2Point : public ScanMatchingBase<PointSource, PointTarget, Scalar> {
+class ScanMatching3DOFPoint2Point
+    : public ScanMatchingBase<PointSource, PointTarget, Scalar,
+                              ScanMatching3DOFPoint2Point<PointSource, PointTarget, Scalar>> {
  public:
   using Ptr = std::shared_ptr<ScanMatching3DOFPoint2Point>;
   using PointCloudSource = pcl::PointCloud<PointSource>;
@@ -110,7 +114,8 @@ class ScanMatching3DOFPoint2Point : public ScanMatchingBase<PointSource, PointTa
 
   ScanMatching3DOFPoint2Point(PointCloudSourceConstPtr source, PointCloudTargetConstPtr target,
                               KdTreePtr kdtree_target)
-      : ScanMatchingBase<PointSource, PointTarget, Scalar>(source, target, kdtree_target) {}
+      : ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Point>(
+            source, target, kdtree_target) {}
 
   virtual ~ScanMatching3DOFPoint2Point() = default;
 
@@ -166,21 +171,22 @@ class ScanMatching3DOFPoint2Point : public ScanMatchingBase<PointSource, PointTa
   }
 
  protected:
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::kdtree_target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
-
-  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<Scalar>>(new ScanMatching3DOFPoint2Point(*this));
-  }
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Point>::source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Point>::target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching3DOFPoint2Point>::kdtree_target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching3DOFPoint2Point>::transformed_source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching3DOFPoint2Point>::correspondences_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching3DOFPoint2Point>::transform_;
 };
 
 /* Unified point to point 6DOF registration model. */
 template <typename PointSource, typename PointTarget, typename Scalar>
-class ScanMatching6DOFPoint2Point : public ScanMatchingBase<PointSource, PointTarget, Scalar> {
+class ScanMatching6DOFPoint2Point
+    : public ScanMatchingBase<PointSource, PointTarget, Scalar,
+                              ScanMatching6DOFPoint2Point<PointSource, PointTarget, Scalar>> {
  public:
   using Ptr = std::shared_ptr<ScanMatching6DOFPoint2Point>;
   using PointCloudSource = pcl::PointCloud<PointSource>;
@@ -198,7 +204,8 @@ class ScanMatching6DOFPoint2Point : public ScanMatchingBase<PointSource, PointTa
 
   ScanMatching6DOFPoint2Point(PointCloudSourceConstPtr source, PointCloudTargetConstPtr target,
                               KdTreePtr kdtree_target)
-      : ScanMatchingBase<PointSource, PointTarget, Scalar>(source, target, kdtree_target) {}
+      : ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Point>(
+            source, target, kdtree_target) {}
 
   virtual ~ScanMatching6DOFPoint2Point() = default;
 
@@ -255,21 +262,22 @@ class ScanMatching6DOFPoint2Point : public ScanMatchingBase<PointSource, PointTa
   }
 
  protected:
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::kdtree_target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
-
-  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<Scalar>>(new ScanMatching6DOFPoint2Point(*this));
-  }
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Point>::source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Point>::target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching6DOFPoint2Point>::kdtree_target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching6DOFPoint2Point>::transformed_source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching6DOFPoint2Point>::correspondences_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Point>::transform_;
 };
 
 /* Unified point to plane 6DOF registration model. */
 template <typename PointSource, typename PointTarget, typename Scalar>
-class ScanMatching6DOFPoint2Plane : public ScanMatchingBase<PointSource, PointTarget, Scalar> {
+class ScanMatching6DOFPoint2Plane
+    : public ScanMatchingBase<PointSource, PointTarget, Scalar,
+                              ScanMatching6DOFPoint2Plane<PointSource, PointTarget, Scalar>> {
  public:
   using Ptr = std::shared_ptr<ScanMatching6DOFPoint2Plane>;
   using PointCloudSource = pcl::PointCloud<PointSource>;
@@ -285,7 +293,8 @@ class ScanMatching6DOFPoint2Plane : public ScanMatchingBase<PointSource, PointTa
 
   ScanMatching6DOFPoint2Plane(PointCloudSourceConstPtr source, PointCloudTargetConstPtr target,
                               KdTreePtr kdtree_target)
-      : ScanMatchingBase<PointSource, PointTarget, Scalar>(source, target, kdtree_target) {}
+      : ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Plane>(
+            source, target, kdtree_target) {}
 
   virtual ~ScanMatching6DOFPoint2Plane() = default;
 
@@ -314,15 +323,14 @@ class ScanMatching6DOFPoint2Plane : public ScanMatchingBase<PointSource, PointTa
   }
 
  protected:
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::kdtree_target_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transformed_source_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::correspondences_;
-  using ScanMatchingBase<PointSource, PointTarget, Scalar>::transform_;
-
-  virtual typename duna::IBaseModel<Scalar>::Ptr clone() override {
-    return std::shared_ptr<duna::IBaseModel<Scalar>>(new ScanMatching6DOFPoint2Plane(*this));
-  }
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Plane>::source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Plane>::target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching6DOFPoint2Plane>::kdtree_target_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching6DOFPoint2Plane>::transformed_source_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar,
+                         ScanMatching6DOFPoint2Plane>::correspondences_;
+  using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Plane>::transform_;
 };
 }  // namespace duna
