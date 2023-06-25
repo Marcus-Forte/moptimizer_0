@@ -1,6 +1,6 @@
-#include <duna/covariance/covariance.h>
+#include <duna_optimizer/covariance/covariance.h>
 
-namespace duna::covariance {
+namespace duna_optimizer::covariance {
 /* No Covariance ~ Identity*/
 template <class Scalar>
 IdentityCovariance<Scalar>::IdentityCovariance(unsigned int dimension)

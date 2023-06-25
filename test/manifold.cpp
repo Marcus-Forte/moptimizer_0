@@ -1,5 +1,5 @@
-#include <duna/manifold.h>
-#include <duna/so3.h>
+#include <duna_optimizer/manifold.h>
+#include <duna_optimizer/so3.h>
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) {

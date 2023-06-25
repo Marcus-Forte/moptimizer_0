@@ -2,7 +2,7 @@
 
 #include <Eigen/Dense>
 
-#include "duna/logger.h"
+#include "duna_optimizer/logger.h"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
@@ -12,14 +12,14 @@ int main(int argc, char **argv) {
 
 // Need GMOCK?
 TEST(Drafts, Logging) {
-  duna::logger logger;
-  logger.setVerbosityLevel(duna::L_WARN);
-  duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
-  duna::logger::log_info("info");
-  duna::logger::log_warn("warn");
-  duna::logger::log_error("error");
-  duna::logger::log_debug("debug");
-  logger.log(duna::L_INFO, "INFO");
+  duna_optimizer::logger logger;
+  logger.setVerbosityLevel(duna_optimizer::L_WARN);
+  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
+  duna_optimizer::logger::log_info("info");
+  duna_optimizer::logger::log_warn("warn");
+  duna_optimizer::logger::log_error("error");
+  duna_optimizer::logger::log_debug("debug");
+  logger.log(duna_optimizer::L_INFO, "INFO");
   // logger.log(duna::L_WARN, "WARN");
   // logger.log(duna::L_ERROR, "ERROR");
   // logger.log(duna::L_DEBUG, "DEBUG");
@@ -28,7 +28,7 @@ TEST(Drafts, Logging) {
 
   std::stringstream somestream;
   somestream << some_matrix;
-  logger.log(duna::L_WARN, somestream);
+  logger.log(duna_optimizer::L_WARN, somestream);
 
-  logger.log(duna::L_WARN, "Hello world %d + %d = %d\n", 20, 30, 20 + 30);
+  logger.log(duna_optimizer::L_WARN, "Hello world %d + %d = %d\n", 20, 30, 20 + 30);
 }

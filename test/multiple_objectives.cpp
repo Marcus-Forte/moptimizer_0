@@ -1,9 +1,9 @@
-#include <duna/cost_function_numerical.h>
-#include <duna/levenberg_marquadt.h>
+#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/levenberg_marquadt.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <duna/stopwatch.hpp>
+#include <duna_optimizer/stopwatch.hpp>
 // From Ceres
 
 const int kNumObservations = 67;
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModel<double, Model>
+struct Model : public duna_optimizer::BaseModel<double, Model>
 {
 
     Model(const double* dataset) {
@@ -112,18 +112,18 @@ TEST(MultipleObjectives, SplitCost)
 {
     utilities::Stopwatch timer;
     timer.tick();
-    duna::LevenbergMarquadt<double,2> multi_optimizer;
-    duna::LevenbergMarquadt<double,2> single_optimizer;
+    duna_optimizer::LevenbergMarquadt<double,2> multi_optimizer;
+    duna_optimizer::LevenbergMarquadt<double,2> single_optimizer;
     double x0_multi[]= {0.0 , 0.0};
     double x0_single[]= {0.0 , 0.0};
-    single_optimizer.addCost(new duna::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),67));
+    single_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),67));
 
     // Here we split the cost into two over the same parameter x0. Results should be the same as a single cost function.
     // first 30 observations
-    multi_optimizer.addCost(new duna::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),30)); 
+    multi_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),30)); 
 
     // next 37 observations. Note we use data[60] as there are two data points per observation.
-    multi_optimizer.addCost(new duna::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(&data[60])),37)); 
+    multi_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(&data[60])),37)); 
 
     multi_optimizer.minimize(x0_multi);
     single_optimizer.minimize(x0_single);

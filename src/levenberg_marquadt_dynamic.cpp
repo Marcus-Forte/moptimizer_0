@@ -1,6 +1,6 @@
-#include "duna/levenberg_marquadt_dynamic.h"
+#include "duna_optimizer/levenberg_marquadt_dynamic.h"
 
-namespace duna {
+namespace duna_optimizer {
 template <class Scalar>
 bool LevenbergMarquadtDynamic<Scalar>::isDeltaSmall(Scalar *x0) {
   Eigen::Map<ParameterVector> delta(x0, num_parameters_);

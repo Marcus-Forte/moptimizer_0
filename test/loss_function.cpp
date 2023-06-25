@@ -1,13 +1,13 @@
-#include <duna/cost_function_numerical.h>
-#include <duna/levenberg_marquadt.h>
-#include <duna/loss_function/geman_mcclure.h>
-#include <duna/model.h>
+#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/loss_function/geman_mcclure.h>
+#include <duna_optimizer/model.h>
 #include <gtest/gtest.h>
 
 using Scalar = float;
 
 // Function to be minimized
-struct Model : public duna::BaseModel<Scalar, Model> {
+struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
   Model(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
   // API simply has to override this method
 
@@ -23,26 +23,26 @@ struct Model : public duna::BaseModel<Scalar, Model> {
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
-  duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
   return RUN_ALL_TESTS();
 }
 
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {
-    cost = new duna::CostFunctionNumerical<Scalar, 2, 1>(Model::Ptr(new Model(x_data, y_data)), 7);
+    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(Model::Ptr(new Model(x_data, y_data)), 7);
 
     // auto loss = new duna::loss::GemmanMCClure<Scalar>(100.0);
     cost->setLossFunction(
-        duna::loss::GemmanMCClure<Scalar>::Ptr(new duna::loss::GemmanMCClure<Scalar>(100.0)));
+        duna_optimizer::loss::GemmanMCClure<Scalar>::Ptr(new duna_optimizer::loss::GemmanMCClure<Scalar>(100.0)));
     optimizer.addCost(cost);
   }
 
   ~SimpleModel() { delete cost; }
 
  protected:
-  duna::LevenbergMarquadt<Scalar, 2> optimizer;
-  duna::CostFunctionNumerical<Scalar, 2, 1> *cost;
+  duna_optimizer::LevenbergMarquadt<Scalar, 2> optimizer;
+  duna_optimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
   Scalar x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
   Scalar y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 };

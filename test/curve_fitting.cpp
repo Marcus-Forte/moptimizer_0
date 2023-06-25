@@ -1,9 +1,9 @@
-#include <duna/cost_function_numerical.h>
-#include <duna/levenberg_marquadt.h>
+#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/levenberg_marquadt.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <duna/stopwatch.hpp>
+#include <duna_optimizer/stopwatch.hpp>
 // From Ceres
 
 const int kNumObservations = 67;
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModel<double,Model>
+struct Model : public duna_optimizer::BaseModel<double,Model>
 {
     Model(const double* dataset) {
         m_dataset = dataset;
@@ -111,8 +111,8 @@ TEST(CurveFitting, InitialCondition0)
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
+    duna_optimizer::LevenbergMarquadt<double,2> optimizer;
+    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
     optimizer.addCost(cost);
 
     double x0[]= {0.0 , 0.0};
@@ -132,8 +132,8 @@ TEST(CurveFitting, InitialCondition2)
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
+    duna_optimizer::LevenbergMarquadt<double,2> optimizer;
+    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
     optimizer.setMaximumIterations(50);
     optimizer.addCost(cost);
 

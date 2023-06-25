@@ -1,15 +1,15 @@
-#include <duna/cost_function_numerical.h>
-#include <duna/levenberg_marquadt.h>
-#include <duna/levenberg_marquadt_dynamic.h>
-#include <duna/model.h>
-#include <duna/so3.h>
+#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt_dynamic.h>
+#include <duna_optimizer/model.h>
+#include <duna_optimizer/so3.h>
 #include <gtest/gtest.h>
 
 #define MODEL_PARAMETERS 6
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 5e-5
 
-struct Model : public duna::BaseModel<double, Model> {
+struct Model : public duna_optimizer::BaseModel<double, Model> {
   Model(const std::vector<Eigen::Vector4d> &point_list,
         const std::vector<Eigen::Vector2i> &pixel_list)
       : point_vector(point_list), pixel_vector(pixel_list) {
@@ -59,7 +59,7 @@ struct Model : public duna::BaseModel<double, Model> {
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
-  duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
 
   return RUN_ALL_TESTS();
 }
@@ -83,7 +83,7 @@ class CameraCalibration : public testing::Test {
     pixel_list.push_back(Eigen::Vector2i(559, 282));
     pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-    cost = new duna::CostFunctionNumerical<double, 6, 2>(
+    cost = new duna_optimizer::CostFunctionNumerical<double, 6, 2>(
         Model::Ptr(new Model(point_list, pixel_list)), 5);
     optimizer.addCost(cost);
   }
@@ -91,8 +91,8 @@ class CameraCalibration : public testing::Test {
   ~CameraCalibration() { delete cost; }
 
  protected:
-  duna::CostFunctionNumerical<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
-  duna::LevenbergMarquadt<double, MODEL_PARAMETERS> optimizer;
+  duna_optimizer::CostFunctionNumerical<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+  duna_optimizer::LevenbergMarquadt<double, MODEL_PARAMETERS> optimizer;
 
   std::vector<Eigen::Vector4d> point_list;
   std::vector<Eigen::Vector2i> pixel_list;
@@ -133,7 +133,7 @@ TEST_F(CameraCalibration, BadWeather) {
 TEST_F(CameraCalibration, GoodWeatherDynamic) {
   double x0[6] = {0};
 
-  duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
+  duna_optimizer::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
 
   dyn_optimizer.addCost(this->cost);
   dyn_optimizer.minimize(x0);
@@ -147,7 +147,7 @@ TEST_F(CameraCalibration, GoodWeatherDynamic) {
 
 TEST_F(CameraCalibration, BadWeatherDynamic) {
   double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
-  duna::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
+  duna_optimizer::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
 
   dyn_optimizer.addCost(this->cost);
   dyn_optimizer.setMaximumIterations(50);

@@ -1,6 +1,6 @@
-#include <duna/cost_function_analytical_dynamic.h>
+#include <duna_optimizer/cost_function_analytical_dynamic.h>
 
-namespace duna {
+namespace duna_optimizer {
 template <class Scalar>
 void CostFunctionAnalyticalDynamic<Scalar>::init(const Scalar *x, Scalar *hessian, Scalar *b) {
   new (&x_map_) Eigen::Map<const ParameterVector>(x, num_parameters_);

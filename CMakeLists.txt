@@ -14,7 +14,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 # set(CMAKE_INSTALL_PREFIX install) # always install locally
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.12 QUIET COMPONENTS io common search registration)
+find_package(PCL 1.12 QUIET COMPONENTS io common search)
 find_package(GTest REQUIRED)
 find_package(OpenMP REQUIRED)
 link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX ${PCL_LIBRARIES})
@@ -49,7 +49,7 @@ src/logger.cpp
 
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
-EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/duna/duna_exports.h)
+EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/duna_optimizer/duna_exports.h)
 # include_directories(${CMAKE_BINARY_DIR}/exports)
 
 # target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
@@ -60,9 +60,6 @@ endif()
 
 #gtest
 if(BUILD_TESTS)
-  # Copy point cloud
-  get_filename_component(DATASET_PATH test/data/ REALPATH)
-  add_definitions(-DTEST_DATA_DIR="${DATASET_PATH}")
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   enable_testing()
   include(GoogleTest)
@@ -84,15 +81,10 @@ if(BUILD_TESTS)
   message(STATUS "PCL Found. Building registration related tests..")
   set(test_src
   ${test_src}
-  
+
   # Registration
-  test/differentiation.cpp
-  test/registration_point2plane.cpp
-  test/registration_point2point.cpp
-  test/registration_point2plane3DOF.cpp
+#   test/differentiation.cpp
   
-  # Registration sequence
-  test/sequence_3dof.cpp
   )
   endif()
 

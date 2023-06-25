@@ -1,16 +1,16 @@
-#include <duna/cost_function_analytical.h>
-#include <duna/cost_function_numerical.h>
-#include <duna/levenberg_marquadt.h>
-#include <duna/logger.h>
-#include <duna/model.h>
-#include <duna/models/accelerometer.h>
-#include <duna/models/scan_matching.h>
-#include <duna/so3.h>
+#include <duna_optimizer/cost_function_analytical.h>
+#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/logger.h>
+#include <duna_optimizer/model.h>
+#include <duna_optimizer/models/accelerometer.h>
+// #include <duna_optimizer/models/scan_matching.h>
+#include <duna_optimizer/so3.h>
 #include <gtest/gtest.h>
 #include <pcl/point_types.h>
 
 // extern duna::logger::s_level_;
-duna::VERBOSITY_LEVEL duna::logger::s_level_;
+duna_optimizer::VERBOSITY_LEVEL duna_optimizer::logger::s_level_;
 
 /* We compare with numerical diff for resonable results.
 It is very difficult that both yield the same results if something is wrong with
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 }
 
 template <typename Scalar = double>
-struct SimpleModel : duna::BaseModelJacobian<Scalar, SimpleModel<Scalar>> {
+struct SimpleModel : duna_optimizer::BaseModelJacobian<Scalar, SimpleModel<Scalar>> {
   SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y){};
 
   // Defining operator for comparison.
@@ -62,8 +62,8 @@ TYPED_TEST(Differentiation, SimpleModel) {
 
   typename SimpleModel<TypeParam>::Ptr model(new SimpleModel<TypeParam>(x_data, y_data));
 
-  duna::CostFunctionAnalytical<TypeParam, 2, 1> cost_ana(model, m_residuals);
-  duna::CostFunctionNumerical<TypeParam, 2, 1> cost_num(model, m_residuals);
+  duna_optimizer::CostFunctionAnalytical<TypeParam, 2, 1> cost_ana(model, m_residuals);
+  duna_optimizer::CostFunctionNumerical<TypeParam, 2, 1> cost_num(model, m_residuals);
 
   Eigen::Matrix<TypeParam, 2, 2> Hessian;
   Eigen::Matrix<TypeParam, 2, 2> HessianNum;
@@ -81,7 +81,7 @@ TYPED_TEST(Differentiation, SimpleModel) {
   std::cerr << "Hessian Numerical:\n" << HessianNum << std::endl;
 }
 
-struct Powell : duna::BaseModelJacobian<double, Powell> {
+struct Powell : duna_optimizer::BaseModelJacobian<double, Powell> {
   // Should be 4 x 4 = 16. Eigen stores column major order, so we fill indices
   // accordingly.
 
@@ -141,8 +141,8 @@ TEST(Differentiation, PowellModel) {
 
   Powell::Ptr powell(new Powell);
 
-  duna::CostFunctionAnalytical<double, 4, 4> cost_ana(powell, m_residuals);
-  duna::CostFunctionNumerical<double, 4, 4> cost_num(powell, m_residuals);
+  duna_optimizer::CostFunctionAnalytical<double, 4, 4> cost_ana(powell, m_residuals);
+  duna_optimizer::CostFunctionNumerical<double, 4, 4> cost_num(powell, m_residuals);
 
   Eigen::Matrix<double, 4, 4> Hessian;
   Eigen::Matrix<double, 4, 4> HessianNum;
@@ -176,11 +176,11 @@ TEST(Differentiation, ScanMatching3DOFPoint2Point) {
   pcl::search::KdTree<PointT>::Ptr kdtree_target(new pcl::search::KdTree<PointT>);
   kdtree_target->setInputCloud(target);
 
-  typename duna::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(
-      new duna::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
+  typename duna_optimizer::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(
+      new duna_optimizer::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
 
-  duna::CostFunctionNumerical<Scalar, 3, 3> cost_num(model);
-  duna::CostFunctionAnalytical<Scalar, 3, 3> cost_ana(model);
+  duna_optimizer::CostFunctionNumerical<Scalar, 3, 3> cost_num(model);
+  duna_optimizer::CostFunctionAnalytical<Scalar, 3, 3> cost_ana(model);
 
   Eigen::Matrix<Scalar, 3, 3> HessianNum;
   Eigen::Matrix<Scalar, 3, 3> Hessian;
@@ -214,11 +214,11 @@ TEST(Differentiation, ScanMatching6DOFPoint2Point) {
   pcl::search::KdTree<PointT>::Ptr kdtree_target(new pcl::search::KdTree<PointT>);
   kdtree_target->setInputCloud(target);
 
-  typename duna::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(
-      new duna::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
+  typename duna_optimizer::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(
+      new duna_optimizer::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
 
-  duna::CostFunctionNumerical<Scalar, 6, 3> cost_num(model);
-  duna::CostFunctionAnalytical<Scalar, 6, 3> cost_ana(model);
+  duna_optimizer::CostFunctionNumerical<Scalar, 6, 3> cost_num(model);
+  duna_optimizer::CostFunctionAnalytical<Scalar, 6, 3> cost_ana(model);
 
   Eigen::Matrix<Scalar, 6, 6> HessianNum;
   Eigen::Matrix<Scalar, 6, 6> Hessian;
@@ -263,8 +263,8 @@ TEST(Differentiation, ScanMatchingPoint2Plane) {
   pcl::search::KdTree<PointT>::Ptr target_kdtree(new pcl::search::KdTree<PointT>);
   target_kdtree->setInputCloud(target);
 
-  typename duna::ScanMatching3DOFPoint2Plane<PointT, PointT, double>::Ptr model(
-      new duna::ScanMatching3DOFPoint2Plane<PointT, PointT, double>(source, target, target_kdtree));
+  typename duna_optimizer::ScanMatching3DOFPoint2Plane<PointT, PointT, double>::Ptr model(
+      new duna_optimizer::ScanMatching3DOFPoint2Plane<PointT, PointT, double>(source, target, target_kdtree));
 
   // Currently only works close to 0
   Eigen::Matrix<double, 3, 1> x0;
@@ -272,8 +272,8 @@ TEST(Differentiation, ScanMatchingPoint2Plane) {
 
   model->update(x0.data());
 
-  duna::CostFunctionNumerical<double, 3, 1> cost_num(model);
-  duna::CostFunctionAnalytical<double, 3, 1> cost_ana(model);
+  duna_optimizer::CostFunctionNumerical<double, 3, 1> cost_num(model);
+  duna_optimizer::CostFunctionAnalytical<double, 3, 1> cost_ana(model);
 
   Eigen::Matrix<double, 3, 3> HessianNum;
   Eigen::Matrix<double, 3, 3> Hessian;
@@ -293,15 +293,15 @@ TEST(Differentiation, Accelerometer) {
   measurement[0] = 0;
   measurement[1] = 0;
   measurement[2] = 0;
-  typename duna::IBaseModel<double>::Ptr acc(new duna::Accelerometer(measurement));
+  typename duna_optimizer::IBaseModel<double>::Ptr acc(new duna_optimizer::Accelerometer(measurement));
   double x[3];
   double f_x[3];
   x[0] = 0.1;
   x[1] = 0.0;
   x[2] = 0.0;
 
-  duna::CostFunctionNumerical<double, 3, 3> cost(acc);
-  duna::CostFunctionAnalytical<double, 3, 3> cost_a(acc);
+  duna_optimizer::CostFunctionNumerical<double, 3, 3> cost(acc);
+  duna_optimizer::CostFunctionAnalytical<double, 3, 3> cost_a(acc);
   Eigen::Matrix3d hessian;
   Eigen::Matrix3d hessian_a;
   Eigen::Vector3d b;

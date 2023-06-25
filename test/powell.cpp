@@ -1,10 +1,10 @@
-#include <duna/cost_function_analytical_dynamic.h>
-#include <duna/cost_function_numerical.h>
-#include <duna/levenberg_marquadt.h>
-#include <duna/levenberg_marquadt_dynamic.h>
+#include <duna_optimizer/cost_function_analytical_dynamic.h>
+#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt_dynamic.h>
 #include <gtest/gtest.h>
 
-#include <duna/stopwatch.hpp>
+#include <duna_optimizer/stopwatch.hpp>
 
 //  Powell's singular function.
 //
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   return RUN_ALL_TESTS();
 }
 
-struct Model : public duna::BaseModelJacobian<double, Model> {
+struct Model : public duna_optimizer::BaseModelJacobian<double, Model> {
   bool f(const double *x, double *f_x, unsigned int index) override {
     f_x[0] = x[0] + 10 * x[1];
     f_x[1] = sqrt(5) * (x[2] - x[3]);
@@ -71,12 +71,12 @@ TEST(PowellFunction, InitialCondition0) {
   timer.tick();
   double x0[] = {3, -1, 0, 4};
 
-  duna::logger::setGlobalVerbosityLevel(duna::L_DEBUG);
+  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
 
-  duna::LevenbergMarquadt<double, 4> optimizer;
+  duna_optimizer::LevenbergMarquadt<double, 4> optimizer;
   optimizer.setMaximumIterations(25);
 
-  optimizer.addCost(new duna::CostFunctionNumerical<double, 4, 4>(Model::Ptr(new Model), 1));
+  optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double, 4, 4>(Model::Ptr(new Model), 1));
 
   optimizer.minimize(x0);
 

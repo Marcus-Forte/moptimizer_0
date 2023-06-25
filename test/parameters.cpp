@@ -7,8 +7,8 @@ int main(int argc, char** argv) {
 }
 
 TEST(Parameters, Euclidean) {
-  duna::Parameter<3> A;
-  duna::Parameter<3> B;
-  duna::Parameter<3> C;
-  duna::plus(&A, &B, &C);
+  duna_optimizer::Parameter<3> A;
+  duna_optimizer::Parameter<3> B;
+  duna_optimizer::Parameter<3> C;
+  duna_optimizer::plus(&A, &B, &C);
 }

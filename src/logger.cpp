@@ -1,6 +1,6 @@
-#include "duna/logger.h"
+#include "duna_optimizer/logger.h"
 
-namespace duna {
+namespace duna_optimizer {
 // Default setting for global/static log level;
 VERBOSITY_LEVEL logger::s_level_ = L_ERROR;
 

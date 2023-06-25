@@ -1,6 +1,6 @@
-#include "duna/so3.h"
+#include "duna_optimizer/so3.h"
 
-#include "duna/duna_exports.h"
+#include "duna_optimizer/duna_exports.h"
 
 namespace so3 {
 template <typename Scalar>

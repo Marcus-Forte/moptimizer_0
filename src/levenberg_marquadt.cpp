@@ -1,6 +1,6 @@
-#include <duna/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt.h>
 
-namespace duna {
+namespace duna_optimizer {
 template <class Scalar, int N_PARAMETERS>
 bool LevenbergMarquadt<Scalar, N_PARAMETERS>::isDeltaSmall(Scalar *x0) {
   Eigen::Map<ParameterVector> delta(x0);
@@ -70,7 +70,7 @@ OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
       // TODO Manifold operation
       xi = x0_map + delta;
 
-      // std::cout << xi << std::endl;
+      std::cout << xi << std::endl;
 
       Scalar yi = 0;
 

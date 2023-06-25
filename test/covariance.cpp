@@ -1,9 +1,9 @@
-#include <duna/covariance/covariance.h>
+#include <duna_optimizer/covariance/covariance.h>
 #include <gtest/gtest.h>
 
 /* Client covariance */
-class Covariance3x3 : public duna::covariance::ICovariance<double> {
-  using MatrixType = typename duna::covariance::ICovariance<double>::MatrixType;
+class Covariance3x3 : public duna_optimizer::covariance::ICovariance<double> {
+  using MatrixType = typename duna_optimizer::covariance::ICovariance<double>::MatrixType;
 
  public:
   Covariance3x3() {
@@ -19,8 +19,8 @@ class Covariance3x3 : public duna::covariance::ICovariance<double> {
 };
 
 /* Client covariance */
-class Covariance6x6 : public duna::covariance::ICovariance<double> {
-  using MatrixType = typename duna::covariance::ICovariance<double>::MatrixType;
+class Covariance6x6 : public duna_optimizer::covariance::ICovariance<double> {
+  using MatrixType = typename duna_optimizer::covariance::ICovariance<double>::MatrixType;
 
  public:
   Covariance6x6() {
@@ -46,14 +46,14 @@ using ScalarTypes = ::testing::Types<float, double>;
 TYPED_TEST_SUITE(Covariance, ScalarTypes);
 
 TYPED_TEST(Covariance, getNoCovariance) {
-  auto cov_obj = duna::covariance::IdentityCovariance<TypeParam>(1);
+  auto cov_obj = duna_optimizer::covariance::IdentityCovariance<TypeParam>(1);
   auto covariance = cov_obj.getCovariance();
   GTEST_ASSERT_EQ(covariance(0), 1.0f);
   GTEST_ASSERT_EQ(covariance.size(), 1);
 }
 
 TEST(Covariance, getCovariance) {
-  duna::covariance::ICovariance<double>::Ptr icov;
+  duna_optimizer::covariance::ICovariance<double>::Ptr icov;
   icov = std::make_shared<Covariance3x3>();
 
   auto covariance = icov->getCovariance();
