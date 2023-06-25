@@ -25,8 +25,8 @@ if(UNIX)
 # GTest required pthread in UNIX Os
         link_libraries(pthread)
         if(LINUX) # not APPLE
-        add_compile_options(-march=native)
         add_compile_options(-msse -msse2 -mavx -mfma -msse4)
+        add_compile_options(-march=native)
         endif()
 elseif(MSVC)
         add_compile_options(/bigobj)
