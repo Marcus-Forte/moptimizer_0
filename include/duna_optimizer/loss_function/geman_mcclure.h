@@ -17,4 +17,4 @@ class GemmanMCClure : public ILossFunction<T> {
 
   inline T square(T val) { return val * val; }
 };
-}  // namespace duna::loss
+}  // namespace duna_optimizer::loss

@@ -18,4 +18,4 @@ class Exception : public std::exception {
   std::string msg_;
 };
 
-}  // namespace duna
+}  // namespace duna_optimizer

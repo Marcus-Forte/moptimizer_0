@@ -118,4 +118,4 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
 }
 template class LevenbergMarquadtDynamic<float>;
 template class LevenbergMarquadtDynamic<double>;
-}  // namespace duna
+}  // namespace duna_optimizer

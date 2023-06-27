@@ -45,4 +45,4 @@ std::string logger::levelToString(VERBOSITY_LEVEL level) const {
   }
   return "";
 }
-}  // namespace duna
+}  // namespace duna_optimizer

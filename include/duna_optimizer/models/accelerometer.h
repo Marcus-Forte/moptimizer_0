@@ -73,4 +73,4 @@ class Accelerometer : public BaseModelJacobian<double, Accelerometer> {
   Eigen::Vector3d gravity_;
   Eigen::Vector3d measurements_;
 };
-}  // namespace duna
+}  // namespace duna_optimizer

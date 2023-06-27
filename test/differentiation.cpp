@@ -177,7 +177,8 @@ TEST(Differentiation, ScanMatching3DOFPoint2Point) {
   kdtree_target->setInputCloud(target);
 
   typename duna_optimizer::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(
-      new duna_optimizer::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
+      new duna_optimizer::ScanMatching3DOFPoint2Point<PointT, PointT, Scalar>(source, target,
+                                                                              kdtree_target));
 
   duna_optimizer::CostFunctionNumerical<Scalar, 3, 3> cost_num(model);
   duna_optimizer::CostFunctionAnalytical<Scalar, 3, 3> cost_ana(model);
@@ -215,7 +216,8 @@ TEST(Differentiation, ScanMatching6DOFPoint2Point) {
   kdtree_target->setInputCloud(target);
 
   typename duna_optimizer::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>::Ptr model(
-      new duna_optimizer::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>(source, target, kdtree_target));
+      new duna_optimizer::ScanMatching6DOFPoint2Point<PointT, PointT, Scalar>(source, target,
+                                                                              kdtree_target));
 
   duna_optimizer::CostFunctionNumerical<Scalar, 6, 3> cost_num(model);
   duna_optimizer::CostFunctionAnalytical<Scalar, 6, 3> cost_ana(model);
@@ -264,7 +266,8 @@ TEST(Differentiation, ScanMatchingPoint2Plane) {
   target_kdtree->setInputCloud(target);
 
   typename duna_optimizer::ScanMatching3DOFPoint2Plane<PointT, PointT, double>::Ptr model(
-      new duna_optimizer::ScanMatching3DOFPoint2Plane<PointT, PointT, double>(source, target, target_kdtree));
+      new duna_optimizer::ScanMatching3DOFPoint2Plane<PointT, PointT, double>(source, target,
+                                                                              target_kdtree));
 
   // Currently only works close to 0
   Eigen::Matrix<double, 3, 1> x0;
@@ -293,7 +296,8 @@ TEST(Differentiation, Accelerometer) {
   measurement[0] = 0;
   measurement[1] = 0;
   measurement[2] = 0;
-  typename duna_optimizer::IBaseModel<double>::Ptr acc(new duna_optimizer::Accelerometer(measurement));
+  typename duna_optimizer::IBaseModel<double>::Ptr acc(
+      new duna_optimizer::Accelerometer(measurement));
   double x[3];
   double f_x[3];
   x[0] = 0.1;

@@ -30,11 +30,12 @@ int main(int argc, char **argv) {
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {
-    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(Model::Ptr(new Model(x_data, y_data)), 7);
+    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(
+        Model::Ptr(new Model(x_data, y_data)), 7);
 
     // auto loss = new duna::loss::GemmanMCClure<Scalar>(100.0);
-    cost->setLossFunction(
-        duna_optimizer::loss::GemmanMCClure<Scalar>::Ptr(new duna_optimizer::loss::GemmanMCClure<Scalar>(100.0)));
+    cost->setLossFunction(duna_optimizer::loss::GemmanMCClure<Scalar>::Ptr(
+        new duna_optimizer::loss::GemmanMCClure<Scalar>(100.0)));
     optimizer.addCost(cost);
   }
 

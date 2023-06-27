@@ -62,6 +62,6 @@ class Optimizer {
   unsigned int maximum_iterations_;
   unsigned int executed_iterations_;
 };
-}  // namespace duna
+}  // namespace duna_optimizer
 
 #endif

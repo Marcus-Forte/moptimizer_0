@@ -10,6 +10,6 @@ enum OptimizationStatus {
   NUMERIC_ERROR,
   FATAL_ERROR,
 };
-}  // namespace duna
+}  // namespace duna_optimizer
 
 #endif

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "duna_optimizer/optimizer.h"
 #include "duna_exports.h"
+#include "duna_optimizer/optimizer.h"
 
 namespace duna_optimizer {
 template <class Scalar>
@@ -44,4 +44,4 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic : public Optimizer<Scalar> 
   Scalar lm_lambda_;
   unsigned int lm_max_iterations_;
 };
-}  // namespace duna
+}  // namespace duna_optimizer

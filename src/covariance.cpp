@@ -20,4 +20,4 @@ inline typename IdentityCovariance<Scalar>::MatrixType IdentityCovariance<Scalar
 // Instantiations
 template class IdentityCovariance<float>;
 template class IdentityCovariance<double>;
-}  // namespace duna::covariance
+}  // namespace duna_optimizer::covariance

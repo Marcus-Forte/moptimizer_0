@@ -31,4 +31,4 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public LevenbergMarquadtDynamic<
   // Delta Convergence
   bool isDeltaSmall(Scalar *delta) override;
 };
-}  // namespace duna
+}  // namespace duna_optimizer

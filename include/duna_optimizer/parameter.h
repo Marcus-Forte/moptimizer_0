@@ -30,4 +30,4 @@ class Parameter : public IParameter {
 
 void plus(const IParameter *lhs, const IParameter *rhs, IParameter *res) { lhs->Plus(rhs, res); }
 
-}  // namespace duna
+}  // namespace duna_optimizer

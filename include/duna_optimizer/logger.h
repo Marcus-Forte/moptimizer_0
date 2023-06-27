@@ -73,4 +73,4 @@ class DUNA_OPTIMIZER_EXPORT logger {
 
   static VERBOSITY_LEVEL s_level_;
 };
-}  // namespace duna
+}  // namespace duna_optimizer

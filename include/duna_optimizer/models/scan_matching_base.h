@@ -33,9 +33,11 @@ class ScanMatchingBase : public BaseModelJacobian<Scalar, Derived> {
         target_(target),
         kdtree_target_(kdtree_target),
         maximum_corr_dist_(std::numeric_limits<double>::max()) {
-    if (!source_ || source_->size() == 0) duna_optimizer::logger::log_error("No points at source cloud!");
+    if (!source_ || source_->size() == 0)
+      duna_optimizer::logger::log_error("No points at source cloud!");
 
-    if (!target_ || target_->size() == 0) duna_optimizer::logger::log_error("No points at target cloud!");
+    if (!target_ || target_->size() == 0)
+      duna_optimizer::logger::log_error("No points at target cloud!");
 
     if (!kdtree_target_) duna_optimizer::logger::log_error("No target Kdtree!");
 
@@ -64,19 +66,21 @@ class ScanMatchingBase : public BaseModelJacobian<Scalar, Derived> {
     if (corr_rejectors.size()) {
       pcl::CorrespondencesPtr tmp_corrs(new pcl::Correspondences(correspondences_));
       for (int i = 0; i < corr_rejectors.size(); ++i) {
-        duna_optimizer::logger::log_debug("Using rejector: %s", corr_rejectors[i]->getClassName().c_str());
+        duna_optimizer::logger::log_debug("Using rejector: %s",
+                                          corr_rejectors[i]->getClassName().c_str());
         corr_rejectors[i]->setInputCorrespondences(tmp_corrs);
         corr_rejectors[i]->getCorrespondences(correspondences_);
 
-        duna_optimizer::logger::log_debug("Remaining: %d / %d", correspondences_.size(), tmp_corrs->size());
+        duna_optimizer::logger::log_debug("Remaining: %d / %d", correspondences_.size(),
+                                          tmp_corrs->size());
         // Modify input for the next iteration
         if (i < corr_rejectors.size() - 1) *tmp_corrs = correspondences_;
       }
     }
 
     if (correspondences_.size() < 4)
-      duna_optimizer::logger::log_debug("Too few correspondences! (%d / %d) ", correspondences_.size(),
-                              source_->size());
+      duna_optimizer::logger::log_debug("Too few correspondences! (%d / %d) ",
+                                        correspondences_.size(), source_->size());
     overlap_ = (float)correspondences_.size() / (float)source_->size();
   }
 
@@ -121,4 +125,4 @@ class ScanMatchingBase : public BaseModelJacobian<Scalar, Derived> {
     return true;
   }
 };
-}  // namespace duna
+}  // namespace duna_optimizer

@@ -54,7 +54,8 @@ class BaseModel : public IBaseModel<Scalar> {
 
   // No jacobian definition.
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) final {
-    throw duna_optimizer::Exception("Non implemented non-jacobian model function `f_df` being used.");
+    throw duna_optimizer::Exception(
+        "Non implemented non-jacobian model function `f_df` being used.");
   }
 
   std::shared_ptr<IBaseModel<Scalar>> clone() const {
@@ -92,4 +93,4 @@ class BaseModelJacobian : public IBaseModel<Scalar> {
   }
 };
 
-}  // namespace duna
+}  // namespace duna_optimizer

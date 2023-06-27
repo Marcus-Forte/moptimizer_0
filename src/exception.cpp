@@ -1,3 +1,3 @@
 #include <duna_optimizer/exception.h>
 
-namespace duna_optimizer {}  // namespace duna
+namespace duna_optimizer {}  // namespace duna_optimizer

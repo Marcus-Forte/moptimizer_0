@@ -17,4 +17,4 @@ void CostFunctionAnalyticalDynamic<Scalar>::init(const Scalar *x, Scalar *hessia
 
 template class CostFunctionAnalyticalDynamic<float>;
 template class CostFunctionAnalyticalDynamic<double>;
-}  // namespace duna
+}  // namespace duna_optimizer

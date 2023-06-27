@@ -21,4 +21,4 @@ class NoLoss : public ILossFunction<T> {
  public:
   inline virtual T weight(T errorSquaredNorm) override { return 1.0; }
 };
-}  // namespace duna::loss
+}  // namespace duna_optimizer::loss

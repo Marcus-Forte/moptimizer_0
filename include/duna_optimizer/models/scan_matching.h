@@ -333,4 +333,4 @@ class ScanMatching6DOFPoint2Plane
                          ScanMatching6DOFPoint2Plane>::correspondences_;
   using ScanMatchingBase<PointSource, PointTarget, Scalar, ScanMatching6DOFPoint2Plane>::transform_;
 };
-}  // namespace duna
+}  // namespace duna_optimizer

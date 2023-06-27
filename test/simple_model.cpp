@@ -31,7 +31,8 @@ int main(int argc, char **argv) {
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {
-    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(Model::Ptr(new Model(x_data, y_data)), 7);
+    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(
+        Model::Ptr(new Model(x_data, y_data)), 7);
 
     optimizer.addCost(cost);
   }
@@ -90,8 +91,8 @@ TEST_F(SimpleModel, InitialCondition1DynamicCost) {
   duna_optimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
 
   duna_optimizer::CostFunctionNumericalDynamic<Scalar> *dyn_cost =
-      new duna_optimizer::CostFunctionNumericalDynamic<Scalar>(Model::Ptr(new Model(x_data, y_data)), 2, 1,
-                                                     7);
+      new duna_optimizer::CostFunctionNumericalDynamic<Scalar>(
+          Model::Ptr(new Model(x_data, y_data)), 2, 1, 7);
   dyn_optimizer.addCost(dyn_cost);
   dyn_optimizer.minimize(x0);
 

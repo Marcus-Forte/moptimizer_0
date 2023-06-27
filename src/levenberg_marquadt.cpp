@@ -117,4 +117,4 @@ template class LevenbergMarquadt<double, 2>;
 template class LevenbergMarquadt<double, 6>;
 template class LevenbergMarquadt<double, 3>;  // 3DOF
 
-}  // namespace duna
+}  // namespace duna_optimizer
