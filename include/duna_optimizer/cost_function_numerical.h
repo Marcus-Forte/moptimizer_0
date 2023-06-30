@@ -7,8 +7,12 @@
 #include <vector>
 
 namespace duna_optimizer {
-/* Numerical Differentiation cost function module. Computes numerical
- * derivatives when computing hessian. */
+
+/// @brief Numerical Differentiation cost function. Computes numerical
+/// derivatives when computing hessian.
+/// @tparam Scalar Scalar type (double, float)
+/// @tparam model_parameter_dim Dimension of parameters
+/// @tparam model_output_dim Dimension of output
 template <class Scalar = double, int model_parameter_dim = Eigen::Dynamic,
           int model_output_dim = Eigen::Dynamic>
 class CostFunctionNumerical : public CostFunctionBase<Scalar> {
@@ -91,7 +95,7 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
     }
     // hessian_map_.template triangularView<Eigen::Upper>() =
     // hessian_map_.transpose();
-    std::cout << "hessian_map_:\n " << hessian_map_ << std::endl;
+    // std::cout << "hessian_map_:\n " << hessian_map_ << std::endl;
     return sum;
   }
 

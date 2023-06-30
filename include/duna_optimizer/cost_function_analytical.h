@@ -5,8 +5,12 @@
 #include <duna_optimizer/model.h>
 
 namespace duna_optimizer {
-/* Analytical cost function module. Computes hessian using provided `f_df` model
- * function with explicit jacobian calculation. */
+
+/// @brief Analytical cost function. Computes hessian using provided `f_df` model function with
+/// explicit jacobian calculation.
+/// @tparam Scalar Scalar type (double, float)
+/// @tparam model_parameter_dim Dimension of parameters
+/// @tparam model_output_dim Dimension of output
 template <class Scalar = double, int model_parameter_dim = Eigen::Dynamic,
           int model_output_dim = Eigen::Dynamic>
 class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
@@ -68,7 +72,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
         sum += residuals_.transpose() * residuals_;
       }
     }
-    std::cout << "hessian_map_:\n " << hessian_map_ << std::endl;
+    // std::cout << "hessian_map_:\n " << hessian_map_ << std::endl;
     hessian_map_.template triangularView<Eigen::Upper>() = hessian_map_.transpose();
     return sum;
   }

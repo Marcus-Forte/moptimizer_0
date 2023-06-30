@@ -134,4 +134,7 @@ TEST(MultipleObjectives, SplitCost)
 
     EXPECT_NEAR(x0_multi[0], 0.291861, 5e-5);
     EXPECT_NEAR(x0_multi[1], 0.131439, 5e-5);
+
+    single_optimizer.clearCosts();
+    multi_optimizer.clearCosts();  
 }

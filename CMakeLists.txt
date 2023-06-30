@@ -11,15 +11,9 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
-# set(CMAKE_INSTALL_PREFIX install) # always install locally
-
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.12 QUIET COMPONENTS io common search)
-find_package(GTest REQUIRED)
-find_package(OpenMP REQUIRED)
-link_libraries(Eigen3::Eigen OpenMP::OpenMP_CXX ${PCL_LIBRARIES})
-include_directories(include gtest ${PCL_INCLUDE_DIRS})
-add_definitions(${PCL_DEFINITIONS})
+find_package(TBB REQUIRED)
+link_libraries(Eigen3::Eigen)
 
 if(UNIX)
 # GTest required pthread in UNIX Os
@@ -50,9 +44,7 @@ src/logger.cpp
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
 EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/duna_optimizer/duna_exports.h)
-# include_directories(${CMAKE_BINARY_DIR}/exports)
 
-# target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
 if(BUILD_EXPERIMENTAL)
         add_subdirectory(experimental EXCLUDE_FROM_ALL)
 endif()
@@ -60,6 +52,7 @@ endif()
 
 #gtest
 if(BUILD_TESTS)
+  find_package(GTest REQUIRED)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   enable_testing()
   include(GoogleTest)
@@ -74,19 +67,8 @@ if(BUILD_TESTS)
   test/loss_function.cpp
   test/logging.cpp
   test/covariance.cpp
+  test/differentiation.cpp
   )
-
-  # Add registration related tests
-  if(${PCL_FOUND})
-  message(STATUS "PCL Found. Building registration related tests..")
-  set(test_src
-  ${test_src}
-
-  # Registration
-#   test/differentiation.cpp
-  
-  )
-  endif()
 
   message(STATUS ${test_src})
 
