@@ -27,7 +27,7 @@ class IBaseModel {
 
   /// @brief Model function
   /// @param x parameter vector.
-  /// @param f_x
+  /// @param f_x computation result ( f(x) )
   /// @param index
   /// @return true if value was computed successfully.
   virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) = 0;
@@ -35,7 +35,7 @@ class IBaseModel {
   /// @brief Computes both jacobian and function at same time. Usually they depend on
   /// commons functions.
   /// @param x parameter vector.
-  /// @param f_x
+  /// @param f_x computation result ( f(x) )
   /// @param jacobian
   /// @param index
   /// @return true if value was computed successfully.

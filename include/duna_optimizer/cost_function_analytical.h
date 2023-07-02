@@ -73,7 +73,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
       }
     }
     // std::cout << "hessian_map_:\n " << hessian_map_ << std::endl;
-    hessian_map_.template triangularView<Eigen::Upper>() = hessian_map_.transpose();
+    // hessian_map_.template triangularView<Eigen::Upper>() = hessian_map_.transpose();
     return sum;
   }
 

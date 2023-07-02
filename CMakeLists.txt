@@ -41,6 +41,8 @@ src/exception.cpp
 src/logger.cpp
 )
 
+target_link_libraries(${PROJECT_NAME} TBB::tbb)
+
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
 EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/duna_optimizer/duna_exports.h)
