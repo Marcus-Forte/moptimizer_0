@@ -60,16 +60,16 @@ if(BUILD_TESTS)
   include(GoogleTest)
   # Make test cases
   set(test_src 
-  test/simple_model.cpp    
-  test/camera_calibration.cpp  
-  test/manifold.cpp
-  test/powell.cpp
-  test/curve_fitting.cpp
-  test/multiple_objectives.cpp
-  test/loss_function.cpp
-  test/logging.cpp
-  test/covariance.cpp
-  test/differentiation.cpp
+  tst/simple_model.cpp    
+  tst/camera_calibration.cpp  
+  tst/manifold.cpp
+  tst/powell.cpp
+  tst/curve_fitting.cpp
+  tst/multiple_objectives.cpp
+  tst/loss_function.cpp
+  tst/logging.cpp
+  tst/covariance.cpp
+  tst/differentiation.cpp
   )
 
   message(STATUS ${test_src})
@@ -82,42 +82,42 @@ if(BUILD_TESTS)
           gtest_discover_tests(${test_src_name})
   endforeach()
 
-  add_executable(draft test/draft.cpp)
+  add_executable(draft tst/draft.cpp)
   target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
 endif()
 
 # Link library to headers, but does not install. 
 target_include_directories(${PROJECT_NAME} PUBLIC
 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-$<INSTALL_INTERFACE:include>
+$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-# Install Artifacts
+# --- Installation process --- #
 include(GNUInstallDirs)
 install(
   DIRECTORY include/
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-### Install Config and ConfigVersion files
+# Install 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}      
 )
 
+# Targets file
 install(
         EXPORT ${PROJECT_NAME}-targets
         NAMESPACE duna::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
-
+# Version
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
         ${PROJECT_NAME}Version.cmake
         VERSION 1.0.0
-        COMPATIBILITY SameMajorVersion
-        )
-
+        COMPATIBILITY SameMajorVersion)
+# Config
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in ${PROJECT_NAME}-config.cmake
                @ONLY)
 
@@ -130,8 +130,8 @@ install(FILES
 # Packaging
 if(UNIX)
         set(CPACK_GENERATOR DEB)
-        set(CPACK_DEBIAN_PACKAGE_NAME "libdunaoptimizator-dev")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libpcl-dev,libeigen3-dev")
+        set(CPACK_DEBIAN_PACKAGE_NAME "libdunaoptimizer-dev")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libeigen3-dev, libtbb-dev")
         set(CPACK_PACKAGE_CONTACT "marcus.forte@dunasystem.com")
         include(CPack)
 elseif(WIN32)
