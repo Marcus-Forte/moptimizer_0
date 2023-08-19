@@ -78,14 +78,6 @@ const double data[] = {
   4.950000e+00, 4.669206e+00,
 };
 
-
-int main(int argc, char** argv)
-{
-    testing::InitGoogleTest(&argc,argv);
-
-    return RUN_ALL_TESTS();
-}
-
 struct Model : public duna_optimizer::BaseModel<double,Model>
 {
     Model(const double* dataset) {

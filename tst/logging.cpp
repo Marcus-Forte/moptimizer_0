@@ -4,11 +4,6 @@
 
 #include "duna_optimizer/logger.h"
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-}
 
 // Need GMOCK?
 TEST(Drafts, Logging) {

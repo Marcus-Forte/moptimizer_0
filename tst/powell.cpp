@@ -18,11 +18,6 @@
 // The starting values are x1 = 3, x2 = -1, x3 = 0, x4 = 1.
 // The minimum is 0 at (x1, x2, x3, x4) = 0.
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-}
 
 struct Model : public duna_optimizer::BaseModelJacobian<double, Model> {
   bool f(const double *x, double *f_x, unsigned int index) override {

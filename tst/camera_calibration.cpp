@@ -56,14 +56,6 @@ struct Model : public duna_optimizer::BaseModel<double, Model> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
-
-  return RUN_ALL_TESTS();
-}
-
 class CameraCalibration : public testing::Test {
  public:
   CameraCalibration() {

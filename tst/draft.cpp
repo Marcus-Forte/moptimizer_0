@@ -5,12 +5,6 @@
 #include <Eigen/Dense>
 #include <memory>
 
-int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
-}
-
 // bool fun(float* x, float* f_x) {
 //   f_x[0] = x[0] * x[0];
 //   return true;

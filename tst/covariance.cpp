@@ -35,11 +35,6 @@ class Covariance6x6 : public duna_optimizer::covariance::ICovariance<double> {
   MatrixType constantCovariance;
 };
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
 template <typename Scalar>
 class Covariance : public ::testing::Test {};
 using ScalarTypes = ::testing::Types<float, double>;

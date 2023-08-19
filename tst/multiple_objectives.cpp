@@ -79,14 +79,6 @@ const double data[] = {
 };
 
 
-int main(int argc, char** argv)
-{
-    testing::InitGoogleTest(&argc,argv);
-
-
-    return RUN_ALL_TESTS();
-}
-
 struct Model : public duna_optimizer::BaseModel<double, Model>
 {
 
