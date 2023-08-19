@@ -21,12 +21,6 @@ struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
   const Scalar *const data_y;
 };
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
-  return RUN_ALL_TESTS();
-}
-
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {
@@ -48,7 +42,7 @@ class SimpleModel : public testing::Test {
   Scalar y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 };
 
-TEST_F(SimpleModel, InitialCondition0) {
+TEST_F(SimpleModel, InitialCondition00) {
   Scalar x0[] = {0.9, 0.2};
 
   optimizer.minimize(x0);
@@ -57,7 +51,7 @@ TEST_F(SimpleModel, InitialCondition0) {
   EXPECT_NEAR(x0[1], 0.556, 0.01);
 }
 
-TEST_F(SimpleModel, InitialCondition1) {
+TEST_F(SimpleModel, InitialCondition10) {
   Scalar x0[] = {1.9, 1.5};
   optimizer.minimize(x0);
 

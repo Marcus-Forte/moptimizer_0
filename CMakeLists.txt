@@ -59,7 +59,9 @@ if(BUILD_TESTS)
   enable_testing()
   include(GoogleTest)
   # Make test cases
-  set(test_src 
+  add_executable(
+  optimizer_tests
+  tst/test_main.cpp
   tst/simple_model.cpp    
   tst/camera_calibration.cpp  
   tst/manifold.cpp
@@ -72,18 +74,8 @@ if(BUILD_TESTS)
   tst/differentiation.cpp
   )
 
-  message(STATUS ${test_src})
-
-  foreach(test_case ${test_src})
-          get_filename_component(test_src_name ${test_case} NAME_WE)
-          message(STATUS ${filename})    
-          add_executable(${test_src_name} ${test_case})
-          target_link_libraries(${test_src_name} ${PCL_LIBRARIES} ${PROJECT_NAME} ${GTEST_LIBRARIES})
-          gtest_discover_tests(${test_src_name})
-  endforeach()
-
-  add_executable(draft tst/draft.cpp)
-  target_link_libraries(draft ${GTEST_LIBRARIES} ${PROJECT_NAME} )
+  target_link_libraries(optimizer_tests ${GTEST_LIBRARIES} ${PROJECT_NAME} )
+  gtest_discover_tests(optimizer_tests)
 endif()
 
 # Link library to headers, but does not install. 

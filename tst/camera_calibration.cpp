@@ -9,9 +9,9 @@
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 5e-5
 
-struct Model : public duna_optimizer::BaseModel<double, Model> {
-  Model(const std::vector<Eigen::Vector4d> &point_list,
-        const std::vector<Eigen::Vector2i> &pixel_list)
+struct CameraModel : public duna_optimizer::BaseModel<double, CameraModel> {
+  CameraModel(const std::vector<Eigen::Vector4d> &point_list,
+              const std::vector<Eigen::Vector2i> &pixel_list)
       : point_vector(point_list), pixel_vector(pixel_list) {
     if (pixel_list.empty()) throw std::runtime_error("Empty pixel list");
 
@@ -56,15 +56,7 @@ struct Model : public duna_optimizer::BaseModel<double, Model> {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
-
-  return RUN_ALL_TESTS();
-}
-
-class CameraCalibration : public testing::Test {
+class CameraCalibration : public ::testing::Test {
  public:
   CameraCalibration() {
     // TODO I spent quite some time debugging why vectors would have their
@@ -84,7 +76,7 @@ class CameraCalibration : public testing::Test {
     pixel_list.push_back(Eigen::Vector2i(481, 388));
 
     cost = new duna_optimizer::CostFunctionNumerical<double, 6, 2>(
-        Model::Ptr(new Model(point_list, pixel_list)), 5);
+        CameraModel::Ptr(new CameraModel(point_list, pixel_list)), 5);
     optimizer.addCost(cost);
   }
 

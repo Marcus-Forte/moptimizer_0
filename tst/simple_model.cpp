@@ -22,12 +22,6 @@ struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
   const Scalar *const data_y;
 };
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
-  return RUN_ALL_TESTS();
-}
-
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {
