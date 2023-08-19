@@ -2,7 +2,6 @@
 #include <duna_optimizer/so3.h>
 #include <gtest/gtest.h>
 
-
 TEST(Manifold, EuclideanSpace) {
   EuclideanManifold<3> ManifoldA;
   Manifold<3>::TangentRepresentation delta;

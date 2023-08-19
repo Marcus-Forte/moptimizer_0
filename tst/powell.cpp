@@ -18,8 +18,7 @@
 // The starting values are x1 = 3, x2 = -1, x3 = 0, x4 = 1.
 // The minimum is 0 at (x1, x2, x3, x4) = 0.
 
-
-struct Model : public duna_optimizer::BaseModelJacobian<double, Model> {
+struct PowellModel : public duna_optimizer::BaseModelJacobian<double, PowellModel> {
   bool f(const double *x, double *f_x, unsigned int index) override {
     f_x[0] = x[0] + 10 * x[1];
     f_x[1] = sqrt(5) * (x[2] - x[3]);
@@ -71,8 +70,8 @@ TEST(PowellFunction, InitialCondition0) {
   duna_optimizer::LevenbergMarquadt<double, 4> optimizer;
   optimizer.setMaximumIterations(25);
 
-  optimizer.addCost(
-      new duna_optimizer::CostFunctionNumerical<double, 4, 4>(Model::Ptr(new Model), 1));
+  optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double, 4, 4>(
+      PowellModel::Ptr(new PowellModel), 1));
 
   optimizer.minimize(x0);
 

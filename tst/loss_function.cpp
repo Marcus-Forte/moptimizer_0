@@ -21,7 +21,6 @@ struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
   const Scalar *const data_y;
 };
 
-
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() {

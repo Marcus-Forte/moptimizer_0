@@ -78,9 +78,9 @@ const double data[] = {
   4.950000e+00, 4.669206e+00,
 };
 
-struct Model : public duna_optimizer::BaseModel<double,Model>
+struct CurveFittingModel : public duna_optimizer::BaseModel<double,CurveFittingModel>
 {
-    Model(const double* dataset) {
+    CurveFittingModel(const double* dataset) {
         m_dataset = dataset;
     }
     inline bool f(const double * x, double* f_x, unsigned int index) override
@@ -104,7 +104,7 @@ TEST(CurveFitting, InitialCondition0)
     utilities::Stopwatch timer;
     timer.tick();
     duna_optimizer::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
+    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
     optimizer.addCost(cost);
 
     double x0[]= {0.0 , 0.0};
@@ -125,7 +125,7 @@ TEST(CurveFitting, InitialCondition2)
     utilities::Stopwatch timer;
     timer.tick();
     duna_optimizer::LevenbergMarquadt<double,2> optimizer;
-    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(Model::Ptr(new Model(data)),kNumObservations);
+    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
     optimizer.setMaximumIterations(50);
     optimizer.addCost(cost);
 

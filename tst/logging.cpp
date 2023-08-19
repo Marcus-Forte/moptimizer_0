@@ -4,7 +4,6 @@
 
 #include "duna_optimizer/logger.h"
 
-
 // Need GMOCK?
 TEST(Drafts, Logging) {
   duna_optimizer::logger logger;

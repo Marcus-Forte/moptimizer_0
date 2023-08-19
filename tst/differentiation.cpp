@@ -15,7 +15,6 @@ duna_optimizer::VERBOSITY_LEVEL duna_optimizer::logger::s_level_;
 It is very difficult that both yield the same results if something is wrong with
 either Numerical or Analytical Diff */
 
-
 template <typename Scalar = double>
 struct SimpleModel : duna_optimizer::BaseModelJacobian<Scalar, SimpleModel<Scalar>> {
   SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y){};
