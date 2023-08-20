@@ -30,7 +30,7 @@ class IBaseModel {
   /// @param f_x computation result ( f(x) )
   /// @param index
   /// @return true if value was computed successfully.
-  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) = 0;
+  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) const = 0;
 
   /// @brief Computes both jacobian and function at same time. Usually they depend on
   /// commons functions.
@@ -39,7 +39,7 @@ class IBaseModel {
   /// @param jacobian
   /// @param index
   /// @return true if value was computed successfully.
-  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) = 0;
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) const = 0;
 
   /// @brief Clone the model and returns a copy as a IBaseModel pointer.
   /// @return Cloned model.
@@ -52,6 +52,8 @@ class IBaseModel {
 template <typename Scalar, class ModelT>
 class BaseModel : public IBaseModel<Scalar> {
  public:
+  using Ptr = std::shared_ptr<ModelT>;
+  using ConstPtr = std::shared_ptr<const ModelT>;
   BaseModel() = default;
   virtual ~BaseModel() = default;
 
@@ -59,9 +61,10 @@ class BaseModel : public IBaseModel<Scalar> {
 
   virtual void update(const Scalar *x) override {}
 
-  virtual bool f(const Scalar *x, Scalar *residual, unsigned int index) override = 0;
+  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) const override = 0;
 
-  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) final {
+  virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
+                    unsigned int index) const final {
     throw duna_optimizer::Exception(
         "Non implemented non-jacobian model function `f_df` being used.");
   }
@@ -78,6 +81,8 @@ class BaseModel : public IBaseModel<Scalar> {
 template <typename Scalar, class ModelT>
 class BaseModelJacobian : public IBaseModel<Scalar> {
  public:
+  using Ptr = std::shared_ptr<ModelT>;
+  using ConstPtr = std::shared_ptr<const ModelT>;
   BaseModelJacobian() = default;
   virtual ~BaseModelJacobian() = default;
 
@@ -85,12 +90,12 @@ class BaseModelJacobian : public IBaseModel<Scalar> {
 
   virtual void update(const Scalar *x) override {}
 
-  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) override {
+  virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) const override {
     throw duna_optimizer::Exception("Non implemented jacobian model function `f` being used.");
   }
 
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
-                    unsigned int index) override = 0;
+                    unsigned int index) const override = 0;
 
   std::shared_ptr<IBaseModel<Scalar>> clone() const {
     const auto &copy_cast = static_cast<const ModelT *>(this);

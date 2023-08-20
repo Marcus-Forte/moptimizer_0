@@ -3,9 +3,10 @@
 #include <duna_optimizer/cost_function_numerical.h>
 
 namespace duna_optimizer {
-/* Numerical Differentiation cost function module. Computes numerical
- * derivatives when computing hessian. Dynamic size parameters and function
- * outputs. */
+/// @brief Numerical Differentiation cost function. Computes numerical
+/// derivatives when computing hessian. Dimensions of function output and parameter are set in
+/// runtime.
+/// @tparam Scalar Scalar type (double, float)
 template <class Scalar = double>
 class CostFunctionNumericalDynamic : public CostFunctionNumerical<Scalar> {
  public:

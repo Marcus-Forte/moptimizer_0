@@ -19,7 +19,7 @@ class Accelerometer : public BaseModelJacobian<double, Accelerometer> {
     so3::Exp<double>(x_map, transform_);
   }
 
-  virtual bool f(const double *x, double *f_x, unsigned int index) override {
+  virtual bool f(const double *x, double *f_x, unsigned int index) const override {
     // Rotate gravity
     Eigen::Vector3d rotated_gravity = transform_ * gravity_;
 
@@ -41,7 +41,7 @@ class Accelerometer : public BaseModelJacobian<double, Accelerometer> {
     return true;
   }
 
-  bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override {
+  bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) const override {
     // fill residue
     f(x, f_x, index);
 
@@ -50,8 +50,7 @@ class Accelerometer : public BaseModelJacobian<double, Accelerometer> {
     Eigen::Matrix3d skew;
     Eigen::Matrix3d l_jac;
     skew << SKEW_SYMMETRIC_FROM(gravity_);
-
-    so3::Exp<double>(x_map, transform_);
+    ;
     so3::leftJacobian<double>(x_map, l_jac);
 
     Eigen::Vector3d rotated_gravity = transform_ * gravity_;

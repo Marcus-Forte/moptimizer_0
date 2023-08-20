@@ -86,7 +86,7 @@ struct MOModel : public duna_optimizer::BaseModel<double, MOModel>
         m_dataset = dataset;
     }
 
-    inline bool f(const double * x, double* f_x, unsigned int index) override
+    inline bool f(const double * x, double* f_x, unsigned int index) const override
     {
         const double &x_ = m_dataset[2*index];
         const double &y_ = m_dataset[2*index + 1];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <duna_optimizer/cost_function.h>
+#include <duna_optimizer/cost_function_common.h>
 #include <duna_optimizer/logger.h>
 #include <duna_optimizer/model.h>
 
@@ -38,16 +39,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
   CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
 
   Scalar computeCost(const Scalar *x) override {
-    Scalar sum = 0;
-
-    model_->setup(x);
-
-    for (int i = 0; i < m_num_residuals; ++i) {
-      if (model_->f(x, residuals_.data(), i)) {
-        sum += residuals_.transpose() * residuals_;
-      }
-    }
-    return sum;
+    return performParallelComputeCost(x, residuals_, model_, num_residuals_);
   }
 
   Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override {
@@ -59,7 +51,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
 
     // TODO check if at least a few residuals were computed.
     // TODO paralelize.
-    for (int i = 0; i < m_num_residuals; ++i) {
+    for (int i = 0; i < num_residuals_; ++i) {
       if (model_->f_df(x, residuals_.data(), jacobian_.data(), i)) {
         Scalar w = loss_function_->weight(residuals_.squaredNorm());
 
@@ -78,7 +70,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
   }
 
  protected:
-  using CostFunctionBase<Scalar>::m_num_residuals;
+  using CostFunctionBase<Scalar>::num_residuals_;
   using CostFunctionBase<Scalar>::model_;
   using CostFunctionBase<Scalar>::loss_function_;
   using CostFunctionBase<Scalar>::covariance_;

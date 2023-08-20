@@ -18,9 +18,9 @@ void logger::log(VERBOSITY_LEVEL level, const char *format, ...) const {
 
   va_start(ap, format);
 
-  fprintf(stdout, "[%s.%s]: ", logger_name_.c_str(), levelToString(level).c_str());
-  vfprintf(stdout, format, ap);
-  fprintf(stdout, "\n");
+  fprintf(stderr, "[%s.%s]: ", logger_name_.c_str(), levelToString(level).c_str());
+  vfprintf(stderr, format, ap);
+  fprintf(stderr, "\n");
 
   va_end(ap);
 }

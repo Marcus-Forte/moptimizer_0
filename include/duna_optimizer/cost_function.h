@@ -24,7 +24,7 @@ class CostFunctionBase {
 
   CostFunctionBase(ModelPtr model, int num_residuals)
       : model_(model),
-        m_num_residuals(num_residuals)
+        num_residuals_(num_residuals)
 
   {
     loss_function_.reset(new loss::NoLoss<Scalar>());
@@ -35,13 +35,16 @@ class CostFunctionBase {
   CostFunctionBase &operator=(const CostFunctionBase &) = delete;
   virtual ~CostFunctionBase() = default;
 
-  inline void setNumResiduals(int num_residuals) { m_num_residuals = num_residuals; }
+  inline void setNumResiduals(int num_residuals) { num_residuals_ = num_residuals; }
   inline void setLossFunction(LossFunctionPtr loss_function) { loss_function_ = loss_function; }
 
   // Setup internal state of the model. Runs at the beggining of the
   // optimization loop.
   virtual void update(const Scalar *x) { model_->update(x); }
 
+  /// @brief Computes  || ∑_i f_i(x) ||²
+  /// @param x
+  /// @return
   virtual Scalar computeCost(const Scalar *x) = 0;
   virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
 
@@ -49,7 +52,7 @@ class CostFunctionBase {
   virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
 
  protected:
-  int m_num_residuals;
+  int num_residuals_;
 
   // Interfaces
   ModelPtr model_;

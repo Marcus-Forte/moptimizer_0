@@ -58,23 +58,19 @@ if(BUILD_TESTS)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   enable_testing()
   include(GoogleTest)
+
+  file (GLOB tests_srcs ${CMAKE_SOURCE_DIR}/tst/*.cpp)
+  list (FILTER tests_srcs EXCLUDE REGEX ".draft.cpp")
   # Make test cases
   add_executable(
   optimizer_tests
-  tst/test_main.cpp
-  tst/simple_model.cpp    
-  tst/camera_calibration.cpp  
-  tst/manifold.cpp
-  tst/powell.cpp
-  tst/curve_fitting.cpp
-  tst/multiple_objectives.cpp
-  tst/loss_function.cpp
-  tst/logging.cpp
-  tst/covariance.cpp
-  tst/differentiation.cpp
+  ${tests_srcs}
   )
 
-  target_link_libraries(optimizer_tests ${GTEST_LIBRARIES} ${PROJECT_NAME} )
+  add_executable(draft
+  ${CMAKE_SOURCE_DIR}/tst/draft.cpp)
+  target_link_libraries(draft ${PROJECT_NAME})
+  target_link_libraries(optimizer_tests ${PROJECT_NAME} GTest::gtest GTest::gmock)
   gtest_discover_tests(optimizer_tests)
 endif()
 

@@ -32,7 +32,7 @@ struct CameraModel : public duna_optimizer::BaseModel<double, CameraModel> {
 
   inline void setup(const double *x) override { so3::convert6DOFParameterToMatrix(x, transform); }
 
-  inline bool f(const double *x, double *residual, unsigned int index) override {
+  inline bool f(const double *x, double *residual, unsigned int index) const override {
     Eigen::Vector3d out_pixel;
     out_pixel = camera_model * transform * camera_laser_frame_conversion * point_vector[index];
     residual[0] = pixel_vector[index][0] - (out_pixel[0] / out_pixel[2]);

@@ -20,13 +20,13 @@ struct SimpleModel : duna_optimizer::BaseModelJacobian<Scalar, SimpleModel<Scala
   SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y){};
 
   // Defining operator for comparison.
-  bool f(const Scalar *x, Scalar *f_x, unsigned int index) override {
+  bool f(const Scalar *x, Scalar *f_x, unsigned int index) const override {
     f_x[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
     return true;
   }
 
   // Jacobian
-  bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) override {
+  bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian, unsigned int index) const override {
     Scalar denominator = (x[1] + data_x[index]);
 
     f_x[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
@@ -63,6 +63,11 @@ TYPED_TEST(Differentiation, SimpleModel) {
   Eigen::Matrix<TypeParam, 2, 1> Residuals;
   Eigen::Matrix<TypeParam, 2, 1> x0(0.9, 0.2);
 
+  auto sum_ana = cost_ana.computeCost(x0.data());
+  auto sum_num = cost_num.computeCost(x0.data());
+
+  EXPECT_NEAR(sum_ana, sum_num, 1e-4);
+
   cost_ana.linearize(x0.data(), Hessian.data(), Residuals.data());
   cost_num.linearize(x0.data(), HessianNum.data(), Residuals.data());
 
@@ -89,7 +94,7 @@ struct Powell : duna_optimizer::BaseModelJacobian<double, Powell> {
                   .
                   .
   */
-  bool f(const double *x, double *f_x, unsigned int index) override {
+  bool f(const double *x, double *f_x, unsigned int index) const override {
     f_x[0] = x[0] + 10 * x[1];
     f_x[1] = sqrt(5) * (x[2] - x[3]);
     f_x[2] = (x[1] - 2 * x[2]) * (x[1] - 2 * x[2]);
@@ -98,7 +103,7 @@ struct Powell : duna_optimizer::BaseModelJacobian<double, Powell> {
   }
 
   /* ROW MAJOR*/
-  bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) override {
+  bool f_df(const double *x, double *f_x, double *jacobian, unsigned int index) const override {
     this->f(x, f_x, index);
 
     // Df / dx0
@@ -141,6 +146,11 @@ TEST(Differentiation, PowellModel) {
   Eigen::Matrix<double, 4, 4> HessianNum;
   Eigen::Matrix<double, 4, 1> x0(3, -1, 0, 4);
   Eigen::Matrix<double, 4, 1> residuals;
+
+  auto sum_ana = cost_ana.computeCost(x0.data());
+  auto sum_num = cost_num.computeCost(x0.data());
+
+  EXPECT_NEAR(sum_ana, sum_num, 1e-4);
 
   cost_ana.linearize(x0.data(), Hessian.data(), residuals.data());
   cost_num.linearize(x0.data(), HessianNum.data(), residuals.data());
