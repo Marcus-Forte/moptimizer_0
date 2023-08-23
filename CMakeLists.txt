@@ -67,6 +67,11 @@ if(BUILD_TESTS)
   ${tests_srcs}
   )
 
+  set(test_data_path ${CMAKE_SOURCE_DIR}/tst/data)
+  # cmake_path(GET some_path ROOT_PATH test_data_path)
+  message("TEST PATH: ${test_data_path}")
+  target_compile_definitions(optimizer_tests PRIVATE -DTEST_DATA_PATH="${test_data_path}" )
+
   add_executable(draft
   ${CMAKE_SOURCE_DIR}/tst/draft.cpp)
   target_link_libraries(draft ${PROJECT_NAME})

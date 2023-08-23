@@ -84,6 +84,7 @@ struct MOModel : public duna_optimizer::BaseModel<double, MOModel>
 
     MOModel(const double* dataset) {
         m_dataset = dataset;
+
     }
 
     inline bool f(const double * x, double* f_x, unsigned int index) const override
@@ -98,6 +99,8 @@ struct MOModel : public duna_optimizer::BaseModel<double, MOModel>
     protected:
     const double* m_dataset;
 };
+
+
 
 
 TEST(MultipleObjectives, SplitCost)
