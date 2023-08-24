@@ -17,15 +17,9 @@ class CostFunctionNumericalDynamic : public CostFunctionNumerical<Scalar> {
   using typename CostFunctionNumerical<Scalar>::ModelPtr;
 
   CostFunctionNumericalDynamic(ModelPtr model, int num_parameters, int num_outputs,
-                               int num_residuals)
-      : CostFunctionNumerical<Scalar>(model, num_residuals),
-        num_parameters_(num_parameters),
-        num_outputs_(num_outputs) {}
+                               int num_residuals);
 
-  CostFunctionNumericalDynamic(ModelPtr model, int num_parameters, int num_outputs)
-      : CostFunctionNumerical<Scalar>(model),
-        num_parameters_(num_parameters),
-        num_outputs_(num_outputs) {}
+  CostFunctionNumericalDynamic(ModelPtr model, int num_parameters, int num_outputs);
 
   virtual ~CostFunctionNumericalDynamic() {}
 

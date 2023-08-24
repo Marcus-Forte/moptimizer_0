@@ -16,15 +16,9 @@ class CostFunctionAnalyticalDynamic : public CostFunctionAnalytical<Scalar> {
   using typename CostFunctionAnalytical<Scalar>::ModelPtr;
 
   CostFunctionAnalyticalDynamic(ModelPtr model, int num_parameters, int num_outputs,
-                                int num_residuals)
-      : CostFunctionAnalytical<Scalar>(model, num_residuals),
-        num_parameters_(num_parameters),
-        num_outputs_(num_outputs) {}
+                                int num_residuals);
 
-  CostFunctionAnalyticalDynamic(ModelPtr model, int num_parameters, int num_outputs)
-      : CostFunctionAnalytical<Scalar>(model),
-        num_parameters_(num_parameters),
-        num_outputs_(num_outputs) {}
+  CostFunctionAnalyticalDynamic(ModelPtr model, int num_parameters, int num_outputs);
 
   virtual ~CostFunctionAnalyticalDynamic() {}
 

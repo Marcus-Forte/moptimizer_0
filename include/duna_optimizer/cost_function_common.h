@@ -38,14 +38,12 @@ Scalar performParallelComputeCost(const Scalar *const x, ResidualsType &residual
                                   typename IBaseModel<Scalar>::Ptr model, int num_elements) {
   model->setup(x);
 
-  // Copy sample residuals;
-  ResidualsType residuals_(residuals);
   return tbb::parallel_reduce(
       tbb::blocked_range<int>(0, num_elements), 0.0f,
       [&](tbb::blocked_range<int> &r, Scalar init) -> Scalar {
         for (auto it = r.begin(); it != r.end(); ++it) {
-          if (model->f(x, residuals_.data(), it)) {
-            init += residuals_.transpose() * residuals_;
+          if (model->f(x, residuals.data(), it)) {
+            init += residuals.transpose() * residuals;
           }
         }
         return init;

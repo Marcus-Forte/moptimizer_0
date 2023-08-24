@@ -8,8 +8,8 @@
 using scalar = double;
 using point_set_type = std::vector<Eigen::Vector3d>;
 
-struct Point2Point : public duna_optimizer::BaseModel<scalar, Point2Point> {
-  Point2Point(const point_set_type *src, const point_set_type *tgt) {
+struct Point2PointDist : public duna_optimizer::BaseModel<scalar, Point2PointDist> {
+  Point2PointDist(const point_set_type *src, const point_set_type *tgt) {
     src_ = src;
     tgt_ = tgt;
   }
@@ -69,7 +69,7 @@ class ParallelCostTest : public testing::Test {
 TEST_F(ParallelCostTest, ComputeCost) {
   // Correspondences are the vector indices.
   auto num_points = this->src_point_cloud_.size();
-  Point2Point::Ptr model(new Point2Point(&this->src_point_cloud_, &this->tgt_point_cloud_));
+  Point2PointDist::Ptr model(new Point2PointDist(&this->src_point_cloud_, &this->tgt_point_cloud_));
   // duna_optimizer::CostFunctionNumerical<scalar, 6, 3> cost(model, num_points);
 
   // auto diff = cost.computeCost(nullptr);

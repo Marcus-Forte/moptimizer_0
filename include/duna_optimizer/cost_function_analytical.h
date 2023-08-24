@@ -39,7 +39,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
   CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
 
   Scalar computeCost(const Scalar *x) override {
-    return performComputeCost(x, residuals_, model_, num_residuals_);
+    return performParallelComputeCost(x, residuals_, model_, num_residuals_);
   }
 
   Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override {
@@ -47,7 +47,7 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
 
     Scalar sum = 0.0;
 
-    // model_->setup(x);
+    model_->setup(x);
 
     // TODO check if at least a few residuals were computed.
     // TODO paralelize.
