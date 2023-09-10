@@ -84,7 +84,6 @@ struct MOModel : public duna_optimizer::BaseModel<double, MOModel>
 
     MOModel(const double* dataset) {
         m_dataset = dataset;
-
     }
 
     inline bool f(const double * x, double* f_x, unsigned int index) const override
@@ -99,9 +98,6 @@ struct MOModel : public duna_optimizer::BaseModel<double, MOModel>
     protected:
     const double* m_dataset;
 };
-
-
-
 
 TEST(MultipleObjectives, SplitCost)
 {
@@ -124,8 +120,8 @@ TEST(MultipleObjectives, SplitCost)
     single_optimizer.minimize(x0_single);
 
     timer.tock("Curve Fitting");
-    EXPECT_NEAR(x0_multi[0], x0_single[0], 1e-7);
-    EXPECT_NEAR(x0_multi[1], x0_single[1], 1e-7);
+    EXPECT_NEAR(x0_multi[0], x0_single[0], 1e-8);
+    EXPECT_NEAR(x0_multi[1], x0_single[1], 1e-8);
 
     EXPECT_NEAR(x0_multi[0], 0.291861, 5e-5);
     EXPECT_NEAR(x0_multi[1], 0.131439, 5e-5);
