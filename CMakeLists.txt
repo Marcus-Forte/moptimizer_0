@@ -32,9 +32,10 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Library
 add_library(${PROJECT_NAME} SHARED
 src/levenberg_marquadt.cpp
-src/levenberg_marquadt_dynamic.cpp #temporarily removed
-src/cost_function_analytical_dynamic.cpp
-src/cost_function_numerical_dynamic.cpp
+src/levenberg_marquadt_dyn.cpp 
+src/cost_function_analytical_dyn.cpp
+src/cost_function_numerical_dyn.cpp
+src/delta.cpp
 src/covariance.cpp
 src/so3.cpp
 src/exception.cpp
@@ -119,17 +120,3 @@ install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Version.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
         )
-
-# Packaging
-if(UNIX)
-        set(CPACK_GENERATOR DEB)
-        set(CPACK_DEBIAN_PACKAGE_NAME "libdunaoptimizer-dev")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libeigen3-dev, libtbb-dev")
-        set(CPACK_PACKAGE_CONTACT "marcus.forte@dunasystem.com")
-        include(CPack)
-elseif(WIN32)
-        set(CPACK_GENERATOR NSIS)
-        include(CPack)
-endif()
-
-

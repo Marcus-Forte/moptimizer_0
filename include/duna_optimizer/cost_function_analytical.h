@@ -27,13 +27,10 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
   CostFunctionAnalytical(ModelPtr model, int num_residuals)
       : CostFunctionBase<Scalar>(model, num_residuals),
         hessian_map_(0, 0, 0),
-        x_map_(0, 0, 0),
-        b_map_(0, 0, 0) {}
+        x_map_(0, 0),
+        b_map_(0, 0) {}
   CostFunctionAnalytical(ModelPtr model)
-      : CostFunctionBase<Scalar>(model, 1),
-        hessian_map_(0, 0, 0),
-        x_map_(0, 0, 0),
-        b_map_(0, 0, 0) {}
+      : CostFunctionBase<Scalar>(model, 1), hessian_map_(0, 0, 0), x_map_(0, 0), b_map_(0, 0) {}
 
   CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
   CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;

@@ -4,10 +4,10 @@
 #include <filesystem>
 #include <fstream>
 
-#include "duna_optimizer/cost_function_analytical_dynamic.h"
-#include "duna_optimizer/cost_function_numerical_dynamic.h"
+#include "duna_optimizer/cost_function_analytical_dyn.h"
+#include "duna_optimizer/cost_function_numerical_dyn.h"
 #include "duna_optimizer/levenberg_marquadt.h"
-#include "duna_optimizer/levenberg_marquadt_dynamic.h"
+#include "duna_optimizer/levenberg_marquadt_dyn.h"
 #include "duna_optimizer/model.h"
 #include "duna_optimizer/so3.h"
 

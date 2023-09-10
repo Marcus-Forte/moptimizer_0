@@ -1,4 +1,4 @@
-#include <duna_optimizer/cost_function_analytical_dynamic.h>
+#include <duna_optimizer/cost_function_analytical_dyn.h>
 
 namespace duna_optimizer {
 
