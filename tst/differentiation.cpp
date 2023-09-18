@@ -8,9 +8,6 @@
 #include <duna_optimizer/so3.h>
 #include <gtest/gtest.h>
 
-// extern duna::logger::s_level_;
-duna_optimizer::VERBOSITY_LEVEL duna_optimizer::logger::s_level_;
-
 /* We compare with numerical diff for resonable results.
 It is very difficult that both yield the same results if something is wrong with
 either Numerical or Analytical Diff */

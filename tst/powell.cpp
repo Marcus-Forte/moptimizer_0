@@ -65,8 +65,6 @@ TEST(PowellFunction, InitialCondition0) {
   timer.tick();
   double x0[] = {3, -1, 0, 4};
 
-  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
-
   duna_optimizer::LevenbergMarquadt<double, 4> optimizer;
   optimizer.setMaximumIterations(25);
 
@@ -88,11 +86,10 @@ TEST(PowellFunction, InitialCondition0Dynamic) {
   timer.tick();
   double x0[] = {3, -1, 0, 4};
 
-  duna_optimizer::logger::setGlobalVerbosityLevel(duna_optimizer::L_DEBUG);
-
   duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(4);
   optimizer.setMaximumIterations(25);
 
+  optimizer.setLogger(std::make_shared<duna::Logger>(std::cout, duna::Logger::L_DEBUG, "LM"));
   optimizer.addCost(new duna_optimizer::CostFunctionNumericalDynamic<double>(
       PowellModel::Ptr(new PowellModel), 4, 4, 1));
 

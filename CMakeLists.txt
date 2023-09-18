@@ -40,7 +40,6 @@ src/covariance.cpp
 src/so3.cpp
 src/exception.cpp
 src/logger.cpp
-src/logger_.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} TBB::tbb)

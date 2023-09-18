@@ -7,7 +7,8 @@ template <class Scalar>
 void LevenbergMarquadtDynamic<Scalar>::init(Scalar* x0) {
   LevenbergMarquadt<Scalar, Eigen::Dynamic>::init(x0);
 
-  logger::log_debug("[LM] Dynamic");
+  logger_->log(duna::Logger::L_DEBUG, "Dynamic");
+
   new (&x0_map_) Eigen::Map<ParameterVector>(x0, num_parameters_);
   xi_.resize(num_parameters_);
   b_.resize(num_parameters_);

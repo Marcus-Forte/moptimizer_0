@@ -34,5 +34,6 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic
   using LevenbergMarquadt<Scalar, Eigen::Dynamic>::xi_;
   using LevenbergMarquadt<Scalar, Eigen::Dynamic>::cost_hessian_;
   using LevenbergMarquadt<Scalar, Eigen::Dynamic>::cost_b_;
+  using LevenbergMarquadt<Scalar, Eigen::Dynamic>::logger_;
 };
 }  // namespace duna_optimizer

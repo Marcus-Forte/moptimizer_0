@@ -1,76 +1,63 @@
 #pragma once
-#include <cstdarg>  // for va_list, va_start, va_end
+
 #include <iostream>
+#include <ostream>
 #include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
-#include "duna_optimizer/duna_exports.h"
-
-#define _PRINT_MESSAGE(LEVEL)   \
-  va_list ap;                   \
-  va_start(ap, format);         \
-  fprintf(stdout, "%s", LEVEL); \
-  vfprintf(stdout, format, ap); \
-  fprintf(stdout, "\n");        \
-  va_end(ap)
-
-namespace duna_optimizer {
-enum VERBOSITY_LEVEL {
-  L_ERROR,  // Error logging level
-  L_WARN,   // Warn logging level
-  L_INFO,   // Info logging level
-  L_DEBUG,  // Debug logging level
-};
-
-/* Basic logging class. Also provides static methods for `global` logging. */
-class DUNA_OPTIMIZER_EXPORT logger {
+namespace duna {
+/// @brief basic Logger class.
+class Logger {
  public:
-  logger() : default_stream_(std::cout), level_(L_ERROR), logger_name_("LOG") {}
+  enum VERBOSITY_LEVEL {
+    L_ERROR,  // Error logging level
+    L_WARN,   // Warn logging level
+    L_INFO,   // Info logging level
+    L_DEBUG,  // Debug logging level
+  };
 
-  logger(const std::string &logger_name)
-      : default_stream_(std::cout), level_(L_ERROR), logger_name_(logger_name) {}
+  /// @brief
+  /// @param sink ostream sink. Can be std::cout, a file, etc.
+  /// @param level log level for that logger.
+  /// @param name (optional) logger name.
+  Logger(std::ostream& sink, VERBOSITY_LEVEL level = L_ERROR, const std::string&& name = "logger");
+  duna::Logger& operator=(const duna::Logger& rhs) = delete;
+  /// @brief perform loggging. Accepts any object that has the ostream overload.
+  template <typename... Args>
+  void log(VERBOSITY_LEVEL level, Args&&... args) const {
+    if (level > level_) return;
 
-  virtual ~logger() = default;
+    std::ostringstream content_stream;
+    content_stream << "[" << level_prefix_.at(level) << "] duna::" << logger_name_ << "::";
+    (content_stream << ... << args) << std::endl;
+    auto content_string = content_stream.str();
 
-  inline void setLoggerName(const std::string &name) { logger_name_ = name; }
+    sink_ << content_string;
 
-  static void log_info(const char *format, ...) {
-    if (L_INFO > s_level_) return;
-
-    _PRINT_MESSAGE("[duna::opt::INFO]");
+    // Log to additional logs.
+    for (const auto& sink : added_sinks_) {
+      *sink << content_string;
+    }
   }
 
-  static void log_warn(const char *format, ...) {
-    if (L_WARN > s_level_) return;
+  /// @brief set log level of the logger.
+  inline void setLogLevel(VERBOSITY_LEVEL level) { level_ = level; }
 
-    _PRINT_MESSAGE("[duna::opt::WARN]");
-  }
-  static void log_error(const char *format, ...) {
-    if (L_ERROR > s_level_) return;
-
-    _PRINT_MESSAGE("[duna::opt::ERROR]");
-  }
-  static void log_debug(const char *format, ...) {
-    if (L_DEBUG > s_level_) return;
-
-    _PRINT_MESSAGE("[duna::opt::DEBUG]");
-  }
-  // static void log(const std::string &message);
-  // static void log(const std::stringstream &stream);
-
-  void log(VERBOSITY_LEVEL level, const char *format, ...) const;
-  void log(VERBOSITY_LEVEL level, const std::string &message) const;
-  void log(VERBOSITY_LEVEL level, const std::stringstream &stream) const;
-
-  inline void setVerbosityLevel(VERBOSITY_LEVEL level) { level_ = level; }
-
-  static inline void setGlobalVerbosityLevel(VERBOSITY_LEVEL level) { s_level_ = level; }
+  /// @brief add extra logging sinks (ostream objects) to the logger.
+  inline void addSink(std::ostream* sink) { added_sinks_.emplace(sink); }
 
  private:
+  std::ostream& sink_;
   VERBOSITY_LEVEL level_;
-  std::ostream &default_stream_;
-  std::string levelToString(VERBOSITY_LEVEL level) const;
   std::string logger_name_;
+  std::unordered_set<std::ostream*> added_sinks_;
 
-  static VERBOSITY_LEVEL s_level_;
+  const std::unordered_map<VERBOSITY_LEVEL, std::string> level_prefix_ = {
+      {L_ERROR, "ERROR"},
+      {L_WARN, "WARN"},
+      {L_INFO, "INFO"},
+      {L_DEBUG, "DEBUG"},
+  };
 };
-}  // namespace duna_optimizer
+}  // namespace duna

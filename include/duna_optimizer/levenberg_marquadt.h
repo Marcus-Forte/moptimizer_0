@@ -2,6 +2,7 @@
 
 #include "duna_exports.h"
 #include "duna_optimizer/delta.h"
+#include "duna_optimizer/logger.h"
 #include "duna_optimizer/optimizer.h"
 
 namespace duna_optimizer {
@@ -11,7 +12,11 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public Optimizer<Scalar> {
   using HessianMatrix = Eigen::Matrix<Scalar, N_PARAMETERS, N_PARAMETERS>;
   using ParameterVector = Eigen::Matrix<Scalar, N_PARAMETERS, 1>;
 
-  LevenbergMarquadt() : x0_map_(0, 0) { lm_max_iterations_ = 8; }
+  LevenbergMarquadt() : x0_map_(0, 0) {
+    lm_max_iterations_ = 8;
+    logger_ =
+        std::make_shared<duna::Logger>(std::cout, duna::Logger::L_ERROR, "Levenberg-Marquadt");
+  }
   virtual ~LevenbergMarquadt() = default;
 
   inline void setLevenbergMarquadtIterations(int max_iterations) {
@@ -22,6 +27,8 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public Optimizer<Scalar> {
   virtual void init(Scalar *x0) override;
   OptimizationStatus step(Scalar *x0) override;
   OptimizationStatus minimize(Scalar *x0) override;
+
+  inline void setLogger(std::shared_ptr<duna::Logger> logger) { logger_ = logger; }
 
  protected:
   bool hasConverged() override { return false; }
@@ -42,5 +49,7 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadt : public Optimizer<Scalar> {
   Scalar lm_init_lambda_factor_;
   Scalar lm_lambda_;
   unsigned int lm_max_iterations_;
+
+  std::shared_ptr<duna::Logger> logger_;
 };
 }  // namespace duna_optimizer

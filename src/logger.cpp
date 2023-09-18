@@ -1,48 +1,7 @@
-#include "duna_optimizer/logger.h"
+#include <duna_optimizer/logger.h>
 
-namespace duna_optimizer {
-// Default setting for global/static log level;
-VERBOSITY_LEVEL logger::s_level_ = L_ERROR;
+namespace duna {
+Logger::Logger(std::ostream& sink, VERBOSITY_LEVEL level, const std::string&& name)
+    : sink_(sink), level_(level), logger_name_(name) {}
 
-void logger::log(VERBOSITY_LEVEL level, const std::stringstream &stream) const {
-  if (level > level_) return;
-
-  default_stream_ << "[" << logger_name_ << "." << levelToString(level) << "]: " << stream.str()
-                  << std::endl;
-}
-
-void logger::log(VERBOSITY_LEVEL level, const char *format, ...) const {
-  if (level > level_) return;
-
-  va_list ap;
-
-  va_start(ap, format);
-
-  fprintf(stderr, "[%s.%s]: ", logger_name_.c_str(), levelToString(level).c_str());
-  vfprintf(stderr, format, ap);
-  fprintf(stderr, "\n");
-
-  va_end(ap);
-}
-
-void logger::log(VERBOSITY_LEVEL level, const std::string &message) const {
-  if (level > level_) return;
-
-  default_stream_ << "[" << logger_name_ << "." << levelToString(level) << "]: " << message
-                  << std::endl;
-}
-
-std::string logger::levelToString(VERBOSITY_LEVEL level) const {
-  switch (level) {
-    case (L_INFO):
-      return "duna::opt::INFO";
-    case (L_WARN):
-      return "duna::opt::WARN";
-    case (L_DEBUG):
-      return "duna::opt::DEBUG";
-    case (L_ERROR):
-      return "duna::opt::ERROR";
-  }
-  return "";
-}
-}  // namespace duna_optimizer
+}  // namespace duna

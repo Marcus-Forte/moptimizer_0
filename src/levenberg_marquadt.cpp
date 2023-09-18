@@ -1,10 +1,13 @@
 #include "duna_optimizer/levenberg_marquadt.h"
 
+#include "duna_optimizer/logger.h"
+
 namespace duna_optimizer {
 
 template <class Scalar, int N_PARAMETERS>
 void LevenbergMarquadt<Scalar, N_PARAMETERS>::init(Scalar *x0) {
-  logger::log_debug("[LM] Init");
+  logger_->log(duna::Logger::L_DEBUG, "Init");
+
   new (&x0_map_) Eigen::Map<ParameterVector>(x0, N_PARAMETERS, 1);
   lm_init_lambda_factor_ = 1e-9;
   lm_lambda_ = -1.0;
@@ -23,8 +26,8 @@ OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
 
   for (executed_iterations_ = 0; executed_iterations_ < maximum_iterations_;
        ++executed_iterations_) {
-    logger::log_debug("[LM] Levenberg-Marquadt Iteration: %d/%d", executed_iterations_,
-                      maximum_iterations_);
+    logger_->log(duna::Logger::L_DEBUG, "Iteration: ", executed_iterations_, '/',
+                 maximum_iterations_);
 
     Scalar y0 = 0;
     hessian_.setZero();
@@ -38,7 +41,7 @@ OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
 
       cost->update(x0);
       Scalar cost_y = cost->linearize(x0, cost_hessian_.data(), cost_b_.data());
-      logger::log_debug("[LM] Cost(%d) = %e ", cost_i, cost_y);
+      logger_->log(duna::Logger::L_DEBUG, "Cost(", cost_i, ") = ", cost_y);
       y0 += cost_y;
       hessian_ += cost_hessian_;
       b_ += cost_b_;
@@ -52,10 +55,11 @@ OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
 
     Scalar nu = 2.0;
 
-    logger::log_debug(
-        "[LM] Internal Iteration --- : it | max | prev_cost | new_cost | "
-        "rho | "
-        "lambda| nu");
+    logger_->log(duna::Logger::L_DEBUG,
+                 "Internal Iteration --- : it | max | prev_cost | new_cost | "
+                 "rho | "
+                 "lambda| nu");
+
     for (int k = 0; k < lm_max_iterations_; ++k) {
       Eigen::LDLT<HessianMatrix> solver(hessian_ + lm_lambda_ * hessian_diagonal_);
 
@@ -68,17 +72,18 @@ OptimizationStatus LevenbergMarquadt<Scalar, N_PARAMETERS>::minimize(Scalar *x0)
       for (const auto cost : costs_) yi += cost->computeCost(xi_.data());
 
       if (std::isnan(yi)) {
-        logger::log_error("[LM] Numeric Error!");
+        logger_->log(duna::Logger::L_ERROR, "Numeric Error!");
         return OptimizationStatus::NUMERIC_ERROR;
       }
 
       Scalar rho = (y0 - yi) / delta.dot(lm_lambda_ * delta - b_);
-      logger::log_debug("[LM] Internal Iteration --- : %d/%d | %e %e %f %f %f", k + 1,
-                        lm_max_iterations_, y0, yi, rho, lm_lambda_, nu);
+      logger_->log(duna::Logger::L_DEBUG, "Internal Iteration --- : ", k + 1, '/',
+                   lm_max_iterations_, ' ', y0, ' ', yi, ' ', rho, ' ', lm_lambda_, ' ', nu);
 
       if (rho < 0) {
         if (isDeltaSmall(delta)) {
-          logger::log_debug("## Small delta reached: %e", delta.array().abs().maxCoeff());
+          logger_->log(duna::Logger::L_DEBUG,
+                       "## Small delta reached: ", delta.array().abs().maxCoeff());
           if (this->isCostSmall(yi))
             return OptimizationStatus::CONVERGED;
           else
