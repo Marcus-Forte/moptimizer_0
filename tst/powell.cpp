@@ -115,6 +115,12 @@ TEST(PowellFunction, InitialCondition0DynamicCovariance) {
   auto cost = new duna_optimizer::CostFunctionNumericalDynamic<double>(
       PowellModel::Ptr(new PowellModel), 4, 4, 1);
 
+  auto covariance = std::make_shared<duna_optimizer::covariance::Matrix<double>>();
+  covariance->resize(4,4);
+  covariance->setIdentity();
+  *covariance *= 0.01; // still works
+  cost->setCovariance(covariance); 
+
   optimizer.addCost(cost);
 
   optimizer.minimize(x0);
