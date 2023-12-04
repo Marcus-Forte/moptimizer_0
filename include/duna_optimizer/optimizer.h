@@ -1,5 +1,4 @@
-#ifndef OPTIMIZER_H
-#define OPTIMIZER_H
+#pragma once
 
 #include <duna_optimizer/cost_function.h>
 #include <duna_optimizer/logger.h>
@@ -9,6 +8,7 @@
 #include <vector>
 
 namespace duna_optimizer {
+
 template <class Scalar = double>
 class Optimizer {
  public:
@@ -16,7 +16,9 @@ class Optimizer {
   using ConstPtr = std::shared_ptr<const Optimizer>;
   using CostFunctionType = CostFunctionBase<Scalar>;
 
-  Optimizer() : maximum_iterations_(15) {}
+  Optimizer() : maximum_iterations_(15) {
+    logger_.reset(new duna::Logger(std::cout, duna::Logger::L_ERROR, "Optimizer"));
+  }
   Optimizer(const Optimizer &) = delete;
   Optimizer &operator=(const Optimizer &) = delete;
   virtual ~Optimizer() = default;
@@ -64,9 +66,6 @@ class Optimizer {
 
     costs_.clear();
   }
-  /// @brief Init optimization parameters.
-  /// @param x0
-  virtual void init(Scalar *x0) = 0;
 
   /// @brief Perform optimization step.
   /// @param x0
@@ -83,7 +82,9 @@ class Optimizer {
   std::vector<CostFunctionType *> costs_;
   unsigned int maximum_iterations_;
   unsigned int executed_iterations_;
+  /// @brief Prepare data.
+  /// @param x0
+  virtual void prepare(Scalar *x0) = 0;
+  std::shared_ptr<duna::Logger> logger_;
 };
 }  // namespace duna_optimizer
-
-#endif

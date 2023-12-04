@@ -16,10 +16,8 @@ find_package(TBB REQUIRED)
 link_libraries(Eigen3::Eigen)
 
 if(UNIX)
-# GTest required pthread in UNIX Os
-        link_libraries(pthread)
-        if(LINUX) # not APPLE
-        add_compile_options(-msse -msse2 -mavx -mfma -msse4)
+        if(NOT APPLE)
+        add_compile_options(-msse -msse2 -mavx2 -mfma -msse4.2 -mfpmath=sse)
         add_compile_options(-march=native)
         endif()
 elseif(MSVC)
@@ -31,12 +29,10 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Library
 add_library(${PROJECT_NAME} SHARED
-src/levenberg_marquadt.cpp
 src/levenberg_marquadt_dyn.cpp 
 src/cost_function_analytical_dyn.cpp
 src/cost_function_numerical_dyn.cpp
 src/delta.cpp
-src/covariance.cpp
 src/so3.cpp
 src/exception.cpp
 src/logger.cpp
@@ -93,6 +89,8 @@ install(
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
+# set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR})
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # Install 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}-targets

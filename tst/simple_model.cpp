@@ -1,32 +1,17 @@
 #include <duna_optimizer/cost_function_numerical.h>
 #include <duna_optimizer/cost_function_numerical_dyn.h>
-#include <duna_optimizer/levenberg_marquadt.h>
 #include <duna_optimizer/levenberg_marquadt_dyn.h>
 #include <duna_optimizer/model.h>
 #include <gtest/gtest.h>
 
+#include "test_models.h"
 using Scalar = float;
-
-// Function to be minimized
-struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
-  Model(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
-  // API simply has to override this method
-
-  bool f(const Scalar *x, Scalar *residual, unsigned int index) const override {
-    residual[0] = data_y[index] - (x[0] * data_x[index]) / (x[1] + data_x[index]);
-    return true;
-  }
-
- private:
-  const Scalar *const data_x;
-  const Scalar *const data_y;
-};
 
 class SimpleModel : public testing::Test {
  public:
-  SimpleModel() {
+  SimpleModel() : optimizer(2) {
     cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(
-        Model::Ptr(new Model(x_data, y_data)), 7);
+        Model<Scalar>::Ptr(new Model<Scalar>(x_data, y_data)), 7);
 
     optimizer.addCost(cost);
   }
@@ -34,7 +19,7 @@ class SimpleModel : public testing::Test {
   ~SimpleModel() { delete cost; }
 
  protected:
-  duna_optimizer::LevenbergMarquadt<Scalar, 2> optimizer;
+  duna_optimizer::LevenbergMarquadtDynamic<Scalar> optimizer;
   duna_optimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
   Scalar x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
   Scalar y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
@@ -84,9 +69,9 @@ TEST_F(SimpleModel, InitialCondition1DynamicCost) {
   Scalar x0[] = {1.9, 1.5};
   duna_optimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
 
-  duna_optimizer::CostFunctionNumericalDynamic<Scalar> *dyn_cost =
-      new duna_optimizer::CostFunctionNumericalDynamic<Scalar>(
-          Model::Ptr(new Model(x_data, y_data)), 2, 1, 7);
+  auto *dyn_cost = new duna_optimizer::CostFunctionNumericalDynamic<Scalar>(
+      Model<Scalar>::Ptr(new Model<Scalar>(x_data, y_data)), 2, 1, 7);
+
   dyn_optimizer.addCost(dyn_cost);
   dyn_optimizer.minimize(x0);
 

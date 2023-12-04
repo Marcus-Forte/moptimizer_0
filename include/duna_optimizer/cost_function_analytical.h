@@ -26,21 +26,26 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
 
   CostFunctionAnalytical(ModelPtr model, int num_residuals)
       : CostFunctionBase<Scalar>(model, num_residuals),
-        hessian_map_(0, 0, 0),
-        x_map_(0, 0),
-        b_map_(0, 0) {}
-  CostFunctionAnalytical(ModelPtr model)
-      : CostFunctionBase<Scalar>(model, 1), hessian_map_(0, 0, 0), x_map_(0, 0), b_map_(0, 0) {}
+        hessian_map_(0, model_parameter_dim, model_parameter_dim),
+        x_map_(0, model_parameter_dim, 1),
+        b_map_(0, model_parameter_dim, 1) {
+    cost_computer_ = &performParallelComputeCost<Scalar, ResidualVector>;
 
+    if (model_output_dim != -1) {
+      covariance_->resize(model_output_dim, model_output_dim);
+      covariance_->setIdentity();
+    }
+  }
   CostFunctionAnalytical(const CostFunctionAnalytical &) = delete;
   CostFunctionAnalytical &operator=(const CostFunctionAnalytical &) = delete;
+  virtual ~CostFunctionAnalytical() = default;
 
   Scalar computeCost(const Scalar *x) override {
     return performParallelComputeCost(x, residuals_, model_, num_residuals_);
   }
 
   Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override {
-    init(x, hessian, b);
+    prepare(x, hessian, b);
 
     Scalar sum = 0.0;
 
@@ -52,12 +57,11 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
       if (model_->f_df(x, residuals_.data(), jacobian_.data(), i)) {
         Scalar w = loss_function_->weight(residuals_.squaredNorm());
 
-        // auto covariance = covariance_->getCovariance();  // TODO
         // causing double free! hessian_map.template
         // selfadjointView<Eigen::Lower>().rankUpdate(jacobian_.transpose());
         // // H = J^T * J
-        hessian_map_.noalias() += jacobian_.transpose() * w * jacobian_;
-        b_map_.noalias() += jacobian_.transpose() * w * residuals_;
+        hessian_map_.noalias() += w * jacobian_.transpose() * (*covariance_) * jacobian_;
+        b_map_.noalias() += w * jacobian_.transpose() * (*covariance_) * residuals_;
         sum += residuals_.transpose() * residuals_;
       }
     }
@@ -78,8 +82,10 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
   JacobianMatrix jacobian_;
   ResidualVector residuals_;
 
+  computeCostFuncT<Scalar, ResidualVector> cost_computer_;
+
   // Initialize internal cost function states.
-  virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) override {
+  virtual void prepare(const Scalar *x, Scalar *hessian, Scalar *b) override {
     new (&x_map_) Eigen::Map<const ParameterVector>(x, model_parameter_dim, 1);
     new (&hessian_map_)
         Eigen::Map<HessianMatrix>(hessian, model_parameter_dim, model_parameter_dim);
@@ -87,7 +93,6 @@ class CostFunctionAnalytical : public CostFunctionBase<Scalar> {
 
     hessian_map_.setZero();
     b_map_.setZero();
-    covariance_.reset(new covariance::IdentityCovariance<Scalar>(model_parameter_dim));
   }
 };
 }  // namespace duna_optimizer

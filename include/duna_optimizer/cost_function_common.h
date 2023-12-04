@@ -10,6 +10,11 @@
 
 namespace duna_optimizer {
 
+template <class Scalar, class ResidualsType>
+using computeCostFuncT =
+    std::function<Scalar(const Scalar *const x, ResidualsType &residuals,
+                         typename IBaseModel<Scalar>::Ptr model, int num_elements)>;
+
 /// @brief perform compuation of cost. Single threaded.
 /// @tparam Scalar
 /// @tparam ResidualsType

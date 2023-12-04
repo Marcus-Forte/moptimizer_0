@@ -19,9 +19,7 @@ class CostFunctionNumericalDynamic : public CostFunctionNumerical<Scalar> {
   CostFunctionNumericalDynamic(ModelPtr model, int num_parameters, int num_outputs,
                                int num_residuals);
 
-  CostFunctionNumericalDynamic(ModelPtr model, int num_parameters, int num_outputs);
-
-  virtual ~CostFunctionNumericalDynamic() {}
+  virtual ~CostFunctionNumericalDynamic() = default;
 
  private:
   using CostFunctionNumerical<Scalar>::x_map_;
@@ -34,6 +32,6 @@ class CostFunctionNumericalDynamic : public CostFunctionNumerical<Scalar> {
   int num_parameters_;
   int num_outputs_;
 
-  void init(const Scalar *x, Scalar *hessian, Scalar *b) override;
+  void prepare(const Scalar *x, Scalar *hessian, Scalar *b) override;
 };
 }  // namespace duna_optimizer

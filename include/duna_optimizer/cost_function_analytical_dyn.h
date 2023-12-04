@@ -18,9 +18,7 @@ class CostFunctionAnalyticalDynamic : public CostFunctionAnalytical<Scalar> {
   CostFunctionAnalyticalDynamic(ModelPtr model, int num_parameters, int num_outputs,
                                 int num_residuals);
 
-  CostFunctionAnalyticalDynamic(ModelPtr model, int num_parameters, int num_outputs);
-
-  virtual ~CostFunctionAnalyticalDynamic() {}
+  virtual ~CostFunctionAnalyticalDynamic() = default;
 
  private:
   using CostFunctionAnalytical<Scalar>::x_map_;
@@ -32,6 +30,6 @@ class CostFunctionAnalyticalDynamic : public CostFunctionAnalytical<Scalar> {
   int num_parameters_;
   int num_outputs_;
 
-  void init(const Scalar *x, Scalar *hessian, Scalar *b) override;
+  void prepare(const Scalar *x, Scalar *hessian, Scalar *b) override;
 };
 }  // namespace duna_optimizer

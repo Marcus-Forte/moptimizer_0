@@ -41,7 +41,7 @@ class ParallelCostTest : public testing::Test {
 
     for (int i = 0; i < n_elements; ++i) {
       Eigen::Vector3d pt = Eigen::Vector3d::Random();
-      pt = (pt + Eigen::Vector3d::Constant(1, 1, 1)) * (hi_range - lo_range) * 0.5f;
+      pt = (pt + Eigen::Vector3d::Constant(3, 1, 1)) * (hi_range - lo_range) * 0.5f;
       src_point_cloud_.emplace_back(pt);
     }
 

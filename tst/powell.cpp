@@ -1,6 +1,6 @@
 #include <duna_optimizer/cost_function_numerical.h>
 #include <duna_optimizer/cost_function_numerical_dyn.h>
-#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/covariance/covariance.h>
 #include <duna_optimizer/levenberg_marquadt_dyn.h>
 #include <gtest/gtest.h>
 
@@ -65,7 +65,7 @@ TEST(PowellFunction, InitialCondition0) {
   timer.tick();
   double x0[] = {3, -1, 0, 4};
 
-  duna_optimizer::LevenbergMarquadt<double, 4> optimizer;
+  duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(4);
   optimizer.setMaximumIterations(25);
 
   optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double, 4, 4>(
@@ -92,6 +92,30 @@ TEST(PowellFunction, InitialCondition0Dynamic) {
   optimizer.setLogger(std::make_shared<duna::Logger>(std::cout, duna::Logger::L_DEBUG, "LM"));
   optimizer.addCost(new duna_optimizer::CostFunctionNumericalDynamic<double>(
       PowellModel::Ptr(new PowellModel), 4, 4, 1));
+
+  optimizer.minimize(x0);
+
+  timer.tock("Power Function minimzation");
+
+  for (int i = 0; i < 4; ++i) {
+    EXPECT_NEAR(x0[i], 0.0, 5e-5);
+  }
+}
+
+TEST(PowellFunction, InitialCondition0DynamicCovariance) {
+  //
+  utilities::Stopwatch timer;
+  timer.tick();
+  double x0[] = {3, -1, 0, 4};
+
+  duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(4);
+  optimizer.setMaximumIterations(25);
+
+  optimizer.setLogger(std::make_shared<duna::Logger>(std::cout, duna::Logger::L_DEBUG, "LM"));
+  auto cost = new duna_optimizer::CostFunctionNumericalDynamic<double>(
+      PowellModel::Ptr(new PowellModel), 4, 4, 1);
+
+  optimizer.addCost(cost);
 
   optimizer.minimize(x0);
 

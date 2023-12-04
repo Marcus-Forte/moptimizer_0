@@ -1,6 +1,6 @@
 #include <duna_optimizer/cost_function_analytical.h>
 #include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt_dyn.h>
 #include <duna_optimizer/logger.h>
 #include <duna_optimizer/model.h>
 #include <duna_optimizer/models/accelerometer.h>
@@ -173,8 +173,8 @@ TEST(Differentiation, Accelerometer) {
   x[1] = 0.0;
   x[2] = 0.0;
 
-  duna_optimizer::CostFunctionNumerical<double, 3, 3> cost(acc);
-  duna_optimizer::CostFunctionAnalytical<double, 3, 3> cost_a(acc);
+  duna_optimizer::CostFunctionNumerical<double, 3, 3> cost(acc, 3);
+  duna_optimizer::CostFunctionAnalytical<double, 3, 3> cost_a(acc, 3);
   Eigen::Matrix3d hessian;
   Eigen::Matrix3d hessian_a;
   Eigen::Vector3d b;

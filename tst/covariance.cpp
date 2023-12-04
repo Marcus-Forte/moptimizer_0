@@ -1,72 +1,63 @@
-#include <duna_optimizer/covariance/covariance.h>
+#include <duna_optimizer/cost_function_numerical_dyn.h>
 #include <gtest/gtest.h>
 
-/* Client covariance */
-class Covariance3x3 : public duna_optimizer::covariance::ICovariance<double> {
-  using MatrixType = typename duna_optimizer::covariance::ICovariance<double>::MatrixType;
+#include <cmath>
+#include <duna_optimizer/stopwatch.hpp>
 
+#include "test_models.h"
+
+float x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
+float y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
+
+class testCovariance : public ::testing::Test {
  public:
-  Covariance3x3() {
-    constantCovariance.resize(3, 3);
-    constantCovariance.setIdentity();
-    constantCovariance *= 10.0;
+  testCovariance() : cost(Model<float>::Ptr(new Model<float>(x_data, y_data)), 2, 1, 7) {
+    covariance = std::make_shared<duna_optimizer::covariance::Matrix<float>>();
   }
 
-  MatrixType getCovariance(double *input) override { return constantCovariance; }
+ protected:
+  Eigen::Matrix<float, 2, 2> hessian, hessian_with_covariance;
+  Eigen::Matrix<float, 2, 1> b, b_with_covariance;
+  duna_optimizer::covariance::MatrixPtr<float> covariance;
 
- private:
-  MatrixType constantCovariance;
+  duna_optimizer::CostFunctionNumericalDynamic<float> cost;
 };
 
-/* Client covariance */
-class Covariance6x6 : public duna_optimizer::covariance::ICovariance<double> {
-  using MatrixType = typename duna_optimizer::covariance::ICovariance<double>::MatrixType;
+TEST_F(testCovariance, setIdentityCovariance) {
+  float x0[2] = {1.9, 1.5};
+  cost.linearize(x0, hessian.data(), b.data());
 
- public:
-  Covariance6x6() {
-    constantCovariance.resize(6, 6);
-    constantCovariance.setIdentity();
-    constantCovariance *= 0.02;
+  covariance->resize(1, 1);
+  covariance->setIdentity();
+  cost.setCovariance(covariance);
+
+  cost.linearize(x0, hessian_with_covariance.data(), b_with_covariance.data());
+
+  for (int i = 0; i < hessian_with_covariance.size(); ++i) {
+    EXPECT_NEAR(hessian_with_covariance(i), hessian(i), 1e-5);
   }
 
-  MatrixType getCovariance(double *input) override { return constantCovariance; }
-
- private:
-  MatrixType constantCovariance;
-};
-
-template <typename Scalar>
-class Covariance : public ::testing::Test {};
-using ScalarTypes = ::testing::Types<float, double>;
-TYPED_TEST_SUITE(Covariance, ScalarTypes);
-
-TYPED_TEST(Covariance, getNoCovariance) {
-  auto cov_obj = duna_optimizer::covariance::IdentityCovariance<TypeParam>(1);
-  auto covariance = cov_obj.getCovariance();
-  GTEST_ASSERT_EQ(covariance(0), 1.0f);
-  GTEST_ASSERT_EQ(covariance.size(), 1);
+  for (int i = 0; i < b_with_covariance.size(); ++i) {
+    EXPECT_NEAR(b_with_covariance(i), b(i), 1e-5);
+  }
 }
 
-TEST(Covariance, getCovariance) {
-  duna_optimizer::covariance::ICovariance<double>::Ptr icov;
-  icov = std::make_shared<Covariance3x3>();
+TEST_F(testCovariance, setLowerCovariance) {
+  float x0[2] = {1.9, 1.5};
+  cost.linearize(x0, hessian.data(), b.data());
+  float cov_val = 0.5;
 
-  auto covariance = icov->getCovariance();
-  GTEST_ASSERT_EQ(covariance(0, 0), 10.0);
-  GTEST_ASSERT_EQ(covariance(1, 1), 10.0);
-  GTEST_ASSERT_EQ(covariance(2, 2), 10.0);
-  GTEST_ASSERT_EQ(covariance.rows(), 3);
-  GTEST_ASSERT_EQ(covariance.cols(), 3);
+  covariance->resize(1, 1);
+  (*covariance)(0, 0) = cov_val;
+  cost.setCovariance(covariance);
 
-  icov = std::make_shared<Covariance6x6>();
+  cost.linearize(x0, hessian_with_covariance.data(), b_with_covariance.data());
 
-  covariance = icov->getCovariance();
-  GTEST_ASSERT_EQ(covariance(0, 0), 0.02);
-  GTEST_ASSERT_EQ(covariance(1, 1), 0.02);
-  GTEST_ASSERT_EQ(covariance(2, 2), 0.02);
-  GTEST_ASSERT_EQ(covariance(3, 3), 0.02);
-  GTEST_ASSERT_EQ(covariance(4, 4), 0.02);
-  GTEST_ASSERT_EQ(covariance(5, 5), 0.02);
-  GTEST_ASSERT_EQ(covariance.rows(), 6);
-  GTEST_ASSERT_EQ(covariance.cols(), 6);
+  for (int i = 0; i < hessian_with_covariance.size(); ++i) {
+    EXPECT_NEAR(hessian_with_covariance(i), hessian(i) * cov_val, 1e-5);
+  }
+
+  for (int i = 0; i < b_with_covariance.size(); ++i) {
+    EXPECT_NEAR(b_with_covariance(i), b(i) * cov_val, 1e-5);
+  }
 }

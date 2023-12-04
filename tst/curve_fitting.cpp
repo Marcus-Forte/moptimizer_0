@@ -1,5 +1,5 @@
 #include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt_dyn.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
@@ -98,12 +98,12 @@ struct CurveFittingModel : public duna_optimizer::BaseModel<double,CurveFittingM
 };
 
 
-TEST(CurveFitting, InitialCondition0)
+TEST(CurveFitting, InitialCondition1)
 {
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna_optimizer::LevenbergMarquadt<double,2> optimizer;
+       duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(2);
     auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
     optimizer.addCost(cost);
 
@@ -124,12 +124,13 @@ TEST(CurveFitting, InitialCondition2)
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna_optimizer::LevenbergMarquadt<double,2> optimizer;
+    duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(2);
     auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
     optimizer.setMaximumIterations(50);
+    optimizer.setLogger(std::make_shared<duna::Logger>(duna::Logger(std::cout, duna::Logger::L_DEBUG)));
     optimizer.addCost(cost);
 
-    double x0[]= {2.70 , 2.0};
+    double x0[]= {1.20 , 2.0};
 
     optimizer.minimize(x0);
 

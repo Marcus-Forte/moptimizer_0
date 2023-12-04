@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <ostream>
 #include <sstream>
 #include <unordered_map>
@@ -10,6 +11,8 @@ namespace duna {
 /// @brief basic Logger class.
 class Logger {
  public:
+  using LoggerPtr = std::shared_ptr<Logger>;
+
   enum VERBOSITY_LEVEL {
     L_ERROR,  // Error logging level
     L_WARN,   // Warn logging level

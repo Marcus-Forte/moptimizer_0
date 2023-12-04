@@ -7,9 +7,12 @@
 /// General sandbox program.
 
 int main(int argc, char** argv) {
-  duna::Logger logger(std::cout, duna::Logger::L_INFO, "SCREEN");
+  Eigen::Matrix<double, 2, 1> jac_transpose;
+  Eigen::Matrix<double, -1, -1> cov;
+  Eigen::Matrix<double, 1, 2> jac;
 
-  std::ofstream file("FILE.LOG");
-  logger.addSink(&file);
-  logger.log(duna::Logger::L_INFO, "HEY!!");
+  cov.resize(2, 2);
+
+  auto res = jac_transpose * cov;
+  std::cout << res << std::endl;
 }

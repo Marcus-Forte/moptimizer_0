@@ -2,4 +2,4 @@
 
 echo "Formatting code..."
 find src tst include \( -iname *.h -o -iname *.cpp -o -iname *.md \) -and -not -iname *duna_exports.h \
-| xargs clang-format-16 -i --verbose
+| xargs clang-format -i --verbose

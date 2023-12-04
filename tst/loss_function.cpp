@@ -1,5 +1,5 @@
 #include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt_dyn.h>
 #include <duna_optimizer/loss_function/geman_mcclure.h>
 #include <duna_optimizer/model.h>
 #include <gtest/gtest.h>
@@ -23,7 +23,7 @@ struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
 
 class SimpleModel : public testing::Test {
  public:
-  SimpleModel() {
+  SimpleModel() : optimizer(2) {
     cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(
         Model::Ptr(new Model(x_data, y_data)), 7);
 
@@ -36,7 +36,7 @@ class SimpleModel : public testing::Test {
   ~SimpleModel() { delete cost; }
 
  protected:
-  duna_optimizer::LevenbergMarquadt<Scalar, 2> optimizer;
+  duna_optimizer::LevenbergMarquadtDynamic<Scalar> optimizer;
   duna_optimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
   Scalar x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
   Scalar y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};

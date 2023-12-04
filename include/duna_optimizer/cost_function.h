@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <exception>
+#include <iostream>
 
 #include "duna_optimizer/covariance/covariance.h"
 #include "duna_optimizer/loss_function/loss_function.h"
@@ -18,9 +19,6 @@ class CostFunctionBase {
   using ModelPtr = typename Model::Ptr;
   using ModelConstPtr = typename Model::ConstPtr;
   using LossFunctionPtr = typename loss::ILossFunction<Scalar>::Ptr;
-  using CovariancePtr = typename covariance::ICovariance<Scalar>::Ptr;
-
-  CostFunctionBase() = default;
 
   CostFunctionBase(ModelPtr model, int num_residuals)
       : model_(model),
@@ -28,15 +26,18 @@ class CostFunctionBase {
 
   {
     loss_function_.reset(new loss::NoLoss<Scalar>());
-    covariance_.reset(new covariance::IdentityCovariance<Scalar>(1));
+    covariance_.reset(new Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>);
   }
+  CostFunctionBase() = delete;
 
   CostFunctionBase(const CostFunctionBase &) = delete;
   CostFunctionBase &operator=(const CostFunctionBase &) = delete;
   virtual ~CostFunctionBase() = default;
 
-  inline void setNumResiduals(int num_residuals) { num_residuals_ = num_residuals; }
   inline void setLossFunction(LossFunctionPtr loss_function) { loss_function_ = loss_function; }
+  inline void setCovariance(const duna_optimizer::covariance::MatrixPtr<Scalar> covariance) {
+    covariance_ = covariance;
+  }
 
   // Setup internal state of the model. Runs at the beggining of the
   // optimization loop.
@@ -49,7 +50,7 @@ class CostFunctionBase {
   virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
 
   // Initialize internal variables.
-  virtual void init(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
+  virtual void prepare(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
 
  protected:
   int num_residuals_;
@@ -57,6 +58,6 @@ class CostFunctionBase {
   // Interfaces
   ModelPtr model_;
   LossFunctionPtr loss_function_;
-  CovariancePtr covariance_;
+  duna_optimizer::covariance::MatrixPtr<Scalar> covariance_;
 };
 }  // namespace duna_optimizer

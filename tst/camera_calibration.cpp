@@ -1,6 +1,6 @@
 #include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt.h>
 #include <duna_optimizer/levenberg_marquadt_dyn.h>
+#include <duna_optimizer/logger.h>
 #include <duna_optimizer/model.h>
 #include <duna_optimizer/so3.h>
 #include <gtest/gtest.h>
@@ -58,7 +58,7 @@ struct CameraModel : public duna_optimizer::BaseModel<double, CameraModel> {
 
 class CameraCalibration : public ::testing::Test {
  public:
-  CameraCalibration() {
+  CameraCalibration() : optimizer(MODEL_PARAMETERS) {
     // TODO I spent quite some time debugging why vectors would have their
     // value changed after running tests... The vectors were allocated in
     // stack and lost their life after constructor. BAD!
@@ -84,7 +84,7 @@ class CameraCalibration : public ::testing::Test {
 
  protected:
   duna_optimizer::CostFunctionNumerical<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
-  duna_optimizer::LevenbergMarquadt<double, MODEL_PARAMETERS> optimizer;
+  duna_optimizer::LevenbergMarquadtDynamic<double> optimizer;
 
   std::vector<Eigen::Vector4d> point_list;
   std::vector<Eigen::Vector2i> pixel_list;
@@ -100,7 +100,6 @@ class CameraCalibration : public ::testing::Test {
 
 TEST_F(CameraCalibration, GoodWeather) {
   double x0[6] = {0};
-
   optimizer.minimize(x0);
 
   for (int i = 0; i < MODEL_PARAMETERS; ++i) {
@@ -114,36 +113,6 @@ TEST_F(CameraCalibration, BadWeather) {
   double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
   optimizer.setMaximumIterations(50);
   optimizer.minimize(x0);
-
-  for (int i = 0; i < MODEL_PARAMETERS; ++i) {
-    EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);
-  }
-
-  std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);
-}
-
-TEST_F(CameraCalibration, GoodWeatherDynamic) {
-  double x0[6] = {0};
-
-  duna_optimizer::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
-
-  dyn_optimizer.addCost(this->cost);
-  dyn_optimizer.minimize(x0);
-
-  for (int i = 0; i < MODEL_PARAMETERS; ++i) {
-    EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);
-  }
-
-  std::cerr << Eigen::Map<Eigen::Matrix<double, 6, 1>>(x0);
-}
-
-TEST_F(CameraCalibration, BadWeatherDynamic) {
-  double x0[6] = {0.5, 0.5, 0.5, 0.2, 0.5, 0.5};
-  duna_optimizer::LevenbergMarquadtDynamic<double> dyn_optimizer(6);
-
-  dyn_optimizer.addCost(this->cost);
-  dyn_optimizer.setMaximumIterations(50);
-  dyn_optimizer.minimize(x0);
 
   for (int i = 0; i < MODEL_PARAMETERS; ++i) {
     EXPECT_NEAR(x0[i], ceres_solution[i], TOLERANCE);

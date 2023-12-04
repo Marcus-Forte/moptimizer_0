@@ -1,5 +1,5 @@
 #include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt.h>
+#include <duna_optimizer/levenberg_marquadt_dyn.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
@@ -103,8 +103,8 @@ TEST(MultipleObjectives, SplitCost)
 {
     utilities::Stopwatch timer;
     timer.tick();
-    duna_optimizer::LevenbergMarquadt<double,2> multi_optimizer;
-    duna_optimizer::LevenbergMarquadt<double,2> single_optimizer;
+    duna_optimizer::LevenbergMarquadtDynamic<double> multi_optimizer(2);
+    duna_optimizer::LevenbergMarquadtDynamic<double> single_optimizer(2);
     double x0_multi[]= {0.0 , 0.0};
     double x0_single[]= {0.0 , 0.0};
     single_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(data)),67));
