@@ -1,4 +1,5 @@
 #include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/linearization.h>
 #include <duna_optimizer/model.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -77,15 +78,15 @@ TEST_F(ParallelCostTest, ComputeCost) {
   Eigen::Matrix<scalar, 3, 1> residual_type;
   utilities::Stopwatch timer;
 
+  duna_optimizer::CostComputation<scalar, 3, 3> computor;
+
   timer.tick();
-  auto mt_diff = duna_optimizer::performParallelComputeCost<scalar, Eigen::Matrix<scalar, 3, 1>>(
-      nullptr, residual_type, model, num_points);
+  auto mt_diff = computor.parallelComputeCost(nullptr, model, num_points);
 
   timer.tock("Parallel thread cost compute");
 
   timer.tick();
-  auto st_diff = duna_optimizer::performComputeCost<scalar, Eigen::Matrix<scalar, 3, 1>>(
-      nullptr, residual_type, model, num_points);
+  auto st_diff = computor.computeCost(nullptr, model, num_points);
   timer.tock("Single thread cost compute");
 
   EXPECT_NEAR(mt_diff, st_diff, 1e-8);

@@ -1,6 +1,9 @@
 #pragma once
 
-#include <duna_optimizer/cost_function_numerical.h>
+#include <duna_optimizer/cost_function.h>
+#include <duna_optimizer/logger.h>
+#include <duna_optimizer/model.h>
+
 
 namespace duna_optimizer {
 /// @brief Numerical Differentiation cost function. Computes numerical
@@ -8,30 +11,26 @@ namespace duna_optimizer {
 /// runtime.
 /// @tparam Scalar Scalar type (double, float)
 template <class Scalar = double>
-class CostFunctionNumericalDynamic : public CostFunctionNumerical<Scalar> {
+class CostFunctionNumericalDynamic : public CostFunctionBase<Scalar> {
  public:
-  using typename CostFunctionNumerical<Scalar>::ParameterVector;
-  using typename CostFunctionNumerical<Scalar>::HessianMatrix;
-  using typename CostFunctionNumerical<Scalar>::JacobianMatrix;
-  using typename CostFunctionNumerical<Scalar>::Model;
-  using typename CostFunctionNumerical<Scalar>::ModelPtr;
+  using typename CostFunctionBase<Scalar>::Model;
+  using typename CostFunctionBase<Scalar>::ModelPtr;
 
   CostFunctionNumericalDynamic(ModelPtr model, int num_parameters, int num_outputs,
                                int num_residuals);
 
   virtual ~CostFunctionNumericalDynamic() = default;
 
- private:
-  using CostFunctionNumerical<Scalar>::x_map_;
-  using CostFunctionNumerical<Scalar>::hessian_map_;
-  using CostFunctionNumerical<Scalar>::b_map_;
-  using CostFunctionNumerical<Scalar>::jacobian_;
-  using CostFunctionNumerical<Scalar>::residuals_;
-  using CostFunctionNumerical<Scalar>::residuals_plus_;
-  using CostFunctionNumerical<Scalar>::covariance_;
+  Scalar computeCost(const Scalar *x) override;
+  Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override;
+
+ protected:
+  using CostFunctionBase<Scalar>::num_residuals_;
+  using CostFunctionBase<Scalar>::model_;
+  using CostFunctionBase<Scalar>::loss_function_;
+  using CostFunctionBase<Scalar>::covariance_;
+
   int num_parameters_;
   int num_outputs_;
-
-  void prepare(const Scalar *x, Scalar *hessian, Scalar *b) override;
 };
 }  // namespace duna_optimizer

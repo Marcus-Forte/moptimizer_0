@@ -13,7 +13,6 @@ LevenbergMarquadtDynamic<Scalar>::~LevenbergMarquadtDynamic() = default;
 
 template <class Scalar>
 void LevenbergMarquadtDynamic<Scalar>::prepare(Scalar *x0) {
-  logger_->log(duna::Logger::L_DEBUG, "Init Dynamic");
 
   lm_init_lambda_factor_ = 1e-9;
   lm_lambda_ = -1.0;

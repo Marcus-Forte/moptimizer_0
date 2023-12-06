@@ -16,7 +16,7 @@ find_package(TBB REQUIRED)
 link_libraries(Eigen3::Eigen)
 
 if(UNIX)
-        if(NOT APPLE)
+        if(CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT APPLE)
         add_compile_options(-msse -msse2 -mavx2 -mfma -msse4.2 -mfpmath=sse)
         add_compile_options(-march=native)
         endif()
@@ -36,6 +36,7 @@ src/delta.cpp
 src/so3.cpp
 src/exception.cpp
 src/logger.cpp
+src/linearization.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} TBB::tbb)

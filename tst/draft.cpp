@@ -6,13 +6,19 @@
 #include <iostream>
 /// General sandbox program.
 
+void fun(const Eigen::Ref<Eigen::Matrix<double, 3,3>>& m) {
+  std::cout << m << std::endl;
+}
+
 int main(int argc, char** argv) {
-  Eigen::Matrix<double, 2, 1> jac_transpose;
-  Eigen::Matrix<double, -1, -1> cov;
-  Eigen::Matrix<double, 1, 2> jac;
+  Eigen::Matrix<double, 3, 3> jac_transpose;
 
-  cov.resize(2, 2);
+  jac_transpose = Eigen::Matrix<double,3,3>::Random(2,2);
 
-  auto res = jac_transpose * cov;
-  std::cout << res << std::endl;
+  Eigen::Map<Eigen::Matrix<double, 3,3>> some_map(nullptr);
+  
+  new(&some_map) Eigen::Map<Eigen::Matrix<double,3,3>>(jac_transpose.data(), 3,3);
+  some_map(1,1) = 100;
+
+  fun(jac_transpose);
 }

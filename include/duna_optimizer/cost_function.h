@@ -49,9 +49,6 @@ class CostFunctionBase {
   virtual Scalar computeCost(const Scalar *x) = 0;
   virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
 
-  // Initialize internal variables.
-  virtual void prepare(const Scalar *x, Scalar *hessian, Scalar *b) = 0;
-
  protected:
   int num_residuals_;
 
