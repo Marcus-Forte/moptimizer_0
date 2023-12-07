@@ -17,8 +17,9 @@ link_libraries(Eigen3::Eigen)
 
 if(UNIX)
         if(CMAKE_BUILD_TYPE STREQUAL "Release" AND NOT APPLE)
-        add_compile_options(-msse -msse2 -mavx2 -mfma -msse4.2 -mfpmath=sse)
-        add_compile_options(-march=native)
+		# TMP COMMENT
+		# add_compile_options(-msse -msse2 -mavx2 -mfma -msse4.2 -mfpmath=sse)
+		# add_compile_options(-march=native)
         endif()
 elseif(MSVC)
         add_compile_options(/bigobj)
