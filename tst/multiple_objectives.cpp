@@ -119,7 +119,8 @@ TEST(MultipleObjectives, SplitCost)
     multi_optimizer.minimize(x0_multi);
     single_optimizer.minimize(x0_single);
 
-    timer.tock("Curve Fitting");
+    auto delta = timer.tock();
+    std::cerr << "Curve Fitting took:" << delta << std::endl;
     EXPECT_NEAR(x0_multi[0], x0_single[0], 1e-8);
     EXPECT_NEAR(x0_multi[1], x0_single[1], 1e-8);
 

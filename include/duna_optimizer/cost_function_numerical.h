@@ -34,8 +34,8 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
 
   virtual Scalar linearize(const Scalar *x, Scalar *hessian, Scalar *b) override {
     CostComputation<Scalar, model_parameter_dim, model_output_dim> compute;
-    return compute.computeHessianNumerical(x, covariance_->data(), loss_function_, hessian,
-                                                  b, model_, num_residuals_);
+    return compute.computeHessianNumerical(x, covariance_->data(), loss_function_, hessian, b,
+                                           model_, num_residuals_);
   }
 
  protected:

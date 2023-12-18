@@ -4,7 +4,6 @@
 #include <duna_optimizer/logger.h>
 #include <duna_optimizer/model.h>
 
-
 namespace duna_optimizer {
 /// @brief Numerical Differentiation cost function. Computes numerical
 /// derivatives when computing hessian. Dimensions of function output and parameter are set in

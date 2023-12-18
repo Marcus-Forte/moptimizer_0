@@ -83,11 +83,12 @@ TEST_F(ParallelCostTest, ComputeCost) {
   timer.tick();
   auto mt_diff = computor.parallelComputeCost(nullptr, model, num_points);
 
-  timer.tock("Parallel thread cost compute");
-
+  auto delta = timer.tock();
+  std::cerr << "Parallel thread cost compute" << delta << std::endl;
   timer.tick();
   auto st_diff = computor.computeCost(nullptr, model, num_points);
-  timer.tock("Single thread cost compute");
+  delta = timer.tock();
+  std::cerr << "Single thread cost compute" << delta << std::endl;
 
   EXPECT_NEAR(mt_diff, st_diff, 1e-8);
 }

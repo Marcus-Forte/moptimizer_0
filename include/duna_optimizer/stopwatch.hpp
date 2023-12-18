@@ -1,11 +1,11 @@
 #pragma once
 
 #include <chrono>
-#include <iostream>
-// Utility class for timing function calls
+
 
 namespace utilities
 {
+    /// @brief Very simple class for timing function calls.
     class Stopwatch
     {
     public:
@@ -21,7 +21,8 @@ namespace utilities
         {
             is_enabled = false;
         }
-
+        
+        /// @brief Start stopwatch timer.
         inline void tick()
         {
             if (!is_enabled)
@@ -29,19 +30,18 @@ namespace utilities
 
             m_tick = std::chrono::high_resolution_clock::now();
         }
-
-        // TODO decouble from <iostream>
-        inline double tock(const std::string &message)
+        
+        /// @brief  Stop stopwatch timer.
+        /// @return Time duration since last tick() in seconds.
+        inline double tock() const
         {
             if (!is_enabled)
             {
-                fprintf(stderr, "Warning, stopwatch not enabled\n");
-                return 0.0;
+                return -1.0;
             }
 
             const auto delta_tick = std::chrono::high_resolution_clock::now() - m_tick;
             double duration = std::chrono::duration<double>(delta_tick).count();
-            fprintf(stderr, "'%s' took: %f [s]\n", message.c_str(), duration);
 
             return duration;
         }

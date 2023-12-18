@@ -73,7 +73,8 @@ TEST(PowellFunction, InitialCondition0) {
 
   optimizer.minimize(x0);
 
-  timer.tock("Power Function minimzation");
+  auto delta = timer.tock();
+  std::cerr << "Power Function minimzation: " << delta << std::endl;
 
   for (int i = 0; i < 4; ++i) {
     EXPECT_NEAR(x0[i], 0.0, 5e-5);
@@ -95,7 +96,8 @@ TEST(PowellFunction, InitialCondition0Dynamic) {
 
   optimizer.minimize(x0);
 
-  timer.tock("Power Function minimzation");
+  auto delta = timer.tock();
+  std::cerr << "Power Function minimzation: " << delta << std::endl;
 
   for (int i = 0; i < 4; ++i) {
     EXPECT_NEAR(x0[i], 0.0, 5e-5);
@@ -116,16 +118,17 @@ TEST(PowellFunction, InitialCondition0DynamicCovariance) {
       PowellModel::Ptr(new PowellModel), 4, 4, 1);
 
   auto covariance = std::make_shared<duna_optimizer::covariance::Matrix<double>>();
-  covariance->resize(4,4);
+  covariance->resize(4, 4);
   covariance->setIdentity();
-  *covariance *= 0.01; // still works
-  cost->setCovariance(covariance); 
+  *covariance *= 0.01;  // still works
+  cost->setCovariance(covariance);
 
   optimizer.addCost(cost);
 
   optimizer.minimize(x0);
 
-  timer.tock("Power Function minimzation");
+  auto delta = timer.tock();
+  std::cerr << "Power Function minimzation: " << delta << std::endl;
 
   for (int i = 0; i < 4; ++i) {
     EXPECT_NEAR(x0[i], 0.0, 5e-5);

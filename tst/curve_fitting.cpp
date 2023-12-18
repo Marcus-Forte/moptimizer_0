@@ -111,7 +111,8 @@ TEST(CurveFitting, InitialCondition1)
 
     optimizer.minimize(x0);
 
-    timer.tock("Curve Fitting");
+    auto delta = timer.tock();
+    std::cerr << "Curve Fitting took:" << delta << std::endl;
     EXPECT_NEAR(x0[0], 0.291861, 5e-5);
     EXPECT_NEAR(x0[1], 0.131439, 5e-5);
 
@@ -134,7 +135,9 @@ TEST(CurveFitting, InitialCondition2)
 
     optimizer.minimize(x0);
 
-    timer.tock("Curve Fitting");
+    auto delta = timer.tock();
+    std::cerr << "Curve Fitting took:" << delta << std::endl;
+
     EXPECT_NEAR(x0[0], 0.291861, 1e-4);
     EXPECT_NEAR(x0[1], 0.131439, 1e-4);
 
