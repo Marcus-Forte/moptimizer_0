@@ -1,8 +1,8 @@
-#include <duna_optimizer/cost_function_numerical_dyn.h>
+#include <moptimizer/cost_function_numerical_dyn.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <duna_optimizer/stopwatch.hpp>
+#include <moptimizer/stopwatch.hpp>
 
 #include "test_models.h"
 
@@ -12,15 +12,15 @@ float y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 class testCovariance : public ::testing::Test {
  public:
   testCovariance() : cost(Model<float>::Ptr(new Model<float>(x_data, y_data)), 2, 1, 7) {
-    covariance = std::make_shared<duna_optimizer::covariance::Matrix<float>>();
+    covariance = std::make_shared<moptimizer::covariance::Matrix<float>>();
   }
 
  protected:
   Eigen::Matrix<float, 2, 2> hessian, hessian_with_covariance;
   Eigen::Matrix<float, 2, 1> b, b_with_covariance;
-  duna_optimizer::covariance::MatrixPtr<float> covariance;
+  moptimizer::covariance::MatrixPtr<float> covariance;
 
-  duna_optimizer::CostFunctionNumericalDynamic<float> cost;
+  moptimizer::CostFunctionNumericalDynamic<float> cost;
 };
 
 TEST_F(testCovariance, setIdentityCovariance) {

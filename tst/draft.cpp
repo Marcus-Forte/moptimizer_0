@@ -1,8 +1,8 @@
 
-#include <duna_optimizer/logger.h>
+#include <moptimizer/logger.h>
 
 #include <Eigen/Dense>
-#include <duna_optimizer/stopwatch.hpp>
+#include <moptimizer/stopwatch.hpp>
 #include <fstream>
 #include <iostream>
 /// General sandbox program.

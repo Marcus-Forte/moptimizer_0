@@ -3,13 +3,13 @@
 #include <Eigen/Dense>
 #include <memory>
 
-#include "duna_optimizer/types.h"
+#include "moptimizer/types.h"
 
-namespace duna_optimizer::covariance {
+namespace moptimizer::covariance {
 
 template <class Scalar>
 using Matrix = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
 template <class Scalar>
 using MatrixPtr = std::shared_ptr<Matrix<Scalar>>;
 
-}  // namespace duna_optimizer::covariance
+}  // namespace moptimizer::covariance

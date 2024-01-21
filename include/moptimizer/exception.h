@@ -2,7 +2,7 @@
 
 #include <exception>
 #include <string>
-namespace duna_optimizer {
+namespace moptimizer {
 
 class Exception : public std::exception {
  public:
@@ -18,4 +18,4 @@ class Exception : public std::exception {
   std::string msg_;
 };
 
-}  // namespace duna_optimizer
+}  // namespace moptimizer

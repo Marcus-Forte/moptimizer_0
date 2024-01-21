@@ -1,10 +1,10 @@
 #pragma once
 
-#include <duna_optimizer/exception.h>
+#include <moptimizer/exception.h>
 
 #include <memory>
 
-namespace duna_optimizer {
+namespace moptimizer {
 
 /// @brief Interface definitions for user models.
 /// @tparam Scalar Scalar type: float or double.
@@ -65,7 +65,7 @@ class BaseModel : public IBaseModel<Scalar> {
 
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
                     unsigned int index) const final {
-    throw duna_optimizer::Exception(
+    throw moptimizer::Exception(
         "Non implemented non-jacobian model function `f_df` being used.");
   }
 
@@ -91,7 +91,7 @@ class BaseModelJacobian : public IBaseModel<Scalar> {
   virtual void update(const Scalar *x) override {}
 
   virtual bool f(const Scalar *x, Scalar *f_x, unsigned int index) const override {
-    throw duna_optimizer::Exception("Non implemented jacobian model function `f` being used.");
+    throw moptimizer::Exception("Non implemented jacobian model function `f` being used.");
   }
 
   virtual bool f_df(const Scalar *x, Scalar *f_x, Scalar *jacobian,
@@ -103,4 +103,4 @@ class BaseModelJacobian : public IBaseModel<Scalar> {
   }
 };
 
-}  // namespace duna_optimizer
+}  // namespace moptimizer

@@ -1,5 +1,5 @@
-#include <duna_optimizer/manifold.h>
-#include <duna_optimizer/so3.h>
+#include <moptimizer/manifold.h>
+#include <moptimizer/so3.h>
 #include <gtest/gtest.h>
 
 TEST(Manifold, EuclideanSpace) {

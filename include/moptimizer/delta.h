@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
-namespace duna_optimizer {
+namespace moptimizer {
 
 /// @brief Check if vector is _small enough_.
 /// @tparam Scalar
@@ -15,4 +15,4 @@ inline bool isDeltaSmall(const Eigen::Matrix<Scalar, Dim, 1>& delta) {
   return false;
 }
 
-}  // namespace duna_optimizer
+}  // namespace moptimizer

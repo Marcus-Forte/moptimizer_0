@@ -2,7 +2,7 @@
 
 #include "loss_function.h"
 
-namespace duna_optimizer::loss {
+namespace moptimizer::loss {
 template <typename T>
 class GemmanMCClure : public ILossFunction<T> {
  public:
@@ -17,4 +17,4 @@ class GemmanMCClure : public ILossFunction<T> {
 
   inline T square(T val) { return val * val; }
 };
-}  // namespace duna_optimizer::loss
+}  // namespace moptimizer::loss

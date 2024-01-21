@@ -1,10 +1,10 @@
 #pragma once
-#include <duna_optimizer/model.h>
-#include <duna_optimizer/so3.h>
+#include <moptimizer/model.h>
+#include <moptimizer/so3.h>
 
 #include <Eigen/Dense>
 
-namespace duna_optimizer {
+namespace moptimizer {
 
 class Accelerometer : public BaseModelJacobian<double, Accelerometer> {
  public:
@@ -72,4 +72,4 @@ class Accelerometer : public BaseModelJacobian<double, Accelerometer> {
   Eigen::Vector3d gravity_;
   Eigen::Vector3d measurements_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

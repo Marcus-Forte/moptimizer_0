@@ -4,13 +4,13 @@
 #include <filesystem>
 #include <fstream>
 
-#include "duna_optimizer/cost_function_analytical.h"
-#include "duna_optimizer/cost_function_analytical_dyn.h"
-#include "duna_optimizer/cost_function_numerical.h"
-#include "duna_optimizer/cost_function_numerical_dyn.h"
-#include "duna_optimizer/levenberg_marquadt_dyn.h"
-#include "duna_optimizer/model.h"
-#include "duna_optimizer/so3.h"
+#include "moptimizer/cost_function_analytical.h"
+#include "moptimizer/cost_function_analytical_dyn.h"
+#include "moptimizer/cost_function_numerical.h"
+#include "moptimizer/cost_function_numerical_dyn.h"
+#include "moptimizer/levenberg_marquadt_dyn.h"
+#include "moptimizer/model.h"
+#include "moptimizer/so3.h"
 
 using Scalar = double;
 using PointT = Eigen::Vector3d;
@@ -21,7 +21,7 @@ using JacobianType = Eigen::Matrix<Scalar, 3, 6>;
 #error "TEST_DATA_PATH NOT DEFINED!"
 #endif
 
-class Point2Point : public duna_optimizer::BaseModelJacobian<Scalar, Point2Point> {
+class Point2Point : public moptimizer::BaseModelJacobian<Scalar, Point2Point> {
  public:
   Point2Point(const PointCloudT &src, const PointCloudT &tgt) : src_pc_(src), tgt_pc_(tgt) {
     transform_.setIdentity();
@@ -146,10 +146,10 @@ TEST_F(TestPoint2Point, ConsistencyOverCostsClasses) {
   Point2Point::Ptr model = std::make_shared<Point2Point>(src, tgt);
 
   int num_residuals = src.size();  // src.size();
-  duna_optimizer::CostFunctionAnalytical<Scalar, 6, 3> cost_an_s(model, num_residuals);
-  duna_optimizer::CostFunctionAnalyticalDynamic<Scalar> cost_an_d(model, 6, 3, num_residuals);
-  duna_optimizer::CostFunctionNumerical<Scalar, 6, 3> cost_num_s(model, num_residuals);
-  duna_optimizer::CostFunctionNumericalDynamic<Scalar> cost_num_d(model, 6, 3, num_residuals);
+  moptimizer::CostFunctionAnalytical<Scalar, 6, 3> cost_an_s(model, num_residuals);
+  moptimizer::CostFunctionAnalyticalDynamic<Scalar> cost_an_d(model, 6, 3, num_residuals);
+  moptimizer::CostFunctionNumerical<Scalar, 6, 3> cost_num_s(model, num_residuals);
+  moptimizer::CostFunctionNumericalDynamic<Scalar> cost_num_d(model, 6, 3, num_residuals);
 
   Eigen::Matrix<Scalar, 6, 6> hessian_an_s;
   Eigen::Matrix<Scalar, 6, 6> hessian_an_d;
@@ -197,9 +197,9 @@ TEST_F(TestPoint2Point, Optimization) {
 
   int num_residuals = src.size();  // src.size();
 
-  duna_optimizer::CostFunctionNumericalDynamic<Scalar> cost_num_d(model, 6, 3, num_residuals);
+  moptimizer::CostFunctionNumericalDynamic<Scalar> cost_num_d(model, 6, 3, num_residuals);
 
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> lm_d(6);
+  moptimizer::LevenbergMarquadtDynamic<Scalar> lm_d(6);
   lm_d.setMaximumIterations(50);
 
   lm_d.addCost(&cost_num_d);
@@ -208,7 +208,7 @@ TEST_F(TestPoint2Point, Optimization) {
   std::cout << x0;
   x0.setZero();
 
-  duna_optimizer::CostFunctionNumerical<Scalar, 6, 3> cost_num_s(model, num_residuals);
+  moptimizer::CostFunctionNumerical<Scalar, 6, 3> cost_num_s(model, num_residuals);
   lm_d.addCost(&cost_num_s);
   lm_d.minimize(x0.data());
   lm_d.clearCosts();

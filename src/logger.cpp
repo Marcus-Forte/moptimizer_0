@@ -1,4 +1,4 @@
-#include <duna_optimizer/logger.h>
+#include <moptimizer/logger.h>
 
 namespace duna {
 Logger::Logger(std::ostream& sink, VERBOSITY_LEVEL level, const std::string&& name)

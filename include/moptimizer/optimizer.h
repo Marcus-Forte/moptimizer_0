@@ -1,13 +1,13 @@
 #pragma once
 
-#include <duna_optimizer/cost_function.h>
-#include <duna_optimizer/logger.h>
+#include <moptimizer/cost_function.h>
+#include <moptimizer/logger.h>
 
 #include <Eigen/Dense>
 #include <memory>
 #include <vector>
 
-namespace duna_optimizer {
+namespace moptimizer {
 
 template <class Scalar = double>
 class Optimizer {
@@ -87,4 +87,4 @@ class Optimizer {
   virtual void prepare(Scalar *x0) = 0;
   std::shared_ptr<duna::Logger> logger_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

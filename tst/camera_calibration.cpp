@@ -1,15 +1,15 @@
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt_dyn.h>
-#include <duna_optimizer/logger.h>
-#include <duna_optimizer/model.h>
-#include <duna_optimizer/so3.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/levenberg_marquadt_dyn.h>
+#include <moptimizer/logger.h>
+#include <moptimizer/model.h>
+#include <moptimizer/so3.h>
 #include <gtest/gtest.h>
 
 #define MODEL_PARAMETERS 6
 #define MODEL_OUTPUTS 2
 #define TOLERANCE 5e-5
 
-struct CameraModel : public duna_optimizer::BaseModel<double, CameraModel> {
+struct CameraModel : public moptimizer::BaseModel<double, CameraModel> {
   CameraModel(const std::vector<Eigen::Vector4d> &point_list,
               const std::vector<Eigen::Vector2i> &pixel_list)
       : point_vector(point_list), pixel_vector(pixel_list) {
@@ -75,7 +75,7 @@ class CameraCalibration : public ::testing::Test {
     pixel_list.push_back(Eigen::Vector2i(559, 282));
     pixel_list.push_back(Eigen::Vector2i(481, 388));
 
-    cost = new duna_optimizer::CostFunctionNumerical<double, 6, 2>(
+    cost = new moptimizer::CostFunctionNumerical<double, 6, 2>(
         CameraModel::Ptr(new CameraModel(point_list, pixel_list)), 5);
     optimizer.addCost(cost);
   }
@@ -83,8 +83,8 @@ class CameraCalibration : public ::testing::Test {
   ~CameraCalibration() { delete cost; }
 
  protected:
-  duna_optimizer::CostFunctionNumerical<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
-  duna_optimizer::LevenbergMarquadtDynamic<double> optimizer;
+  moptimizer::CostFunctionNumerical<double, MODEL_PARAMETERS, MODEL_OUTPUTS> *cost;
+  moptimizer::LevenbergMarquadtDynamic<double> optimizer;
 
   std::vector<Eigen::Vector4d> point_list;
   std::vector<Eigen::Vector2i> pixel_list;

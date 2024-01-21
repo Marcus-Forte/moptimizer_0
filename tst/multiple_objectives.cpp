@@ -1,9 +1,9 @@
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt_dyn.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/levenberg_marquadt_dyn.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <duna_optimizer/stopwatch.hpp>
+#include <moptimizer/stopwatch.hpp>
 // From Ceres
 
 const int kNumObservations = 67;
@@ -79,7 +79,7 @@ const double data[] = {
 };
 
 
-struct MOModel : public duna_optimizer::BaseModel<double, MOModel>
+struct MOModel : public moptimizer::BaseModel<double, MOModel>
 {
 
     MOModel(const double* dataset) {
@@ -103,18 +103,18 @@ TEST(MultipleObjectives, SplitCost)
 {
     utilities::Stopwatch timer;
     timer.tick();
-    duna_optimizer::LevenbergMarquadtDynamic<double> multi_optimizer(2);
-    duna_optimizer::LevenbergMarquadtDynamic<double> single_optimizer(2);
+    moptimizer::LevenbergMarquadtDynamic<double> multi_optimizer(2);
+    moptimizer::LevenbergMarquadtDynamic<double> single_optimizer(2);
     double x0_multi[]= {0.0 , 0.0};
     double x0_single[]= {0.0 , 0.0};
-    single_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(data)),67));
+    single_optimizer.addCost(new moptimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(data)),67));
 
     // Here we split the cost into two over the same parameter x0. Results should be the same as a single cost function.
     // first 30 observations
-    multi_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(data)),30)); 
+    multi_optimizer.addCost(new moptimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(data)),30)); 
 
     // next 37 observations. Note we use data[60] as there are two data points per observation.
-    multi_optimizer.addCost(new duna_optimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(&data[60])),37)); 
+    multi_optimizer.addCost(new moptimizer::CostFunctionNumerical<double,2,1>(MOModel::Ptr(new MOModel(&data[60])),37)); 
 
     multi_optimizer.minimize(x0_multi);
     single_optimizer.minimize(x0_single);

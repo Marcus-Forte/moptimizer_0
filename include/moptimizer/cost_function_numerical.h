@@ -1,11 +1,11 @@
 #pragma once
 
-#include <duna_optimizer/cost_function.h>
-#include <duna_optimizer/linearization.h>
-#include <duna_optimizer/logger.h>
-#include <duna_optimizer/model.h>
+#include <moptimizer/cost_function.h>
+#include <moptimizer/linearization.h>
+#include <moptimizer/logger.h>
+#include <moptimizer/model.h>
 
-namespace duna_optimizer {
+namespace moptimizer {
 
 /// @brief Numerical Differentiation cost function. Computes numerical
 /// derivatives when computing hessian.
@@ -44,4 +44,4 @@ class CostFunctionNumerical : public CostFunctionBase<Scalar> {
   using CostFunctionBase<Scalar>::loss_function_;
   using CostFunctionBase<Scalar>::covariance_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

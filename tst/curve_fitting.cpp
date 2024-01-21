@@ -1,9 +1,9 @@
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt_dyn.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/levenberg_marquadt_dyn.h>
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include <duna_optimizer/stopwatch.hpp>
+#include <moptimizer/stopwatch.hpp>
 // From Ceres
 
 const int kNumObservations = 67;
@@ -78,7 +78,7 @@ const double data[] = {
   4.950000e+00, 4.669206e+00,
 };
 
-struct CurveFittingModel : public duna_optimizer::BaseModel<double,CurveFittingModel>
+struct CurveFittingModel : public moptimizer::BaseModel<double,CurveFittingModel>
 {
     CurveFittingModel(const double* dataset) {
         m_dataset = dataset;
@@ -103,8 +103,8 @@ TEST(CurveFitting, InitialCondition1)
     
     utilities::Stopwatch timer;
     timer.tick();
-       duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(2);
-    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
+       moptimizer::LevenbergMarquadtDynamic<double> optimizer(2);
+    auto cost = new moptimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
     optimizer.addCost(cost);
 
     double x0[]= {0.0 , 0.0};
@@ -125,8 +125,8 @@ TEST(CurveFitting, InitialCondition2)
     
     utilities::Stopwatch timer;
     timer.tick();
-    duna_optimizer::LevenbergMarquadtDynamic<double> optimizer(2);
-    auto cost = new duna_optimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
+    moptimizer::LevenbergMarquadtDynamic<double> optimizer(2);
+    auto cost = new moptimizer::CostFunctionNumerical<double,2,1>(CurveFittingModel::Ptr(new CurveFittingModel(data)),kNumObservations);
     optimizer.setMaximumIterations(50);
     optimizer.setLogger(std::make_shared<duna::Logger>(duna::Logger(std::cout, duna::Logger::L_DEBUG)));
     optimizer.addCost(cost);

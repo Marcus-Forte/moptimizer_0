@@ -1,11 +1,11 @@
 #pragma once
 
-#include "duna_optimizer/model.h"
+#include "moptimizer/model.h"
 
 // Function to be minimized
 
 template <class Scalar>
-struct Model : public duna_optimizer::BaseModel<Scalar, Model<Scalar>> {
+struct Model : public moptimizer::BaseModel<Scalar, Model<Scalar>> {
   Model(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
   // API simply has to override this method
 

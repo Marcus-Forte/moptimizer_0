@@ -2,7 +2,7 @@
 
 #include <memory>
 
-namespace duna_optimizer::loss {
+namespace moptimizer::loss {
 // Loss Function Interface
 template <typename T>
 class ILossFunction {
@@ -21,4 +21,4 @@ class NoLoss : public ILossFunction<T> {
  public:
   inline virtual T weight(T errorSquaredNorm) override { return 1.0; }
 };
-}  // namespace duna_optimizer::loss
+}  // namespace moptimizer::loss

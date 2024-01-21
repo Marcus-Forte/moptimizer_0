@@ -1,11 +1,11 @@
-#include <duna_optimizer/cost_function_analytical.h>
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt_dyn.h>
-#include <duna_optimizer/logger.h>
-#include <duna_optimizer/model.h>
-#include <duna_optimizer/models/accelerometer.h>
-// #include <duna_optimizer/models/scan_matching.h>
-#include <duna_optimizer/so3.h>
+#include <moptimizer/cost_function_analytical.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/levenberg_marquadt_dyn.h>
+#include <moptimizer/logger.h>
+#include <moptimizer/model.h>
+#include <moptimizer/models/accelerometer.h>
+// #include <moptimizer/models/scan_matching.h>
+#include <moptimizer/so3.h>
 #include <gtest/gtest.h>
 
 /* We compare with numerical diff for resonable results.
@@ -13,7 +13,7 @@ It is very difficult that both yield the same results if something is wrong with
 either Numerical or Analytical Diff */
 
 template <typename Scalar = double>
-struct SimpleModel : duna_optimizer::BaseModelJacobian<Scalar, SimpleModel<Scalar>> {
+struct SimpleModel : moptimizer::BaseModelJacobian<Scalar, SimpleModel<Scalar>> {
   SimpleModel(Scalar *x, Scalar *y) : data_x(x), data_y(y){};
 
   // Defining operator for comparison.
@@ -52,8 +52,8 @@ TYPED_TEST(Differentiation, SimpleModel) {
 
   typename SimpleModel<TypeParam>::Ptr model(new SimpleModel<TypeParam>(x_data, y_data));
 
-  duna_optimizer::CostFunctionAnalytical<TypeParam, 2, 1> cost_ana(model, m_residuals);
-  duna_optimizer::CostFunctionNumerical<TypeParam, 2, 1> cost_num(model, m_residuals);
+  moptimizer::CostFunctionAnalytical<TypeParam, 2, 1> cost_ana(model, m_residuals);
+  moptimizer::CostFunctionNumerical<TypeParam, 2, 1> cost_num(model, m_residuals);
 
   Eigen::Matrix<TypeParam, 2, 2> Hessian;
   Eigen::Matrix<TypeParam, 2, 2> HessianNum;
@@ -76,7 +76,7 @@ TYPED_TEST(Differentiation, SimpleModel) {
   std::cerr << "Hessian Numerical:\n" << HessianNum << std::endl;
 }
 
-struct Powell : duna_optimizer::BaseModelJacobian<double, Powell> {
+struct Powell : moptimizer::BaseModelJacobian<double, Powell> {
   // Should be 4 x 4 = 16. Eigen stores column major order, so we fill indices
   // accordingly.
 
@@ -136,8 +136,8 @@ TEST(Differentiation, PowellModel) {
 
   Powell::Ptr powell(new Powell);
 
-  duna_optimizer::CostFunctionAnalytical<double, 4, 4> cost_ana(powell, m_residuals);
-  duna_optimizer::CostFunctionNumerical<double, 4, 4> cost_num(powell, m_residuals);
+  moptimizer::CostFunctionAnalytical<double, 4, 4> cost_ana(powell, m_residuals);
+  moptimizer::CostFunctionNumerical<double, 4, 4> cost_num(powell, m_residuals);
 
   Eigen::Matrix<double, 4, 4> Hessian;
   Eigen::Matrix<double, 4, 4> HessianNum;
@@ -165,16 +165,16 @@ TEST(Differentiation, Accelerometer) {
   measurement[0] = 0;
   measurement[1] = 0;
   measurement[2] = 0;
-  typename duna_optimizer::IBaseModel<double>::Ptr acc(
-      new duna_optimizer::Accelerometer(measurement));
+  typename moptimizer::IBaseModel<double>::Ptr acc(
+      new moptimizer::Accelerometer(measurement));
   double x[3];
   double f_x[3];
   x[0] = 0.1;
   x[1] = 0.0;
   x[2] = 0.0;
 
-  duna_optimizer::CostFunctionNumerical<double, 3, 3> cost(acc, 3);
-  duna_optimizer::CostFunctionAnalytical<double, 3, 3> cost_a(acc, 3);
+  moptimizer::CostFunctionNumerical<double, 3, 3> cost(acc, 3);
+  moptimizer::CostFunctionAnalytical<double, 3, 3> cost_a(acc, 3);
   Eigen::Matrix3d hessian;
   Eigen::Matrix3d hessian_a;
   Eigen::Vector3d b;

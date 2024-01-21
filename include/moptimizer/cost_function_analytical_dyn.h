@@ -1,10 +1,10 @@
 #pragma once
 
-#include <duna_optimizer/cost_function.h>
-#include <duna_optimizer/logger.h>
-#include <duna_optimizer/model.h>
+#include <moptimizer/cost_function.h>
+#include <moptimizer/logger.h>
+#include <moptimizer/model.h>
 
-namespace duna_optimizer {
+namespace moptimizer {
 /* Analytical cost function module. Computes hessian using provided `f_df` model
  * function with explicit jacobian calculation. Dynamic size parameters and
  * function outputs. */
@@ -30,4 +30,4 @@ class CostFunctionAnalyticalDynamic : public CostFunctionBase<Scalar> {
   int num_parameters_;
   int num_outputs_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

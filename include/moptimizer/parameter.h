@@ -5,7 +5,7 @@
   Parameters are the variables to be minimized in the optimization problem.
 */
 
-namespace duna_optimizer {
+namespace moptimizer {
 
 class IParameter {
  public:
@@ -30,4 +30,4 @@ class Parameter : public IParameter {
 
 void plus(const IParameter *lhs, const IParameter *rhs, IParameter *res) { lhs->Plus(rhs, res); }
 
-}  // namespace duna_optimizer
+}  // namespace moptimizer

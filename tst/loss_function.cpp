@@ -1,13 +1,13 @@
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/levenberg_marquadt_dyn.h>
-#include <duna_optimizer/loss_function/geman_mcclure.h>
-#include <duna_optimizer/model.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/levenberg_marquadt_dyn.h>
+#include <moptimizer/loss_function/geman_mcclure.h>
+#include <moptimizer/model.h>
 #include <gtest/gtest.h>
 
 using Scalar = float;
 
 // Function to be minimized
-struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
+struct Model : public moptimizer::BaseModel<Scalar, Model> {
   Model(Scalar *x, Scalar *y) : data_x(x), data_y(y) {}
   // API simply has to override this method
 
@@ -24,20 +24,20 @@ struct Model : public duna_optimizer::BaseModel<Scalar, Model> {
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() : optimizer(2) {
-    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(
+    cost = new moptimizer::CostFunctionNumerical<Scalar, 2, 1>(
         Model::Ptr(new Model(x_data, y_data)), 7);
 
     // auto loss = new duna::loss::GemmanMCClure<Scalar>(100.0);
-    cost->setLossFunction(duna_optimizer::loss::GemmanMCClure<Scalar>::Ptr(
-        new duna_optimizer::loss::GemmanMCClure<Scalar>(100.0)));
+    cost->setLossFunction(moptimizer::loss::GemmanMCClure<Scalar>::Ptr(
+        new moptimizer::loss::GemmanMCClure<Scalar>(100.0)));
     optimizer.addCost(cost);
   }
 
   ~SimpleModel() { delete cost; }
 
  protected:
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> optimizer;
-  duna_optimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
+  moptimizer::LevenbergMarquadtDynamic<Scalar> optimizer;
+  moptimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
   Scalar x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
   Scalar y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 };

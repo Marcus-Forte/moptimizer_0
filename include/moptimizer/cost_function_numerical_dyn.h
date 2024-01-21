@@ -1,10 +1,10 @@
 #pragma once
 
-#include <duna_optimizer/cost_function.h>
-#include <duna_optimizer/logger.h>
-#include <duna_optimizer/model.h>
+#include <moptimizer/cost_function.h>
+#include <moptimizer/logger.h>
+#include <moptimizer/model.h>
 
-namespace duna_optimizer {
+namespace moptimizer {
 /// @brief Numerical Differentiation cost function. Computes numerical
 /// derivatives when computing hessian. Dimensions of function output and parameter are set in
 /// runtime.
@@ -32,4 +32,4 @@ class CostFunctionNumericalDynamic : public CostFunctionBase<Scalar> {
   int num_parameters_;
   int num_outputs_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

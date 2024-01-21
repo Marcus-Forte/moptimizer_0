@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(duna-optimizer VERSION 0.1 LANGUAGES CXX)
+project(moptimizer VERSION 0.1 LANGUAGES CXX)
 set (CMAKE_CXX_STANDARD 17)
 
 option(BUILD_TESTS "Build test programs" OFF)
@@ -43,7 +43,7 @@ target_link_libraries(${PROJECT_NAME} TBB::tbb)
 
 include (GenerateExportHeader) 
 generate_export_header(${PROJECT_NAME}
-EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/duna_optimizer/duna_exports.h)
+EXPORT_FILE_NAME ${CMAKE_SOURCE_DIR}/include/moptimizer/moptimizer_exports.h)
 
 if(BUILD_EXPERIMENTAL)
         add_subdirectory(experimental EXCLUDE_FROM_ALL)

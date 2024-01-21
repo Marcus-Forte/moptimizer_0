@@ -1,6 +1,6 @@
-#include "duna_optimizer/so3.h"
+#include "moptimizer/so3.h"
 
-#include "duna_optimizer/duna_exports.h"
+#include "moptimizer/moptimizer_exports.h"
 
 namespace so3 {
 template <typename Scalar>
@@ -154,59 +154,59 @@ void leftJacobian(const Eigen::Ref<const Eigen::Matrix<Scalar, 3, 1>> &r,
   left_jacobian = Eigen::Matrix<Scalar, 3, 3>::Identity() + factor * r_skew;
 }
 
-template void DUNA_OPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(
+template void MOPTIMIZER_EXPORT convert6DOFParameterToMatrix<double>(
     const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 convert6DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(
+template void MOPTIMIZER_EXPORT convert3DOFParameterToMatrix<double>(
     const double *x, Eigen::Matrix<double, 4, 4> &transform_matrix_);
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 convert3DOFParameterToMatrix<float>(const float *x, Eigen::Matrix<float, 4, 4> &transform_matrix_);
 
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 convert3DOFParameterToMatrix3<float>(const float *x, Eigen::Matrix<float, 3, 3> &transform_matrix_);
-template void DUNA_OPTIMIZER_EXPORT convert3DOFParameterToMatrix3<double>(
+template void MOPTIMIZER_EXPORT convert3DOFParameterToMatrix3<double>(
     const double *x, Eigen::Matrix<double, 3, 3> &transform_matrix_);
 
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 Exp<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &delta,
             Eigen::Ref<Eigen::Matrix<double, 3, 3>> R);
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 Exp<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &delta,
            Eigen::Ref<Eigen::Matrix<float, 3, 3>> R);
 
-template Eigen::Matrix<float, 3, 3> DUNA_OPTIMIZER_EXPORT
+template Eigen::Matrix<float, 3, 3> MOPTIMIZER_EXPORT
 Exp<float>(const Eigen::Matrix<float, 3, 1> &ang);
-template Eigen::Matrix<double, 3, 3> DUNA_OPTIMIZER_EXPORT
+template Eigen::Matrix<double, 3, 3> MOPTIMIZER_EXPORT
 Exp<double>(const Eigen::Matrix<double, 3, 1> &ang);
 
-template Eigen::Matrix<float, 3, 3> DUNA_OPTIMIZER_EXPORT
+template Eigen::Matrix<float, 3, 3> MOPTIMIZER_EXPORT
 Exp<float>(const Eigen::Matrix<float, 3, 1> &ang_vel, const float &dt);
-template Eigen::Matrix<double, 3, 3> DUNA_OPTIMIZER_EXPORT
+template Eigen::Matrix<double, 3, 3> MOPTIMIZER_EXPORT
 Exp<double>(const Eigen::Matrix<double, 3, 1> &ang_vel, const double &dt);
 
-template void DUNA_OPTIMIZER_EXPORT Log<double>(const Eigen::Ref<Eigen::Matrix<double, 3, 3>> &R,
+template void MOPTIMIZER_EXPORT Log<double>(const Eigen::Ref<Eigen::Matrix<double, 3, 3>> &R,
                                                 Eigen::Matrix<double, 3, 1> &delta);
-template void DUNA_OPTIMIZER_EXPORT Log<float>(const Eigen::Ref<Eigen::Matrix<float, 3, 3>> &R,
+template void MOPTIMIZER_EXPORT Log<float>(const Eigen::Ref<Eigen::Matrix<float, 3, 3>> &R,
                                                Eigen::Matrix<float, 3, 1> &delta);
 
-template void DUNA_OPTIMIZER_EXPORT inverseRightJacobian<float>(
+template void MOPTIMIZER_EXPORT inverseRightJacobian<float>(
     const Eigen::Matrix<float, 3, 1> &r, Eigen::Ref<Eigen::Matrix<float, 3, 3>> inv_jacobian);
-template void DUNA_OPTIMIZER_EXPORT inverseRightJacobian<double>(
+template void MOPTIMIZER_EXPORT inverseRightJacobian<double>(
     const Eigen::Matrix<double, 3, 1> &r, Eigen::Ref<Eigen::Matrix<double, 3, 3>> inv_jacobian);
 
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 rightJacobian<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &r,
                      Eigen::Ref<Eigen::Matrix<float, 3, 3>> jacobian);
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 rightJacobian<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &r,
                       Eigen::Ref<Eigen::Matrix<double, 3, 3>> jacobian);
 
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 leftJacobian<float>(const Eigen::Ref<const Eigen::Matrix<float, 3, 1>> &r,
                     Eigen::Ref<Eigen::Matrix<float, 3, 3>> jacobian);
-template void DUNA_OPTIMIZER_EXPORT
+template void MOPTIMIZER_EXPORT
 leftJacobian<double>(const Eigen::Ref<const Eigen::Matrix<double, 3, 1>> &r,
                      Eigen::Ref<Eigen::Matrix<double, 3, 3>> jacobian);
 }  // namespace so3

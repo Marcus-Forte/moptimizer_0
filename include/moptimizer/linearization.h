@@ -4,10 +4,10 @@
 
 #include <Eigen/Dense>
 
-#include "duna_optimizer/loss_function/loss_function.h"
-#include "duna_optimizer/model.h"
+#include "moptimizer/loss_function/loss_function.h"
+#include "moptimizer/model.h"
 
-namespace duna_optimizer {
+namespace moptimizer {
 ///
 template <class Scalar, int model_parameter_dim = Eigen::Dynamic,
           int model_output_dim = Eigen::Dynamic>
@@ -64,7 +64,7 @@ class CostComputation {
 
   Scalar computeHessianNumerical(
       const Scalar *const x, const Scalar *const covariance_data,
-      const typename duna_optimizer::loss::ILossFunction<Scalar>::Ptr loss_function,
+      const typename moptimizer::loss::ILossFunction<Scalar>::Ptr loss_function,
       Scalar *hessian_data, Scalar *b_data, ModelPtr model, int num_elements) {
     // Mappings
     Eigen::Map<const ParameterType> x_map(x, actual_parameter_dim_, 1);
@@ -165,4 +165,4 @@ class CostComputation {
   int actual_parameter_dim_;
   int actual_output_dim_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

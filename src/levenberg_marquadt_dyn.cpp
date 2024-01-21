@@ -1,8 +1,8 @@
-#include "duna_optimizer/levenberg_marquadt_dyn.h"
+#include "moptimizer/levenberg_marquadt_dyn.h"
 
-#include "duna_optimizer/logger.h"
+#include "moptimizer/logger.h"
 
-namespace duna_optimizer {
+namespace moptimizer {
 
 template <class Scalar>
 LevenbergMarquadtDynamic<Scalar>::LevenbergMarquadtDynamic(int num_parameters)
@@ -124,4 +124,4 @@ OptimizationStatus LevenbergMarquadtDynamic<Scalar>::minimize(Scalar *x0) {
 template class LevenbergMarquadtDynamic<float>;
 template class LevenbergMarquadtDynamic<double>;
 
-}  // namespace duna_optimizer
+}  // namespace moptimizer

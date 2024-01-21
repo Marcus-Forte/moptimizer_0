@@ -1,7 +1,7 @@
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/cost_function_numerical_dyn.h>
-#include <duna_optimizer/levenberg_marquadt_dyn.h>
-#include <duna_optimizer/model.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/cost_function_numerical_dyn.h>
+#include <moptimizer/levenberg_marquadt_dyn.h>
+#include <moptimizer/model.h>
 #include <gtest/gtest.h>
 
 #include "test_models.h"
@@ -10,7 +10,7 @@ using Scalar = float;
 class SimpleModel : public testing::Test {
  public:
   SimpleModel() : optimizer(2) {
-    cost = new duna_optimizer::CostFunctionNumerical<Scalar, 2, 1>(
+    cost = new moptimizer::CostFunctionNumerical<Scalar, 2, 1>(
         Model<Scalar>::Ptr(new Model<Scalar>(x_data, y_data)), 7);
 
     optimizer.addCost(cost);
@@ -19,8 +19,8 @@ class SimpleModel : public testing::Test {
   ~SimpleModel() { delete cost; }
 
  protected:
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> optimizer;
-  duna_optimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
+  moptimizer::LevenbergMarquadtDynamic<Scalar> optimizer;
+  moptimizer::CostFunctionNumerical<Scalar, 2, 1> *cost;
   Scalar x_data[7] = {0.038, 0.194, 0.425, 0.626, 1.253, 2.5, 3.70};
   Scalar y_data[7] = {0.05, 0.127, 0.094, 0.2122, 0.2729, 0.2665, 0.3317};
 };
@@ -44,7 +44,7 @@ TEST_F(SimpleModel, InitialCondition1) {
 
 TEST_F(SimpleModel, InitialCondition0Dynamic) {
   Scalar x0[] = {0.9, 0.2};
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
+  moptimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
 
   dyn_optimizer.addCost(cost);
 
@@ -56,7 +56,7 @@ TEST_F(SimpleModel, InitialCondition0Dynamic) {
 
 TEST_F(SimpleModel, InitialCondition1Dynamic) {
   Scalar x0[] = {1.9, 1.5};
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
+  moptimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
   dyn_optimizer.addCost(cost);
 
   dyn_optimizer.minimize(x0);
@@ -67,9 +67,9 @@ TEST_F(SimpleModel, InitialCondition1Dynamic) {
 
 TEST_F(SimpleModel, InitialCondition1DynamicCost) {
   Scalar x0[] = {1.9, 1.5};
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
+  moptimizer::LevenbergMarquadtDynamic<Scalar> dyn_optimizer(2);
 
-  auto *dyn_cost = new duna_optimizer::CostFunctionNumericalDynamic<Scalar>(
+  auto *dyn_cost = new moptimizer::CostFunctionNumericalDynamic<Scalar>(
       Model<Scalar>::Ptr(new Model<Scalar>(x_data, y_data)), 2, 1, 7);
 
   dyn_optimizer.addCost(dyn_cost);

@@ -4,12 +4,12 @@
 #include <exception>
 #include <iostream>
 
-#include "duna_optimizer/covariance/covariance.h"
-#include "duna_optimizer/loss_function/loss_function.h"
-#include "duna_optimizer/model.h"
-#include "duna_optimizer/types.h"
+#include "moptimizer/covariance/covariance.h"
+#include "moptimizer/loss_function/loss_function.h"
+#include "moptimizer/model.h"
+#include "moptimizer/types.h"
 
-namespace duna_optimizer {
+namespace moptimizer {
 /* Base class for cost functions. */
 
 template <class Scalar = double>
@@ -35,7 +35,7 @@ class CostFunctionBase {
   virtual ~CostFunctionBase() = default;
 
   inline void setLossFunction(LossFunctionPtr loss_function) { loss_function_ = loss_function; }
-  inline void setCovariance(const duna_optimizer::covariance::MatrixPtr<Scalar> covariance) {
+  inline void setCovariance(const moptimizer::covariance::MatrixPtr<Scalar> covariance) {
     covariance_ = covariance;
   }
 
@@ -55,6 +55,6 @@ class CostFunctionBase {
   // Interfaces
   ModelPtr model_;
   LossFunctionPtr loss_function_;
-  duna_optimizer::covariance::MatrixPtr<Scalar> covariance_;
+  moptimizer::covariance::MatrixPtr<Scalar> covariance_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

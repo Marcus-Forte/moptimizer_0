@@ -1,12 +1,12 @@
 #pragma once
 
-#include "duna_exports.h"
-#include "duna_optimizer/delta.h"
-#include "duna_optimizer/optimizer.h"
+#include "moptimizer_exports.h"
+#include "moptimizer/delta.h"
+#include "moptimizer/optimizer.h"
 
-namespace duna_optimizer {
+namespace moptimizer {
 template <class Scalar>
-class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic : public Optimizer<Scalar> {
+class MOPTIMIZER_EXPORT LevenbergMarquadtDynamic : public Optimizer<Scalar> {
  public:
   using HessianType = Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>;
   using ParametersType = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
@@ -48,4 +48,4 @@ class DUNA_OPTIMIZER_EXPORT LevenbergMarquadtDynamic : public Optimizer<Scalar> 
 
   ParametersType delta_;
 };
-}  // namespace duna_optimizer
+}  // namespace moptimizer

@@ -1,15 +1,15 @@
-#include <duna_optimizer/cost_function_numerical.h>
-#include <duna_optimizer/linearization.h>
-#include <duna_optimizer/model.h>
+#include <moptimizer/cost_function_numerical.h>
+#include <moptimizer/linearization.h>
+#include <moptimizer/model.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <duna_optimizer/stopwatch.hpp>
+#include <moptimizer/stopwatch.hpp>
 
 using scalar = double;
 using point_set_type = std::vector<Eigen::Vector3d>;
 
-struct Point2PointDist : public duna_optimizer::BaseModel<scalar, Point2PointDist> {
+struct Point2PointDist : public moptimizer::BaseModel<scalar, Point2PointDist> {
   Point2PointDist(const point_set_type *src, const point_set_type *tgt) {
     src_ = src;
     tgt_ = tgt;
@@ -71,14 +71,14 @@ TEST_F(ParallelCostTest, ComputeCost) {
   // Correspondences are the vector indices.
   auto num_points = this->src_point_cloud_.size();
   Point2PointDist::Ptr model(new Point2PointDist(&this->src_point_cloud_, &this->tgt_point_cloud_));
-  // duna_optimizer::CostFunctionNumerical<scalar, 6, 3> cost(model, num_points);
+  // moptimizer::CostFunctionNumerical<scalar, 6, 3> cost(model, num_points);
 
   // auto diff = cost.computeCost(nullptr);
 
   Eigen::Matrix<scalar, 3, 1> residual_type;
   utilities::Stopwatch timer;
 
-  duna_optimizer::CostComputation<scalar, 3, 3> computor;
+  moptimizer::CostComputation<scalar, 3, 3> computor;
 
   timer.tick();
   auto mt_diff = computor.parallelComputeCost(nullptr, model, num_points);

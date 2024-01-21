@@ -1,7 +1,7 @@
-#include <duna_optimizer/cost_function_analytical_dyn.h>
+#include <moptimizer/cost_function_analytical_dyn.h>
 
-#include "duna_optimizer/linearization.h"
-namespace duna_optimizer {
+#include "moptimizer/linearization.h"
+namespace moptimizer {
 
 template <class Scalar>
 CostFunctionAnalyticalDynamic<Scalar>::CostFunctionAnalyticalDynamic(ModelPtr model,
@@ -31,4 +31,4 @@ Scalar CostFunctionAnalyticalDynamic<Scalar>::linearize(const Scalar *x, Scalar 
 
 template class CostFunctionAnalyticalDynamic<float>;
 template class CostFunctionAnalyticalDynamic<double>;
-}  // namespace duna_optimizer
+}  // namespace moptimizer

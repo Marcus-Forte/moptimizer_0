@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "duna_optimizer/cost_function_analytical.h"
-#include "duna_optimizer/cost_function_analytical_dyn.h"
-#include "duna_optimizer/cost_function_numerical_dyn.h"
-#include "duna_optimizer/levenberg_marquadt_dyn.h"
-#include "duna_optimizer/model.h"
-#include "duna_optimizer/so3.h"
+#include "moptimizer/cost_function_analytical.h"
+#include "moptimizer/cost_function_analytical_dyn.h"
+#include "moptimizer/cost_function_numerical_dyn.h"
+#include "moptimizer/levenberg_marquadt_dyn.h"
+#include "moptimizer/model.h"
+#include "moptimizer/so3.h"
 
 using Scalar = double;
 using StateVector = Eigen::Matrix<double, 12, 1>;       // R15 component
@@ -49,7 +49,7 @@ struct state_composition {
   StateRotation rot_;
 };
 
-class StateModel : public duna_optimizer::BaseModelJacobian<Scalar, StateModel> {
+class StateModel : public moptimizer::BaseModelJacobian<Scalar, StateModel> {
  public:
   StateModel() = default;
   StateModel(const state_composition &init_state) : init_state_(init_state) {}
@@ -94,8 +94,8 @@ TEST(StateModel, Optimize) {
 
   std::cout << Eigen::Map<StateDeltaVector>(x) << std::endl;
 
-  duna_optimizer::LevenbergMarquadtDynamic<Scalar> lm(15);
-  duna_optimizer::CostFunctionNumericalDynamic<Scalar> cost(model, 15, 15, 1);
+  moptimizer::LevenbergMarquadtDynamic<Scalar> lm(15);
+  moptimizer::CostFunctionNumericalDynamic<Scalar> cost(model, 15, 15, 1);
 
   // cost.setCovariance()
   lm.setLogger(std::make_shared<duna::Logger>(std::cout, duna::Logger::L_DEBUG));
